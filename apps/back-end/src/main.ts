@@ -3,12 +3,13 @@
  * This is only a minimal backend to get started.
  */
 
-import express from 'express';
+import express, { Request, Response } from 'express';
 import cors from "cors";
 import * as path from 'path';
 import "./config";
 import { mongooseConnection } from './database';
 import { Server } from "http";
+import responseHandler from "./helper/responseHandler";
 
 const app = express();
 
@@ -18,11 +19,13 @@ app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ limit: '200mb', extended: true }));
 app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
-const bad_gateway = (req, res) => { return res.status(502).json({ status: 502, message: "Backend API Bad Gateway" }) };
+app.use(responseHandler);
 
-app.get('/api', (req, res) => {
-  return res.send({ message: 'Welcome to back-end!' });
-});
+const bad_gateway = (req: Request, res: Response) => { return res.badGateway("badGateway", {}) };
+
+app.get('/api', (req: Request, res: Response) =>
+  res.ok("serverSuccessMsg")
+);
 
 app.use("*", bad_gateway);
 

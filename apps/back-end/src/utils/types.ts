@@ -1,0 +1,1 @@
+export type ResponseDataType = Array<object | string> | object | null | undefined;

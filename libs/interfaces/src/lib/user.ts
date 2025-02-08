@@ -1,5 +1,6 @@
 import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
+import { IRole } from "./role";
 
 export interface IUser extends Document, ITimestamp {
     _id: string;
@@ -8,5 +9,5 @@ export interface IUser extends Document, ITimestamp {
     email: string;
     password: string;
     organizationId: string;
-    roleId: string | null;
+    roleId: string | IRole | null;
 }
