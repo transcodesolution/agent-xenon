@@ -3,12 +3,14 @@ import { NextFunction, Request, Response } from 'express'
 import { config } from '../config'
 import { userModel } from '../database'
 
-const ObjectId = require("mongoose").Types.ObjectId
 const jwt_token_secret = config.JWT_TOKEN_SECRET;
 
 declare module "jsonwebtoken" {
     interface JwtPayload {
-        _id: string | null;
+        _id: string;
+        type: string;
+        organizationId: string;
+        status: string;
         generatedOn: string;
     }
 }
@@ -29,9 +31,13 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
             }
 
             if (checkToken) {
-                const result = await userModel.findOne({ _id: ObjectId(isVerifyToken?._id), deletedAt: null }).populate("roleId");
+                console.log(isVerifyToken)
+                const result = await userModel.findOne({ _id: isVerifyToken?._id, deletedAt: null }).populate("roleId");
                 // if (result?.isBlocked) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}));
-                if (!result?.deletedAt) {
+                if (isVerifyToken.organizationId !== result.organizationId.toString()) {
+                    return res.forbidden("differentToken", {});
+                }
+                if (result) {
                     // Set in Header Decode Token Information
                     req.headers.user = result;
                     return next();
