@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-import { JOB_STATUS } from "../../utils/constant";
 import { IJob } from "@agent-xenon/interfaces";
+import { JOB_STATUS } from "@agent-xenon/constants";
 
 const JobSchema: Schema = new Schema({
     title: { type: String },
