@@ -3,40 +3,40 @@ import { ITimestamp } from "./timestamp";
 
 export interface IApplicant extends Document, ITimestamp {
     _id: string;
-    lastName: string | null;
+    lastName: string;
     contactInfo: {
-        address: string | null;
-        city: string | null;
+        address: string;
+        city: string;
         state: string;
         email: string;
-        phoneNumber: string | null;
+        phoneNumber: string;
     };
-    firstName: string | null;
+    firstName: string;
     socialLinks: object;
-    summary: string | null;
-    skills: string[] | null;
-    hobbies: string[] | null;
-    strengths: string[] | null;
-    salaryExpectation: number | null;
-    feedback: string | null;
-    jobId: string | null;
-    organizationId: string | null;
+    summary: string;
+    skills: string[];
+    hobbies: string[];
+    strengths: string[];
+    salaryExpectation: number;
+    feedback: string;
+    jobId: string;
+    organizationId: string;
     experienceDetails: {
-        duration: string | null;
-        responsibilities: string[] | null;
-        role: string | null;
+        duration: string;
+        responsibilities: string[];
+        role: string;
     }[];
     education: {
-        degree: string | null;
-        institution: string | null;
-        yearOfGraduation: string | null;
+        degree: string;
+        institution: string;
+        yearOfGraduation: string;
     }[];
     projects: {
-        description: string | null;
-        duration: string | null;
-        technologiesUsed: string[] | null;
-        title: string | null;
+        description: string;
+        duration: string;
+        technologiesUsed: string[];
+        title: string;
     }[];
-    resumeLink: string | null;
-    isSelectedByAgent: boolean | null;
+    resumeLink: string;
+    isSelectedByAgent: boolean;
 }

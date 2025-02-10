@@ -9,5 +9,5 @@ export interface IUser extends Document, ITimestamp {
     email: string;
     password: string;
     organizationId: string;
-    roleId: string | IRole | null;
+    roleId: string | IRole;
 }

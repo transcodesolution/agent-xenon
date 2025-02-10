@@ -4,8 +4,8 @@ import { ITimestamp } from "./timestamp";
 export interface IModule extends Document, ITimestamp {
     _id: string;
     tabName: string;
-    displayName: string | null;
+    displayName: string;
     tabUrl: string;
-    image: string | null;
-    parentId: string | null;
+    image: string;
+    parentId: string;
 }

@@ -1,12 +1,13 @@
+import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
 
 export interface IInterviewRounds extends Document, ITimestamp {
     _id: string;
-    type: string | null;
-    durationInSeconds: number | null;
-    qualificationCriteria: string | null;
-    jobId: string | null;
-    startDate: Date | null;
-    endDate: Date | null;
-    roundNumber: number | null;
+    type: string;
+    durationInSeconds: number;
+    qualificationCriteria: string;
+    jobId: string;
+    startDate: Date;
+    endDate: Date;
+    roundNumber: number;
 }
