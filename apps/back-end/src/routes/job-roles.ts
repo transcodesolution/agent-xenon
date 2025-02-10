@@ -1,5 +1,5 @@
 import express from 'express';
-import { createJobRole, deleteJobRole, getJobRoles, updateJobRole } from "../controllers/jobRoles/jobRole";
+import { createJobRole, deleteJobRole, getJobRoles, updateJobRole } from "../controllers/jobRoles/job-role";
 
 const router = express.Router();
 
