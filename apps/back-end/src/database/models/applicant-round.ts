@@ -1,4 +1,4 @@
-import { APPLICANT_ROUND_TYPES } from "@agent-xenon/constants";
+import { INTERVIEW_ROUND_STATUS } from "@agent-xenon/constants";
 import { ITimestamp } from "@agent-xenon/interfaces";
 import mongoose, { Schema } from "mongoose";
 
@@ -14,7 +14,7 @@ export interface IApplicantRounds extends Document, ITimestamp {
 
 const ApplicantRoundsSchema: Schema = new Schema({
     roundId: { type: Schema.Types.ObjectId },
-    status: { type: String, enum: Object.values(APPLICANT_ROUND_TYPES), default: APPLICANT_ROUND_TYPES.PENDING },
+    status: { type: String, enum: Object.values(INTERVIEW_ROUND_STATUS), default: INTERVIEW_ROUND_STATUS.PENDING },
     jobId: { type: Schema.Types.ObjectId },
     applicantId: { type: Schema.Types.ObjectId },
     isSelected: { type: Boolean },
