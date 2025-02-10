@@ -1,19 +1,6 @@
 import dotenv from "dotenv";
 
-// // Load environment-specific variables
-// if (process.env.NODE_ENV === 'dev')
-//   dotenv.config({ path: '.env.dev' });
-// else if (process.env.NODE_ENV === 'prod')
-//   dotenv.config({ path: '.env.prod' });
-// else if (process.env.NODE_ENV === 'staging')
-//   dotenv.config({ path: '.env.staging' });
-// else {
-//   dotenv.config({ path: '.env.dev' });
-// }
-
 dotenv.config();
-
-console.log("working env", process.env.NODE_ENV);
 
 export const config = {
   PORT: process.env.PORT,
