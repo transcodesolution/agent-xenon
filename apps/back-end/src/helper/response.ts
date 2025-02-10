@@ -1,5 +1,7 @@
 export const responseMessage = {
     serverSuccessMsg: "Welcome to back-end!",
+    org_onboard_success: "Organization onboard successfully",
+    invalid_organization: "Cannot login! invalid organization",
     badGateway: "Backend API Bad Gateway",
     invalidAction: "You are not allowed to perform this action",
     loginSuccess: "Login successful!",
@@ -30,7 +32,7 @@ export const responseMessage = {
     tokenNotExpire: "Token has been not expired!",
     tokenExpire: "Token has been expired!",
     refreshTokenSuccess: "A new token has been successfully generated!",
-    differentToken: "Do not try a different token!",
+    differentToken: "Do not try a different organization token!",
     tokenNotFound: "We can't find tokens in header!",
     logout: "Logout Successful!",
     fileUploadSuccess: "Your requested file uploaded successfully!",
@@ -62,5 +64,4 @@ export const responseMessage = {
     updateDataError: (message: string): string => { return `${message[0].toUpperCase() + message.slice(1).toLowerCase()} updating time getting an error!` },
     uploadDataError: (message: string): string => { return `${message[0].toUpperCase() + message.slice(1).toLowerCase()} uploading time getting an error!` },
     deleteDataSuccess: (message: string): string => { return `Your ${message.toLowerCase()} has been successfully deleted!` },
-    publishDataSuccess: (message: string): string => { return `${message[0].toUpperCase() + message.slice(1).toLowerCase()} has been successfully published to Facebook!` }
 }
