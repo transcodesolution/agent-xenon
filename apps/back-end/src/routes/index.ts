@@ -2,7 +2,7 @@
 import { Request, Router, Response } from 'express'
 import { JWT } from '../helper/jwt'
 import { ROLE_TYPES } from '@agent-xenon/constants'
-import { jobRoleRouter } from './jobRoles'
+import { jobRoleRouter } from './job-roles'
 import { authRouter } from './auth'
 import { onBoardOrganization } from '../controllers/auth/auth'
 
