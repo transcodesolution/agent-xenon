@@ -2,7 +2,7 @@ import { IInterviewRounds } from "@agent-xenon/interfaces";
 import mongoose, { Schema } from "mongoose";
 
 const InterviewRoundsSchema: Schema = new Schema({
-    type: { type: Schema.Types.ObjectId, ref: "Round_type" },
+    type: { type: String },
     durationInSeconds: { type: Number },
     qualificationCriteria: { type: String },
     jobId: { type: Schema.Types.ObjectId, ref: "Job" },
