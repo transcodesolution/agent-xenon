@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { createJobRoleSchema, deleteJobRoleSchema, getJobRoleSchema, updateJobRoleSchema } from "../../validation/jobRole";
-import JobRole from "../../database/models/jobRole";
+import { createJobRoleSchema, deleteJobRoleSchema, getJobRoleSchema, updateJobRoleSchema } from "../../validation/job-role";
+import JobRole from "../../database/models/job-role";
 import { FilterQuery } from "mongoose";
 import { IJobRole } from "@agent-xenon/interfaces";
 

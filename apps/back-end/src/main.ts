@@ -9,7 +9,7 @@ import * as path from 'path';
 import "./config";
 import { mongooseConnection } from './database';
 import { Server } from "http";
-import responseHandler from "./helper/responseHandler";
+import responseHandler from "./helper/response-handler";
 import { router } from './routes';
 
 const app = express();
