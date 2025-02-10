@@ -12,3 +12,4 @@ export * from "./lib/job_role";
 export * from "./lib/designation";
 export * from "./lib/job";
 export * from "./lib/interview_rounds";
+export * from "./lib/authResponse";

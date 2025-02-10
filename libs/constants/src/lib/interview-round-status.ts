@@ -1,5 +1,5 @@
 
-export const APPLICANT_ROUND_TYPES = {
+export const INTERVIEW_ROUND_STATUS = {
     PENDING: "pending",
     COMPLETED: "completed",
     ONGOING: "ongoing",

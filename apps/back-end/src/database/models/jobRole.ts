@@ -3,7 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 
 const JobRoleSchema: Schema = new Schema({
   name: { type: String },
-  organizationId: { type: Schema.Types.ObjectId },
+  organizationId: { type: Schema.Types.ObjectId, ref: "Organization" },
   deletedAt: { type: Date, default: null, },
 }, { timestamps: true, versionKey: false });
 

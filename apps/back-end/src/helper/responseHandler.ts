@@ -29,9 +29,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.ok = (errorMsg: string, data?: ResponseDataType, methodName?: string) => {
         return res.status(STATUS_CODES.SUCCESS).json({
             status: STATUS_CODES.SUCCESS,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             data: data ?? null,
         });
     };
@@ -39,9 +39,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.badRequest = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
             status: STATUS_CODES.BAD_REQUEST,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             error: error ?? null,
         });
     };
@@ -49,9 +49,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.forbidden = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.FORBIDDEN).json({
             status: STATUS_CODES.FORBIDDEN,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             error: error ?? null,
         });
     };
@@ -59,9 +59,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.resourceUnavailable = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.RESOURCE_NOT_FOUND).json({
             status: STATUS_CODES.RESOURCE_NOT_FOUND,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             error: error ?? null,
         });
     };
@@ -69,9 +69,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.badRequest = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
             status: STATUS_CODES.BAD_REQUEST,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             error: error ?? null,
         });
     };
@@ -79,9 +79,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.internalServerError = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).json({
             status: STATUS_CODES.INTERNAL_SERVER_ERROR,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             error: error ?? null,
         });
     };
@@ -89,9 +89,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.unAuthorizedAccess = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.UNAUTHORIZED).json({
             status: STATUS_CODES.UNAUTHORIZED,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             error: error ?? null,
         });
     };
@@ -99,9 +99,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.notFound = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.NOT_FOUND).json({
             status: STATUS_CODES.NOT_FOUND,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             error: error ?? null,
         });
     };
@@ -109,9 +109,9 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.badGateway = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.BAD_GATEWAY).json({
             status: STATUS_CODES.BAD_GATEWAY,
-            message: typeof responseMessage[errorMsg] === "string"
-                ? responseMessage[errorMsg]
-                : responseMessage[methodName](errorMsg),
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
             error: error ?? null,
         });
     };
