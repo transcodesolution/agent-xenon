@@ -1,9 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { responseMessage } from "./response";
 import STATUS_CODES from "./statusCodes";
-import { ResponseDataType } from "../utils/types";
 import { IUser } from "@agent-xenon/interfaces";
 import { IncomingHttpHeaders } from "http";
+import { ResponseDataType } from "../types/response-data";
 
 declare module "express" {
     interface Response {
