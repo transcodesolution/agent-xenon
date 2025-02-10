@@ -13,6 +13,7 @@
     "express": "^4.21.2",
     "googleapis": "^144.0.0",
     "http": "^0.0.1-security",
+    "joi": "^17.13.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.7",
     "next": "~15.1.4",

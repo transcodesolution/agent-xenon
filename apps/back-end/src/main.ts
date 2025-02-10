@@ -10,6 +10,7 @@ import "./config";
 import { mongooseConnection } from './database';
 import { Server } from "http";
 import responseHandler from "./helper/responseHandler";
+import { router } from './routes';
 
 const app = express();
 
@@ -27,6 +28,7 @@ app.get('/api', (req: Request, res: Response) =>
   res.ok("serverSuccessMsg")
 );
 
+app.use(router);
 app.use("*", bad_gateway);
 
 const port = process.env.PORT || 3333;
