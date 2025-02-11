@@ -129,12 +129,38 @@ export const getJob = async (req: Request, res: Response) => {
             match.designation = value.designation;
         }
 
-        const [totalData, data] = await Promise.all([
-            Job.countDocuments(match),
-            Job.find(match).skip((value.page - 1) * value.limit).limit(value.limit)
+        const [data] = await Job.aggregate<IPagination<IJob>>([
+            {
+                $match: match
+            },
+            {
+                $lookup: {
+                    from: "interviewrounds",
+                    localField: "_id",
+                    foreignField: "jobId",
+                    as: "rounds",
+                    pipeline: [{ $sort: { roundNumber: 1 } }, { $project: { type: 1, durationInSeconds: 1, qualificationCriteria: 1, roundNumber: 1 } }]
+                }
+            },
+            {
+                $facet: {
+                    data: [
+                        { $sort: { _id: -1 } },
+                        { $skip: (value.page - 1) * value.limit },
+                        { $limit: value.limit },
+                    ],
+                    totalData: [{ $count: "count" }]
+                }
+            },
+            {
+                $project: {
+                    totalData: { $arrayElemAt: ["$totalData.count", 0] },
+                    data: "$data",
+                }
+            }
         ])
 
-        return res.ok("job", { jobData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("job", { jobData: data.data, totalData: data.totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(data.totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
