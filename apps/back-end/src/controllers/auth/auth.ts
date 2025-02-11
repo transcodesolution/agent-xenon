@@ -1,11 +1,11 @@
 "use strict"
 import { Request, Response } from 'express'
-import { roleModel, userModel } from '../../database'
+import { userModel } from '../../database'
 import { loginSchema } from "../../validation/auth"
 import { ILoginResponse } from '@agent-xenon/interfaces'
 import Organization from '../../database/models/organization'
 import { generateToken } from '../../utils/generate-token'
-import { compareHash, generateHash } from '../../utils/password-hashing'
+import { compareHash } from '../../utils/password-hashing'
 
 export const login = async (req: Request, res: Response) => { //email or password // phone or password
     // reqInfo(req)
@@ -153,35 +153,3 @@ export const login = async (req: Request, res: Response) => { //email or passwor
 //         return res.status(500).json(new apiResponse(500, responseMessage?.internalServerError, {}, error))
 //     }
 // }
-
-export const onBoardOrganization = async (req: Request, res: Response) => {
-    // reqInfo(req)
-    try {
-        const body = req.body;
-        const isAlready = await userModel.findOne({ email: body?.email, deletedAt: null });
-        if (isAlready) return res.badRequest("alreadyEmail", {});
-
-        // if (isAlready?.isBlock == true) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}))
-
-        const hashPassword = await generateHash(body.password);
-        delete body.password
-        body.password = hashPassword
-        body.userType = 1  //to specify this user is admin
-        const response = new Organization(body)
-        await response.save()
-        body.organizationId = response._id;
-        body.roleId = (await roleModel.findOne({ isAdministratorRole: true, deletedAt: null }))._id;
-        await new userModel(body).save()
-
-        // let result: any = await email_verification_mail(response, otp);
-        // if (result) {
-        //     await userModel.findOneAndUpdate(body, { otp, otpExpireTime: new Date(new Date().setMinutes(new Date().getMinutes() + 10)) })
-        // return res.status(200).json(new apiResponse(200, `${response}`, {}, {}));
-        return res.ok("org_onboard_success", response)
-        // }
-        // return res.status(501).json(new apiResponse(501, responseMessage?.errorMail, {}, `${result}`));
-    } catch (error) {
-        console.error(error);
-        return res.internalServerError(error.message, error.stack, "customMessage")
-    }
-}

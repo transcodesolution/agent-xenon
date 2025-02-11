@@ -20,6 +20,7 @@ const OrganizationSchema: Schema = new Schema({
             // },
         }
     },
+    deletedAt: { type: Date, default: null },
 }, { timestamps: true, versionKey: false });
 
 const Organization = mongoose.model<IOrganization>('Organization', OrganizationSchema);
