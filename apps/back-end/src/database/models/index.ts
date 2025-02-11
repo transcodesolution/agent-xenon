@@ -10,7 +10,6 @@ export * from "./job-role"
 export * from "./module";
 export * from "./organization";
 export * from "./permission";
-export * from "./round-type";
 export * from "./user";
 export * from "./applicant-question-answer";
 export * from "./applicant-round";
