@@ -1,12 +1,5 @@
-import { ITimestamp } from "@agent-xenon/interfaces";
 import mongoose, { Schema } from "mongoose";
-
-export interface IRoundQuestionAssign extends Document, ITimestamp {
-    _id: string;
-    questionId: string | null;
-    jobId: string | null;
-    roundId: string | null;
-}
+import { IRoundQuestionAssign } from "../../types/round-question-assign";
 
 const RoundQuestionAssignSchema: Schema = new Schema({
     questionId: { type: Schema.Types.ObjectId },
