@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { paginationSchema } from "./auth";
+import { paginationSchema } from "./pagination";
 
 export const createDesignationSchema = Joi.object().keys({
     name: Joi.string().required(),
