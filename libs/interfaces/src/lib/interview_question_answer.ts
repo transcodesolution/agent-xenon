@@ -6,13 +6,15 @@ export interface IInterviewQuestionAnswer extends Document, ITimestamp {
     description: string;
     type: string;
     question: string;
-    text: string;
+    promptText: string;
     answerDetails: {
-        codeText: string;
-        options: string[];
-        text: string;
+        codeText: string | null;
+        text: string | null;
     };
-    options: string[];
+    options: {
+        index: string | null;
+        text: string | null;
+    }[];
     tags: string[];
     difficulty: string;
     timeLimitInMinutes: number;
