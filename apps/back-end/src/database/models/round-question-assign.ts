@@ -11,7 +11,7 @@ export interface IRoundQuestionAssign extends Document, ITimestamp {
 const RoundQuestionAssignSchema: Schema = new Schema({
     questionId: { type: Schema.Types.ObjectId },
     jobId: { type: Schema.Types.ObjectId },
-    roundId: { type: Schema.Types.ObjectId },
+    roundId: { type: Schema.Types.ObjectId, ref: "InterviewRounds" },
     deletedAt: { type: Date, default: null, },
 }, { timestamps: true, versionKey: false });
 

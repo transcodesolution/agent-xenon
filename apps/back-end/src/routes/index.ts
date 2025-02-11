@@ -6,6 +6,7 @@ import { jobRoleRouter } from './job-roles'
 import { authRouter } from './auth'
 import { onBoardOrganization } from '../controllers/auth/auth'
 import { designationRouter } from './job-designation'
+import { interviewQuestionAnswerRouter } from './interview-question-answer'
 
 const router = Router()
 const accessControl = (req: Request, res: Response, next: any) => {
@@ -19,6 +20,7 @@ router.use('/auth', authRouter)
 router.use(JWT)
 router.use('/jobRole', jobRoleRouter)
 router.use('/designation', designationRouter)
+router.use('/questionAnswer', interviewQuestionAnswerRouter)
 // router.use('/role', roleRouter)
 // router.use('/module', moduleRouter)
 // router.use('/permission', permissionRouter)
