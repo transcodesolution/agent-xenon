@@ -25,11 +25,13 @@ export interface IApplicant extends Document, ITimestamp {
         duration: string;
         responsibilities: string[];
         role: string;
+        organization: string;
     }[];
     education: {
         degree: string;
         institution: string;
         yearOfGraduation: string;
+        description: string;
     }[];
     projects: {
         description: string;

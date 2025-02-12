@@ -18,16 +18,18 @@ const ApplicantSchema: Schema = new Schema({
     strengths: [{ type: String }],
     salaryExpectation: { type: Number },
     feedback: { type: String },
-    jobId: { type: Schema.Types.ObjectId, index: true },
+    jobId: { type: Schema.Types.ObjectId, index: true, },
     organizationId: { type: Schema.Types.ObjectId, index: true },
     experienceDetails: [{
         duration: { type: String },
         responsibilities: [{ type: String }],
         role: { type: String },
+        organization: { type: String },
     }],
     education: [{
         degree: { type: String },
         institution: { type: String },
+        description: { type: String },
         yearOfGraduation: { type: String },
     }],
     projects: [{

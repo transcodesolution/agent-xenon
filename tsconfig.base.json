@@ -16,7 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@agent-xenon/constants": ["libs/constants/src/index.ts"],
-      "@agent-xenon/interfaces": ["libs/interfaces/src/index.ts"]
+      "@agent-xenon/interfaces": ["libs/interfaces/src/index.ts"],
+      "@agent-xenon/utils": ["libs/utils/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
