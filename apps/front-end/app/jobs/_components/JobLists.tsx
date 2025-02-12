@@ -1,0 +1,102 @@
+'use client'
+import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
+import { DataTable, DataTableSortStatus } from 'mantine-datatable'
+import { useSearchParams, useRouter } from 'next/navigation';
+import React, { useState } from 'react'
+const PAGE_SIZES = [50, 100, 200, 500, 1000];
+const SORT_ORDER = ['asc', 'desc'];
+
+export const JobLists = () => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const page = Number(searchParams.get('page')) || 1;
+  const pageSize = Number(searchParams.get('pageSize')) || PAGE_SIZES[0];
+  const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
+  const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '')
+    ? searchParams.get('sortOrder')
+    : 'desc';
+
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<any>>({
+    columnAccessor: sortColumn,
+    direction: sortOrder as 'asc' | 'desc',
+  });
+
+  const handleApplyFilter = (filters: FilterParams) => {
+    const newSearchParams = updateUrlParams(filters);
+    router.push(`?${newSearchParams.toString()}`);
+  };
+
+
+
+  const handleChangePage = (pageNumber: number) => {
+    handleApplyFilter({ 'page': pageNumber.toString() })
+  };
+  const handleChangePageSize = (pageNumber: number) => {
+    handleApplyFilter({ 'pageSize': pageNumber.toString() })
+  };
+  const handleSortStatusChange = (status: DataTableSortStatus<any>) => {
+    handleChangePage(1);
+    setSortStatus?.(status);
+  };
+
+  const columns = [
+    {
+      accessor: '_id',
+      title: '',
+      render: (data, index) => {
+        return index + 1
+      },
+      width: 25
+    },
+    {
+      accessor: 'title',
+      title: 'Title',
+      ellipsis: true,
+      sortable: true,
+    }
+  ]
+
+  const data = [
+    {
+      _id: '1',
+      title: 'Senior Software Engineer',
+      createdAt: new Date(),
+      status: 'OPEN'
+    },
+    {
+      _id: '2',
+      title: 'Junior Software Engineer',
+      createdAt: new Date(),
+      status: 'OPEN'
+    },
+    {
+      _id: '3',
+      title: 'Senior Business Executive',
+      createdAt: new Date(),
+      status: 'OPEN'
+    },
+  ]
+
+  return (
+    <DataTable
+      idAccessor='_id'
+      highlightOnHover
+      records={data}
+      selectedRecords={[]}
+      page={page}
+      onPageChange={handleChangePage}
+      onSelectedRecordsChange={() => console.log('selected')}
+      totalRecords={3}
+      recordsPerPage={pageSize}
+      recordsPerPageOptions={PAGE_SIZES}
+      onRecordsPerPageChange={handleChangePageSize}
+      noRecordsText='No Data To Show'
+      recordsPerPageLabel=""
+      sortStatus={sortStatus}
+      onSortStatusChange={handleSortStatusChange}
+      columns={columns}
+    />
+  )
+}
+
