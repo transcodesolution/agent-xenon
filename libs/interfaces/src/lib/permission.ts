@@ -1,7 +1,6 @@
-import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
 
-export interface IPermission extends Document, ITimestamp {
+export interface IPermission extends ITimestamp {
     _id: string;
     moduleId: string;
     roleId: string;

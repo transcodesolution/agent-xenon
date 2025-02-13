@@ -1,8 +1,13 @@
-import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
 
-export interface IRole extends Document, ITimestamp {
+export enum RoleTypes {
+    USER = "user",
+    ADMIN = "admin",
+    ADMINISTRATOR = "administrator",
+}
+
+export interface IRole extends ITimestamp {
     _id: string;
-    name: string;
+    name: RoleTypes;
     isAdministratorRole: boolean;
 }

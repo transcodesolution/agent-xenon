@@ -1,9 +1,8 @@
 import mongoose from "mongoose";
-import { ROLE_TYPES } from "@agent-xenon/constants";
-import { IRole } from "@agent-xenon/interfaces";
+import { IRole, RoleTypes } from "@agent-xenon/interfaces";
 
 const roleSchema = new mongoose.Schema({
-    name: { type: String, enum: Object.values(ROLE_TYPES) },
+    name: { type: String, enum: RoleTypes },
     isAdministratorRole: { type: Boolean, default: false },
 }, { timestamps: true, versionKey: false })
 
