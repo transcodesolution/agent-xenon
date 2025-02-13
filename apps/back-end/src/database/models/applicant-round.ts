@@ -1,10 +1,10 @@
-import { INTERVIEW_ROUND_STATUS } from "@agent-xenon/constants";
-import { IApplicantRounds, InterviewRoundStatus } from "@agent-xenon/interfaces";
+import { InterviewRoundStatus } from "@agent-xenon/constants";
+import { IApplicantRounds } from "@agent-xenon/interfaces";
 import mongoose, { Schema } from "mongoose";
 
 const ApplicantRoundsSchema: Schema = new Schema({
     roundId: { type: Schema.Types.ObjectId },
-    status: { type: String, enum: InterviewRoundStatus, default: INTERVIEW_ROUND_STATUS.PENDING },
+    status: { type: String, enum: InterviewRoundStatus, default: InterviewRoundStatus.PENDING },
     jobId: { type: Schema.Types.ObjectId },
     applicantId: { type: Schema.Types.ObjectId },
     isSelected: { type: Boolean },

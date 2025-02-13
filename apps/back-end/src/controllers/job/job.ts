@@ -5,10 +5,10 @@ import Job from "../../database/models/job";
 import InterviewRounds from "../../database/models/interview-round";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { IInterviewRounds, IJob } from "@agent-xenon/interfaces";
-import { JOB_STATUS } from "@agent-xenon/constants";
 import Applicant from "../../database/models/applicant";
 import ApplicantRounds from "../../database/models/applicant-round";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
+import { JobStatus } from "@agent-xenon/constants";
 
 export const createJob = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -57,7 +57,7 @@ export const updateJob = async (req: Request, res: Response) => {
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
-        if (checkJobExist.status === JOB_STATUS.INTERVIEW_STARTED) { return res.badRequest("could not edit job right now as already interview started!", {}, "customMessage"); }
+        if (checkJobExist.status === JobStatus.INTERVIEW_STARTED) { return res.badRequest("could not edit job right now as already interview started!", {}, "customMessage"); }
 
         if (value?.screeningCriteria) {
             value.qualificationCriteria = value.screeningCriteria;
@@ -83,7 +83,7 @@ export const deleteJob = async (req: Request, res: Response) => {
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
-        if (checkJobExist.status === JOB_STATUS.INTERVIEW_STARTED) { return res.badRequest("could not delete job right now as already interview started!", {}, "customMessage"); }
+        if (checkJobExist.status === JobStatus.INTERVIEW_STARTED) { return res.badRequest("could not delete job right now as already interview started!", {}, "customMessage"); }
 
         const data = await Job.findByIdAndUpdate(value.jobId, { $set: { deletedAt: new Date() } }, { new: true });
 

@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import { IRole, RoleTypes } from "@agent-xenon/interfaces";
+import { IRole, } from "@agent-xenon/interfaces";
+import { RoleTypes } from "@agent-xenon/constants";
 
 const roleSchema = new mongoose.Schema({
     name: { type: String, enum: RoleTypes },

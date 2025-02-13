@@ -1,10 +1,7 @@
+import { InterviewRoundStatus } from "@agent-xenon/constants";
 import { ITimestamp } from "./timestamp";
 
-export enum InterviewRoundStatus {
-    PENDING = "pending",
-    COMPLETED = "completed",
-    ONGOING = "ongoing",
-}
+
 
 export interface IApplicantRounds extends ITimestamp {
     _id: string;

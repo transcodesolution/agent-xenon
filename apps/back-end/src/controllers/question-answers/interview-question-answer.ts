@@ -4,7 +4,7 @@ import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getQuestionAnswerSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
 import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { TECHNICAL_QUESTION_ANSWER_TYPES } from "@agent-xenon/constants";
+import { TechnicalRoundTypes } from "@agent-xenon/constants";
 
 export const createQuestionAnswer = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -15,7 +15,7 @@ export const createQuestionAnswer = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkQuestionExist = await InterviewQuestionAnswer.findOne({ organizationId: user.organizationId, type: TECHNICAL_QUESTION_ANSWER_TYPES.MCQ, question: value.question, deletedAt: null });
+        const checkQuestionExist = await InterviewQuestionAnswer.findOne({ organizationId: user.organizationId, type: TechnicalRoundTypes.MCQ, question: value.question, deletedAt: null });
 
         if (checkQuestionExist) return res.badRequest("question", {}, "dataAlreadyExist");
 
@@ -42,7 +42,7 @@ export const updateQuestionAnswer = async (req: Request, res: Response) => {
 
         if (!checkQuestionExist) return res.badRequest("question", {}, "getDataNotFound");
 
-        const checkQuestionNameExist = await InterviewQuestionAnswer.findOne({ _id: { $ne: value.questionId }, organizationId: user.organizationId, type: TECHNICAL_QUESTION_ANSWER_TYPES.MCQ, question: value.question, deletedAt: null });
+        const checkQuestionNameExist = await InterviewQuestionAnswer.findOne({ _id: { $ne: value.questionId }, organizationId: user.organizationId, type: TechnicalRoundTypes.MCQ, question: value.question, deletedAt: null });
 
         if (checkQuestionNameExist) return res.badRequest("question", {}, "dataAlreadyExist");
 

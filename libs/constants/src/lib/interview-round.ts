@@ -1,6 +1,5 @@
-
-export const INTERVIEW_ROUND_STATUS = {
-    PENDING: "pending",
-    COMPLETED: "completed",
-    ONGOING: "ongoing",
+export enum InterviewRoundStatus {
+    PENDING = "pending",
+    COMPLETED = "completed",
+    ONGOING = "ongoing",
 }

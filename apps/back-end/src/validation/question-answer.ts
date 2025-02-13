@@ -1,17 +1,17 @@
 import Joi from "joi";
-import { ANSWER_INPUT_FORMAT, ANSWER_MCQ_OPTION, DIFFICULTY } from "@agent-xenon/constants";
 import { paginationSchema } from "./pagination";
+import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty } from "@agent-xenon/constants";
 
 const questionAnswerSchema = {
     description: Joi.string().optional(),
     promptText: Joi.string().optional(),
     answerDetails: Joi.object().keys({ codeText: Joi.string().optional(), text: Joi.string().optional() }).optional(),
-    options: Joi.array().items({ text: Joi.string().required(), index: Joi.string().valid(ANSWER_MCQ_OPTION.A, ANSWER_MCQ_OPTION.B, ANSWER_MCQ_OPTION.C, ANSWER_MCQ_OPTION.D).required() }).optional(),
+    options: Joi.array().items({ text: Joi.string().required(), index: Joi.string().valid(AnswerMcqOptionFormat.A, AnswerMcqOptionFormat.B, AnswerMcqOptionFormat.C, AnswerMcqOptionFormat.D).required() }).optional(),
     tags: Joi.array().items(Joi.string()).optional(),
-    difficulty: Joi.string().valid(DIFFICULTY.EASY, DIFFICULTY.MEDIUM, DIFFICULTY.HARD).optional(),
+    difficulty: Joi.string().valid(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD).optional(),
     timeLimitInMinutes: Joi.number().optional(),
     evaluationCriteria: Joi.string().optional(),
-    inputFormat: Joi.string().valid(ANSWER_INPUT_FORMAT.MCQ, ANSWER_INPUT_FORMAT.CODE, ANSWER_INPUT_FORMAT.FILE, ANSWER_INPUT_FORMAT.TEXT).optional(),
+    inputFormat: Joi.string().valid(AnswerInputFormat.MCQ, AnswerInputFormat.CODE, AnswerInputFormat.FILE, AnswerInputFormat.TEXT).optional(),
 }
 
 export const createQuestionAnswerSchema = Joi.object().keys({

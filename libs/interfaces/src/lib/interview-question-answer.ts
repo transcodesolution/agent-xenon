@@ -1,32 +1,10 @@
 import { ITimestamp } from "./timestamp";
-
-export enum TechnicalQuestionAnswerTypes {
-    MCQ = "mcq",
-    DSA = "dsa",
-    CODING = "coding",
-    SYSTEM_DESIGN = "system_design",
-    LOW_LEVEL_DESIGN = "low_level_design",
-    OTHER = "other",
-    BEHAVIORAL = "behavioral",
-}
-
-export enum Difficulty {
-    EASY = "easy",
-    MEDIUM = "medium",
-    HARD = "hard",
-}
-
-export enum AnswerInputFormat {
-    TEXT = "text",
-    MCQ = "mcq",
-    FILE = "file",
-    CODE = "code",
-}
+import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty, TechnicalRoundTypes } from "@agent-xenon/constants"
 
 export interface IInterviewQuestionAnswer extends ITimestamp {
     _id: string;
     description: string;
-    type: TechnicalQuestionAnswerTypes;
+    type: TechnicalRoundTypes;
     question: string;
     promptText: string;
     answerDetails: {
@@ -34,7 +12,7 @@ export interface IInterviewQuestionAnswer extends ITimestamp {
         text: string;
     };
     options: {
-        index: string;
+        index: AnswerMcqOptionFormat;
         text: string;
     }[];
     tags: string[];

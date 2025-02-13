@@ -1,12 +1,6 @@
 import { ITimestamp } from "./timestamp";
 import { IInterviewRounds } from "./interview_rounds";
-
-export enum JobStatus {
-    OPEN = "open",
-    CLOSE = "close",
-    PAUSED = "paused",
-    INTERVIEW_STARTED = "interview_started",
-}
+import { JobStatus } from "@agent-xenon/constants";
 
 export interface IJob extends ITimestamp {
     _id: string;
