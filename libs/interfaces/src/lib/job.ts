@@ -1,13 +1,13 @@
-import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
 import { IInterviewRounds } from "./interview_rounds";
+import { JobStatus } from "@agent-xenon/constants";
 
-export interface IJob extends Document, ITimestamp {
+export interface IJob extends ITimestamp {
     _id: string;
     title: string;
     description: string;
     role: string;
-    status: string;
+    status: JobStatus;
     designation: string;
     qualificationCriteria: string;
     organizationId: string;

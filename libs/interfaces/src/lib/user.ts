@@ -1,8 +1,7 @@
-import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
 import { IRole } from "./role";
 
-export interface IUser extends Document, ITimestamp {
+export interface IUser extends ITimestamp {
     _id: string;
     firstName: string;
     lastName: string;

@@ -1,17 +1,16 @@
-import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
 
-export interface IOrganization extends Document, ITimestamp {
+export interface IOrganization extends ITimestamp {
     _id: string;
     name: string;
     description: string;
     address: string;
-    ServiceProviders: {
-        Google: {
-            AccessToken: string;
-            Expiry: Date;
-            RefreshToken: string;
-            Scope: string[];
+    serviceProviders: {
+        google: {
+            accessToken: string;
+            expiry: Date;
+            refreshToken: string;
+            scope: string[];
         };
         //     slack: {
         //  };

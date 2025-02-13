@@ -1,8 +1,8 @@
-import { Document } from "mongoose";
+import { RoleTypes } from "@agent-xenon/constants";
 import { ITimestamp } from "./timestamp";
 
-export interface IRole extends Document, ITimestamp {
+export interface IRole extends ITimestamp {
     _id: string;
-    name: string;
+    name: RoleTypes;
     isAdministratorRole: boolean;
 }

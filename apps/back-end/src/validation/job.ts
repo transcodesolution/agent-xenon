@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { paginationSchema } from "./pagination";
-import { JOB_STATUS } from "@agent-xenon/constants";
+import { JobStatus } from "@agent-xenon/constants";
 
 const jobSchema = {
     title: Joi.string().optional(),
@@ -26,7 +26,7 @@ export const createJobSchema = Joi.object().keys({
 export const updateJobSchema = Joi.object().keys({
     ...jobSchema,
     ...jobIdSchema,
-    status: Joi.string().valid(JOB_STATUS.CLOSE, JOB_STATUS.PAUSED, JOB_STATUS.INTERVIEW_STARTED).optional(),
+    status: Joi.string().valid(JobStatus.CLOSE, JobStatus.PAUSED, JobStatus.INTERVIEW_STARTED).optional(),
 })
 
 export const deleteJobSchema = Joi.object().keys({

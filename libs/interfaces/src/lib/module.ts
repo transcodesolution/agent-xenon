@@ -1,7 +1,6 @@
-import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
 
-export interface IModule extends Document, ITimestamp {
+export interface IModule extends ITimestamp {
     _id: string;
     tabName: string;
     displayName: string;

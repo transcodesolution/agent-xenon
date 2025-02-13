@@ -1,11 +1,11 @@
-import { ROLE_TYPES } from "@agent-xenon/constants";
+import { RoleTypes } from "@agent-xenon/constants";
 import { NextFunction, Request, Response } from "express";
 
 export const VALIDATE_ROLE = (roles: Array<string>) => async (req: Request, res: Response, next: NextFunction) => {
     const { user } = req.headers;
     try {
         if (typeof user.roleId !== "string") {
-            if (user.roleId.name === ROLE_TYPES.ADMINISTRATOR) {
+            if (user.roleId.name === RoleTypes.ADMINISTRATOR) {
                 return next();
             }
 

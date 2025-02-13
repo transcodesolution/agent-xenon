@@ -1,7 +1,6 @@
-import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
 
-export interface IApplicant extends Document, ITimestamp {
+export interface IApplicant extends ITimestamp {
     _id: string;
     lastName: string;
     contactInfo: {

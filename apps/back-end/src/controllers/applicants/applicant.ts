@@ -6,7 +6,7 @@ import Applicant from "../../database/models/applicant";
 import ApplicantRounds from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
 import uploadResumesAgent from "../../agents/resume-extract-info";
-import { JOB_STATUS } from "@agent-xenon/constants";
+import { JobStatus } from "@agent-xenon/constants";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -39,7 +39,7 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkJobExist = await Job.findOne({ _id: value.jobId, deletedAt: null, status: JOB_STATUS.OPEN });
+        const checkJobExist = await Job.findOne({ _id: value.jobId, deletedAt: null, status: JobStatus.OPEN });
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 

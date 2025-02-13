@@ -5,13 +5,13 @@ const OrganizationSchema: Schema = new Schema({
     name: { type: String, unique: true },
     description: { type: String },
     address: { type: String },
-    ServiceProviders: {
+    serviceProviders: {
         type: {
-            Google: {
-                AccessToken: { type: String },
-                Expiry: { type: Date },
-                RefreshToken: { type: String },
-                Scope: [{ type: String, }],
+            google: {
+                accessToken: { type: String },
+                expiry: { type: Date },
+                refreshToken: { type: String },
+                scope: [{ type: String, }],
             },
             // Slack: {
 
