@@ -1,5 +1,5 @@
 import { ITimestamp } from "./timestamp";
-import { IInterviewRounds } from "./interview_rounds";
+import { IInterviewRounds } from "./interview-round";
 import { JobStatus } from "@agent-xenon/constants";
 
 export interface IJob extends ITimestamp {

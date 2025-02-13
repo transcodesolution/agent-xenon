@@ -10,6 +10,7 @@ import { organizationRouter } from './organization'
 import { jobRouter } from './job'
 import { applicantRouter } from './applicant'
 import { RoleTypes } from '@agent-xenon/constants'
+import { interviewRoundRouter } from './interview-round'
 
 const router = Router()
 const accessControl = (req: Request, res: Response, next: any) => {
@@ -27,6 +28,7 @@ router.use('/questionAnswer', interviewQuestionAnswerRouter)
 router.use('/organization', organizationRouter)
 router.use('/job', jobRouter)
 router.use('/applicant', applicantRouter)
+router.use('/interview-round', interviewRoundRouter)
 // router.use('/role', roleRouter)
 // router.use('/module', moduleRouter)
 // router.use('/permission', permissionRouter)

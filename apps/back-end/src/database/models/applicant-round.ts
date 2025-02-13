@@ -5,7 +5,7 @@ import mongoose, { Schema } from "mongoose";
 const ApplicantRoundsSchema: Schema = new Schema({
     roundId: { type: Schema.Types.ObjectId },
     status: { type: String, enum: InterviewRoundStatus, default: InterviewRoundStatus.PENDING },
-    jobId: { type: Schema.Types.ObjectId },
+    jobId: { type: Schema.Types.ObjectId, ref: "Job" },
     applicantId: { type: Schema.Types.ObjectId },
     isSelected: { type: Boolean },
     lastQuestionId: { type: Schema.Types.ObjectId },

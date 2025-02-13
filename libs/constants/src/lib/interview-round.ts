@@ -3,3 +3,9 @@ export enum InterviewRoundStatus {
     COMPLETED = "completed",
     ONGOING = "ongoing",
 }
+
+export enum InterviewRoundTypes {
+    SCREENING = "screening",
+    TECHNICAL = "technical",
+    MEETING = "meeting",
+}
