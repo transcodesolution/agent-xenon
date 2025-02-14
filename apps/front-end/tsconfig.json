@@ -24,6 +24,9 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./*"],
+      "@agent-xenon/interfaces": ["../../libs/interfaces/src/index.ts"],
+      "@agent-xenon/constants": ["../../libs/constants/src/index.ts"],
+      "@agent-xenon/utils": ["../../libs/utils/src/index.ts"]
     }
   },
   "include": [
@@ -37,10 +40,5 @@
     "postcss.config.cjs",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "jest.config.ts",
-    "**/*.spec.ts",
-    "**/*.test.ts"
-  ]
+  "exclude": ["node_modules", "jest.config.ts", "**/*.spec.ts", "**/*.test.ts"]
 }
