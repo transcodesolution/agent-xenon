@@ -2,7 +2,6 @@
 import { AppShell, Burger } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Sidebar } from '@/libs/components/layouts/sidebar';
-import styles from './styles.module.scss'
 interface IMainLayout {
   children: React.ReactNode
 }
