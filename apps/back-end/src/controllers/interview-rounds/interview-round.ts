@@ -25,15 +25,15 @@ export const createInterviewRound = async (req: Request, res: Response) => {
         const count = await InterviewRounds.countDocuments({ jobId: value.jobId, deletedAt: null })
 
         value.roundNumber = count + 1;
-        const data = await InterviewRounds.create(value);
+        const interviewRoundData = await InterviewRounds.create(value);
 
         await RoundQuestionAssign.insertMany(value.questions.map((i: string) => ({
             questionId: i,
             jobId: checkJobExist._id,
-            roundId: data._id
+            roundId: interviewRoundData._id
         })))
 
-        return res.ok("interview round", data, "addDataSuccess")
+        return res.ok("interview round", interviewRoundData, "addDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -54,13 +54,13 @@ export const updateInterviewRound = async (req: Request, res: Response) => {
 
         if (checkRoundExist.jobId.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can edit round right now interview is already started!", {}, "getDataNotFound");
 
-        const data = await InterviewRounds.findByIdAndUpdate(value.roundId, { $set: value }, { new: true });
+        const interviewRoundData = await InterviewRounds.findByIdAndUpdate(value.roundId, { $set: value }, { new: true });
 
         if (value.newQuestionIds.length > 0) {
             await RoundQuestionAssign.insertMany(value.newQuestionIds.map((i: string) => ({
                 questionId: i,
                 jobId: checkRoundExist.jobId._id,
-                roundId: data._id
+                roundId: interviewRoundData._id
             })))
         }
 
@@ -68,7 +68,7 @@ export const updateInterviewRound = async (req: Request, res: Response) => {
             await RoundQuestionAssign.deleteMany({ _id: { $in: value.removeQuestionIds } })
         }
 
-        return res.ok("interview round", data, "updateDataSuccess")
+        return res.ok("interview round", interviewRoundData, "updateDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -96,11 +96,11 @@ export const deleteInterviewRound = async (req: Request, res: Response) => {
 
         if (jobData?.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can delete round right now interview is already started!", {}, "getDataNotFound");
 
-        const data = await InterviewRounds.updateMany(roundIdQuery, { $set: { deletedAt: new Date() } }, { new: true });
+        const interviewRoundData = await InterviewRounds.updateMany(roundIdQuery, { $set: { deletedAt: new Date() } }, { new: true });
 
         await RoundQuestionAssign.deleteMany({ roundId: Query, jobId: jobData._id });
 
-        return res.ok("interview round", data, "deleteDataSuccess")
+        return res.ok("interview round", interviewRoundData, "deleteDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -120,12 +120,12 @@ export const getInterviewRoundQuestions = async (req: Request, res: Response) =>
             match["questionId.name"] = new RegExp(value.search, "i");
         }
 
-        const [totalData, data] = await Promise.all([
+        const [totalData, interviewRoundData] = await Promise.all([
             RoundQuestionAssign.countDocuments(match),
             RoundQuestionAssign.find(match).populate("questionId").sort({ _id: 1 }).skip((value.page - 1) * value.limit).limit(value.limit)
         ])
 
-        return res.ok("interview questions", { interviewRoundData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("interview questions", { interviewRoundData, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -139,13 +139,13 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkRoundsExist = await InterviewRounds.findOne<IInterviewRounds<IJob>>({ _id: value.roundId, deletedAt: null }).populate("jobId", "status");
+        const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds<IJob>>({ _id: value.roundId, deletedAt: null }).populate("jobId", "status");
 
-        if (checkRoundsExist.jobId._id.toString() !== value.jobId) return res.badRequest("job is invalid for this round", {}, "customMessage");
+        if (interviewRoundData.jobId._id.toString() !== value.jobId) return res.badRequest("job is invalid for this round", {}, "customMessage");
 
-        switch (checkRoundsExist.type) {
+        switch (interviewRoundData.type) {
             case InterviewRoundTypes.SCREENING:
-                await manageScreeningRound(checkRoundsExist);
+                await manageScreeningRound(interviewRoundData);
                 break;
             case InterviewRoundTypes.TECHNICAL:
                 break;

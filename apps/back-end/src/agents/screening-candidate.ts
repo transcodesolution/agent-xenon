@@ -121,8 +121,6 @@ async function filterCandidateAgent(criteria: string, jobId: string, roundId: st
 
         const responseMessage = data.choices[0].message;
 
-        console.log(messages)
-
         if (responseMessage?.tool_calls) {
             for (const toolCall of responseMessage.tool_calls) {
                 if (toolCall.function.name === "getApplicantDetails") {
