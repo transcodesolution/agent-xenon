@@ -4,3 +4,8 @@ export interface IResumeExtractResponse {
     type: string;
     message: IApplicant[];
 }
+
+export interface IScreeningResponse {
+    type: string;
+    message: string[];
+}

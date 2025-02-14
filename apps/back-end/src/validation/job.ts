@@ -1,13 +1,12 @@
 import Joi from "joi";
 import { paginationSchema } from "./pagination";
-import { JobStatus } from "@agent-xenon/constants";
+import { InterviewRoundTypes, JobStatus, TechnicalRoundTypes } from "@agent-xenon/constants";
 
 const jobSchema = {
     title: Joi.string().optional(),
     description: Joi.string().optional(),
     role: Joi.string().optional(),
     designation: Joi.string().optional(),
-    screeningCriteria: Joi.string().optional(),
 }
 
 const jobIdSchema = { jobId: Joi.string().required(), }
@@ -15,9 +14,11 @@ const jobIdSchema = { jobId: Joi.string().required(), }
 export const createJobSchema = Joi.object().keys({
     ...jobSchema,
     rounds: Joi.array().items(Joi.object().keys({
-        type: Joi.string(),
+        type: Joi.string().valid(...Object.values(InterviewRoundTypes)),
+        subType: Joi.string().valid(...Object.values(TechnicalRoundTypes)).optional(),
         durationInSeconds: Joi.number(),
         qualificationCriteria: Joi.string(),
+        mcqCriteria: Joi.number(),
         roundNumber: Joi.number(),
         questions: Joi.array().items(Joi.string()),
     })).optional(),

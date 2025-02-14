@@ -139,7 +139,7 @@ export const getJob = async (req: Request, res: Response) => {
                     localField: "_id",
                     foreignField: "jobId",
                     as: "rounds",
-                    pipeline: [{ $sort: { roundNumber: 1 } }, { $project: { type: 1, durationInSeconds: 1, qualificationCriteria: 1, roundNumber: 1 } }]
+                    pipeline: [{ $match: { deletedAt: null } }, { $sort: { roundNumber: 1 } }, { $project: { type: 1, durationInSeconds: 1, qualificationCriteria: 1, roundNumber: 1, mcqCriteria: 1 } }]
                 }
             },
             {
