@@ -1,13 +1,22 @@
+"use client";
+
 import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MainLayout from './_components/MainLayout';
+import { setupAxiosInterceptors } from '@agent-xenon/web-apis';
 
-export const metadata = {
-  title: 'My Mantine app',
-  description: 'I have followed setup instructions carefully',
-};
+// export const metadata = {
+//   title: 'My Mantine app',
+//   description: 'I have followed setup instructions carefully',
+// };
+
+// Create a client
+
+setupAxiosInterceptors()
+const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
@@ -24,7 +33,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <MantineProvider><MainLayout>{children}</MainLayout></MantineProvider>
+        <QueryClientProvider client={queryClient}>
+          <MantineProvider>
+            <MainLayout>{children}</MainLayout>
+          </MantineProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );

@@ -1,5 +1,5 @@
 "use client"
-import { Button, Paper, Stack, Title } from '@mantine/core'
+import { Button, Paper, Stack, Title, Loader } from '@mantine/core'
 import React from 'react'
 import { JobFilter } from './_components/JobFilter'
 import { JobLists } from './_components/JobLists'
@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { JobGrid } from './_components/JobGrid';
 import { JobStatus } from '@agent-xenon/constants'
 import { IJob } from '@agent-xenon/interfaces'
+import { useGetJobs } from '@agent-xenon/react-query-hooks'
 
 const data: IJob[] = [
   {
@@ -77,17 +78,25 @@ const data: IJob[] = [
 export default function Page() {
   const searchParams = useSearchParams();
   const view = searchParams.get('view') || 'list';
+  const { data, isLoading } = useGetJobs({ page: 1, limit: 10 });
+  console.log('data', data?.data);
+
   return (
     <Stack gap='sm'>
       <Title order={4}>Jobs</Title>
       <Button mb='md' component='a' href='/jobs/create' styles={{ root: { width: 'fit-content' } }}>Create +</Button>
       <JobFilter />
-      {view === 'list' ?
-        <Paper withBorder radius="md" p="md">
-          <JobLists data={data} />
-        </Paper>
-        : <JobGrid data={data} />
-      }
+      {isLoading ? (
+        <Loader />
+      ) : (
+        view === 'list' ? (
+          <Paper withBorder radius="md" p="md">
+            <JobLists data={data?.data?.jobData ?? []} />
+          </Paper>
+        ) : (
+          <JobGrid data={data?.data?.jobData ?? []} />
+        )
+      )}
     </Stack>
   )
 }
