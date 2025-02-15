@@ -1,7 +1,8 @@
 import { getResumeParsedText } from "@agent-xenon/utils";
 import OpenAI from "openai";
-import { ChatCompletionMessageParam } from "openai/resources";
+import { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources";
 import { IResumeExtractResponse } from "../types/agent";
+import Applicant from "../database/models/applicant";
 
 const client = new OpenAI();
 
@@ -10,6 +11,7 @@ export interface IApplicant extends Document {
     lastName: string;
     contactInfo: {
         email: string;
+        password: string;
         phoneNumber: string;
         address: String;
         city: String;
@@ -46,46 +48,137 @@ export interface IApplicant extends Document {
     jobId: string;
 }
 
-Rules:
-- Strictly follow the JSON output format.
-- Please don't put object in array when you not found the contactInfo.email or contactInfo.email is empty, null
+Tools:
+- checkApplicantEmailInJob(jobId: string, email: string): string => you have to call this function to check for email already exist, if this method will give "false" then only take applicant in json otherwise ignore it.
 
-Examples:
-{type:"OUTPUT", "message":"<Put array of object (json) here>"}`;
+### **Rules to Follow**
+1. **Email Check Before Adding Applicant**:
+   - Before adding an applicant, **call the provided function** \`checkApplicantEmailInJob(jobId, contactInfo.email)\`.
+   - If the function **returns \`false\`**, include the applicant in the final array.
+   - If it **returns \`true\`**, skip that applicant.
+   - **Do NOT call the function again for the same email.**
+   - **please trict boolean as string => function return "false", "true" so give me according to this**
+   - **strict to tool_call_id, compare result with each tool properly. match id and take result.
 
-const messages: ChatCompletionMessageParam[] = [
-    { role: "system", content: SYSTEM_PROMPT }
-]
+2. **Mandatory Fields**:
+   - If \`contactInfo.email\` is missing, empty, or null, **ignore** that applicant.
+   - \`contactInfo.password\` must be **generated**, 8 characters long, and strong. Please generate according to schema fields, name, birthdate.
+
+3. Step-by-Step Resume Processing Flow
+    1.) You have string which contains pdf text.
+
+    2.) Parse the provided PDF text string.
+        Extract candidate information according to the given schema.
+
+        Pick one extracted resume object at a time.
+        Retrieve the email from the extracted resume.
+    
+    3.) Check Email Existence (One-Time Call per Email)
+
+        Call the function checkApplicantEmailInJob(jobId, email).
+        Wait for the function’s response before proceeding further.
+    4.) Decide Based on Email Existence Response
+
+        If the response is "true" (email already exists), send null.
+        If the response is "false" (email does not exist), send the object according to schema formatted.
+    5.) Return the Final Processed Data
+
+        Output the final object of extracted resume in strict JSON format.
+        Ensure the format adheres to the expected schema.
+
+### **Response Format**
+{ "type": "OUTPUT", "message": "<Put object (json) here>" }`;
+
+async function checkApplicantEmailInJob(jobId: string, email: string) {
+    const checkApplicantEmailExist = await Applicant.findOne({ jobId, "contactInfo.email": email, deletedAt: null });
+    return !!checkApplicantEmailExist;
+}
 
 async function uploadResumesAgent(resumeUrls: string[], organizationId: string, jobId: string) {
     const pdfTexts = await Promise.all(resumeUrls.map((i) => (getResumeParsedText(i))));
 
-    messages.push({
-        role: 'user',
-        content: `
-      you are an agent for screening a resume & extract candidate information from text extracted from a pdf file and create a json according to the applicant schema given.
+    const finalResumes = [];
 
-      Pdf text are given as array of string each string contains extracted text of single candidate:
-      ${pdfTexts}
-      
-      I am giving you organizationId=${organizationId}, jobId=${jobId} and resumeUrls=${resumeUrls}, attach in according to schema.
-      For resume urls you take according to index.
-      Example:
-      pdfTexts[0]=resumeUrls[0]=resumeLink in schema
-      pdfTexts[1]=resumeUrls[1]=resumeLink in schema
-      `,
-    });
+    const tools: Array<ChatCompletionTool> = [
+        {
+            type: "function",
+            function: {
+                name: "checkApplicantEmailInJob",
+                description: "Checks if an applicant with a given email already exists for a job.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        jobId: { type: "string", description: "The job ID to check against" },
+                        email: { type: "string", description: "The applicant's email address" },
+                    },
+                    required: ["jobId", "email"],
+                },
+            },
+        },
+    ];
 
-    const data = await client.chat.completions.create({
-        model: 'gpt-4o-mini',
-        store: true,
-        messages,
-        response_format: { type: "json_object" }
-    });
+    for (let i = 0; i < pdfTexts.length; i += 1) {
+        const resumeText = pdfTexts[i];
+        const resumeUrl = resumeUrls[i];
 
-    const resumeData: IResumeExtractResponse = JSON.parse(data.choices[0].message?.content ?? '{}');
+        const messages: ChatCompletionMessageParam[] = [
+            { role: "system", content: SYSTEM_PROMPT },
+            {
+                role: 'user',
+                content: `
+                    you are an agent for screening a resume & extract candidate information from text extracted from a pdf file and create a json according to the applicant schema given.
 
-    return resumeData?.message ?? [];
+                    Process the following extracted resume text:
+                    "${resumeText}"
+                    Resume URL: "${resumeUrl}"
+                    Organization ID: "${organizationId}"
+                    Job ID: "${jobId}"
+                `,
+            }
+        ];
+
+        let aiResponse = await client.chat.completions.create({
+            model: 'gpt-4o-mini',
+            store: true,
+            messages,
+            tools,
+            response_format: { type: "json_object" }
+        });
+
+        while (aiResponse.choices[0].message?.tool_calls) {
+            const toolCalls = aiResponse.choices[0].message.tool_calls;
+            messages.push(aiResponse.choices[0].message)
+
+            for (const toolCall of toolCalls) {
+                if (toolCall.function.name === "checkApplicantEmailInJob") {
+                    const { jobId, email } = JSON.parse(toolCall.function.arguments);
+
+                    const emailExists = await checkApplicantEmailInJob(jobId?.trim(), email?.trim());
+
+                    messages.push({
+                        role: "tool",
+                        tool_call_id: toolCall.id,
+                        content: JSON.stringify(emailExists),
+                    });
+                }
+            }
+
+            // Call OpenAI again with updated messages
+            aiResponse = await client.chat.completions.create({
+                model: "gpt-4o-mini",
+                store: true,
+                messages,
+                tools,
+                response_format: { type: "json_object" },
+            });
+        }
+
+        const resumeData: IResumeExtractResponse = JSON.parse(aiResponse.choices[0].message?.content ?? '{}');
+
+        finalResumes.push(resumeData?.message);
+    }
+
+    return finalResumes.filter(Boolean);
 }
 
 export default uploadResumesAgent;

@@ -6,8 +6,9 @@ const ApplicantSchema: Schema = new Schema({
     contactInfo: {
         address: { type: String },
         city: { type: String },
-        state: { type: String, required: true },
+        state: { type: String },
         email: { type: String, required: true },
+        password: { type: String },
         phoneNumber: { type: String },
     },
     firstName: { type: String },
