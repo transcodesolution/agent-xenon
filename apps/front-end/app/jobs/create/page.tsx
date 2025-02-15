@@ -1,20 +1,16 @@
-import { Button, Flex, Select, Stack, Textarea, TextInput } from '@mantine/core'
+import { Stack, Title } from '@mantine/core'
 import React from 'react'
+import { JobForm } from './_components/JobForm';
 
 const designations = [{ value: 'senior', label: 'Senior' }, { value: 'junior', label: 'Junior' }]
 const roles = [{ value: 'softwareEngineer', label: 'Software Engineer' }, { value: 'webDesigner', label: 'Web Designer' }]
 
 export default function page() {
+
   return (
     <Stack>
-      <TextInput label='Title' />
-      <Textarea label='Description' />
-      <Flex gap='sm'>
-        <Select label='Designation' data={designations} />
-        <Select label='Role' data={roles} />
-      </Flex>
-      <Textarea label='Qualification Criteria' />
-      <Button variant='outline' styles={{ root: { width: 'fit-content' } }}>Add Interview Round +</Button>
+      <Title order={4}>Jobs</Title>
+      <JobForm designations={designations} roles={roles} />
     </Stack>
   )
 }
