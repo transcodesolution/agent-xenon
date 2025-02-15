@@ -1,26 +1,16 @@
 
-import { AnswerInputFormat, Difficulty, TechnicalRoundTypes } from '@agent-xenon/constants';
+import { AnswerInputFormat, Difficulty, InterviewRoundTypes, TechnicalRoundTypes } from '@agent-xenon/constants';
 import { IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
-import { ActionIcon, Combobox, Grid, Select, Stack, Textarea, TextInput, useCombobox } from '@mantine/core'
+import { ActionIcon, Button, Combobox, Flex, Grid, Select, Stack, Textarea, TextInput, useCombobox } from '@mantine/core'
 import { IconTrash } from '@tabler/icons-react';
 import React, { useState } from 'react';
-enum RoundType {
-  Technical = 'technical',
-  Meeting = 'meeting',
-  Screening = 'screening',
-}
 
-enum TechnicalSubType {
-  DSA = 'dsa',
-  SystemDesign = 'system_design',
-  MCQ = 'mcq',
-}
 
 export const InterviewRound = () => {
   const [searchQuestion, setSearchQuestion] = useState('');
   const [selectedQuestions, setSelectedQuestions] = useState<IInterviewQuestionAnswer[]>([]);
-  const [roundType, setRoundType] = useState<RoundType | null>(null);
-  const [technicalSubType, setTechnicalSubType] = useState<TechnicalSubType | null>(null);
+  const [roundType, setRoundType] = useState<InterviewRoundTypes>();
+  const [technicalSubType, setTechnicalSubType] = useState<TechnicalRoundTypes | null>(null);
   const combobox = useCombobox();
   const questions: IInterviewQuestionAnswer[] = [
     {
@@ -52,26 +42,30 @@ export const InterviewRound = () => {
   return (
     <Stack>
       <TextInput label='Name' />
-      <Select label='Type' data={[]} />
+      {/* <Select label='Type' data={[]} /> */}
       <Textarea label='Qualification Criteria' />
-      <Select
-        label='Round Type'
-        data={Object.values(RoundType).map((type) => ({ value: type, label: type }))}
-        value={roundType}
-        onChange={(value) => {
-          setRoundType(value as RoundType);
-          setTechnicalSubType(null);
-        }}
-      />
-      {roundType === RoundType.Technical && (
+      <Flex gap='md'>
         <Select
-          label='Technical Sub Type'
-          data={Object.values(TechnicalSubType).map((type) => ({ value: type, label: type }))}
-          value={technicalSubType}
-          onChange={(value) => setTechnicalSubType(value as TechnicalSubType)}
+          w={286}
+          label='Round Type'
+          data={Object.values(InterviewRoundTypes).map((type) => ({ value: type, label: type }))}
+          value={roundType}
+          onChange={(value) => {
+            setRoundType(value as InterviewRoundTypes);
+            setTechnicalSubType(null);
+          }}
         />
-      )}
-      {technicalSubType === TechnicalSubType.MCQ && (
+        {roundType === InterviewRoundTypes.TECHNICAL && (
+          <Select
+            w={286}
+            label='Technical Sub Type'
+            data={Object.values(TechnicalRoundTypes).map((type) => ({ value: type, label: type }))}
+            value={technicalSubType}
+            onChange={(value) => setTechnicalSubType(value as TechnicalRoundTypes)}
+          />
+        )}
+      </Flex>
+      {technicalSubType === TechnicalRoundTypes.MCQ && (
         <Combobox>
           <Combobox.Target>
             <TextInput
@@ -105,6 +99,8 @@ export const InterviewRound = () => {
           </Grid.Col>
         </Grid>
       ))}
-    </Stack>
+
+      <Button mx='auto' styles={{ root: { width: 'fit-content' } }} >Add</Button>
+    </Stack >
   );
 };
