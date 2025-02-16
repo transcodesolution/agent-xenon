@@ -21,3 +21,15 @@ export interface IGetJobsResponse {
   status: number;
   message: string;
 }
+
+export interface ICreateJobParams {
+  title?: string;
+  description?: string;
+  role?: string;
+  designation?: string;
+  rounds: {
+    type: string;
+    roundNumber: number;
+    questions: string[];
+  }[];
+}

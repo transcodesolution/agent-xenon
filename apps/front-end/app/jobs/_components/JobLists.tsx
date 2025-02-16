@@ -1,8 +1,9 @@
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
-import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatable'
+import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { useSearchParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 import { IJob } from '@agent-xenon/interfaces';
+import { getColumns } from './Columns';
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
 
@@ -29,7 +30,7 @@ export function JobLists({ data,isFetching }: JobListsProps) {
 
   const handleApplyFilter = (filters: FilterParams) => {
     const newSearchParams = updateUrlParams(filters);
-    router.push(`?${newSearchParams.toString()}`);
+    router.push(`${newSearchParams.toString()}`);
   };
 
 
@@ -45,23 +46,7 @@ export function JobLists({ data,isFetching }: JobListsProps) {
     setSortStatus?.(status);
   };
 
-
-  const columns: DataTableColumn<IJob>[] = [
-    {
-      accessor: '_id',
-      title: '',
-      render: (_, index) => {
-        return index + 1
-      },
-      width: 25
-    },
-    {
-      accessor: 'title',
-      title: 'Title',
-      ellipsis: true,
-      sortable: true,
-    }
-  ]
+  const columns = getColumns(sortStatus);
 
   return (
     <DataTable
