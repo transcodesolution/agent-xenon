@@ -20,7 +20,6 @@ export const setupAxiosInterceptors = () => {
     (request: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
       if (request.headers) {
         request.headers['Authorization'] = `${token}`;
-        console.log('Token set in header:', request.headers['Authorization']); // Debugging
       }
       return request;
     },

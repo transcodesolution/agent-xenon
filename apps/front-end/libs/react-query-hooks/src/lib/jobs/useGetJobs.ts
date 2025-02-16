@@ -2,7 +2,7 @@ import { IGetJobsParams } from '@agent-xenon/types-api';
 import { getJobs } from '@agent-xenon/web-apis';
 import { useQuery } from '@tanstack/react-query';
 
-type IUseGetJobsParams = IGetJobsParams & {
+interface IUseGetJobs extends IGetJobsParams {
   staleTime?: number;
   enabled?: boolean;
   refetchOnWindowFocus?: boolean;
@@ -17,7 +17,7 @@ export const useGetJobs = ({
   staleTime = 1000 * 60 * 0.2,
   enabled = true,
   refetchOnWindowFocus = false,
-}: IUseGetJobsParams) => {
+}: IUseGetJobs) => {
   return useQuery({
     queryKey: ['getJobs', page, limit, search, role, designation],
     queryFn: async () => {

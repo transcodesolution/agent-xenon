@@ -1,18 +1,23 @@
-import { SimpleGrid, Skeleton } from '@mantine/core';
+import { Loader, SimpleGrid, Skeleton } from '@mantine/core';
 import React from 'react';
 import JobCard from './JobCard';
 import { IJob } from '@agent-xenon/interfaces';
 
 interface JobGridProps {
   data: IJob[];
+  isFetching:boolean;
 }
 
-export function JobGrid({ data }: JobGridProps) {
+export function JobGrid({ data , isFetching }: JobGridProps) {
   const projectsLoading = false;
 
   const jobItems = data.map((job) => (
     <JobCard key={job._id} job={job} />
   ));
+
+  if(isFetching){
+    return <Loader/>
+  }
 
   return (
     <SimpleGrid

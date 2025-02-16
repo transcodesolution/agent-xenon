@@ -1,22 +1,17 @@
-"use client";
-
 import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MainLayout from './_components/MainLayout';
 import { setupAxiosInterceptors } from '@agent-xenon/web-apis';
+import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryCientProvider';
 
-// export const metadata = {
-//   title: 'My Mantine app',
-//   description: 'I have followed setup instructions carefully',
-// };
-
-// Create a client
+export const metadata = {
+  title: 'Agent Xenon',
+  description: 'Agent Xenon is capable of automate organization repeatedly processes',
+};
 
 setupAxiosInterceptors()
-const queryClient = new QueryClient();
 
 export default function RootLayout({
   children,
@@ -33,12 +28,12 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <QueryClientProvider client={queryClient}>
+        <ReactQueryClientProvider>
           <MantineProvider>
             <MainLayout>{children}</MainLayout>
           </MantineProvider>
-        </QueryClientProvider>
-      </body>
-    </html>
+      </ReactQueryClientProvider>
+    </body>
+    </html >
   );
 }
