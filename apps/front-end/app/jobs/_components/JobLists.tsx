@@ -7,10 +7,11 @@ const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
 
 interface JobListsProps {
-  data: IJob[]
+  data: IJob[];
+  isFetching:boolean
 }
 
-export function JobLists({ data }: JobListsProps) {
+export function JobLists({ data,isFetching }: JobListsProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -49,7 +50,7 @@ export function JobLists({ data }: JobListsProps) {
     {
       accessor: '_id',
       title: '',
-      render: (data, index) => {
+      render: (_, index) => {
         return index + 1
       },
       width: 25
@@ -67,6 +68,7 @@ export function JobLists({ data }: JobListsProps) {
       idAccessor='_id'
       highlightOnHover
       records={data}
+      fetching={isFetching}
       selectedRecords={[]}
       page={page}
       onPageChange={handleChangePage}
