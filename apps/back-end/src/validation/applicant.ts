@@ -5,6 +5,7 @@ const contactInfoSchema = Joi.object({
     address: Joi.string().allow(""),
     city: Joi.string().allow(""),
     email: Joi.string().email().required(),
+    password: Joi.string().required(),
     phoneNumber: Joi.string().allow(""),
     state: Joi.string().allow(""),
 });
@@ -25,7 +26,7 @@ const projectsSchema = Joi.array().items(
         title: Joi.string().allow(""),
         description: Joi.string().allow(""),
         technologiesUsed: Joi.array().items(Joi.string().allow("")),
-        duraction: Joi.string().allow(""),
+        duration: Joi.string().allow(""),
     })
 );
 

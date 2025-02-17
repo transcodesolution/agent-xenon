@@ -1,8 +1,6 @@
-import { Document } from "mongoose";
 import { ITimestamp } from "./timestamp";
-import { IJob } from "./job";
 
-export interface IInterviewRounds<T = string> extends Document, ITimestamp {
+export interface IInterviewRounds<T = string> extends ITimestamp {
     _id: string;
     type: string;
     durationInSeconds: number;
