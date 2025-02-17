@@ -1,6 +1,5 @@
-'use client'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Box, CloseButton, Flex, Input, SegmentedControl, VisuallyHidden } from '@mantine/core'
+import { CloseButton, Flex, Input, SegmentedControl, VisuallyHidden } from '@mantine/core'
 import React, { useRef } from 'react'
 import { IconLayoutGrid, IconList } from '@tabler/icons-react'
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams'
@@ -20,7 +19,7 @@ export const JobFilter = () => {
 
   const handleApplyFilter = (filters: FilterParams) => {
     const newSearchParams = updateUrlParams(filters)
-    router.push(`?${newSearchParams.toString()}`);
+    router.push(`${newSearchParams.toString()}`);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {

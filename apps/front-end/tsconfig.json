@@ -10,7 +10,11 @@
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "lib": ["dom", "dom.iterable", "esnext"],
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -20,10 +24,33 @@
         "name": "next"
       }
     ],
-    "types": ["jest", "node"],
+    "types": [
+      "jest",
+      "node"
+    ],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"],
+      "@/*": [
+        "./*"
+      ],
+      "@agent-xenon/interfaces": [
+        "../../libs/interfaces/src/index.ts"
+      ],
+      "@agent-xenon/constants": [
+        "../../libs/constants/src/index.ts"
+      ],
+      "@agent-xenon/utils": [
+        "../../libs/utils/src/index.ts"
+      ],
+      "@agent-xenon/types-api": [
+        "libs/types-api/src/index.ts"
+      ],
+      "@agent-xenon/web-apis": [
+        "libs/web-apis/src/index.ts"
+      ],
+      "@agent-xenon/react-query-hooks": [
+        "libs/react-query-hooks/src/index.ts"
+      ],
     }
   },
   "include": [

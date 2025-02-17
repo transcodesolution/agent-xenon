@@ -1,12 +1,18 @@
-'use client'
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
 import { DataTable, DataTableSortStatus } from 'mantine-datatable'
 import { useSearchParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
+import { IJob } from '@agent-xenon/interfaces';
+import { getColumns } from './Columns';
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
 
-export const JobLists = () => {
+interface JobListsProps {
+  data: IJob[];
+  isFetching:boolean
+}
+
+export function JobLists({ data,isFetching }: JobListsProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -17,14 +23,14 @@ export const JobLists = () => {
     ? searchParams.get('sortOrder')
     : 'desc';
 
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<any>>({
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IJob>>({
     columnAccessor: sortColumn,
     direction: sortOrder as 'asc' | 'desc',
   });
 
   const handleApplyFilter = (filters: FilterParams) => {
     const newSearchParams = updateUrlParams(filters);
-    router.push(`?${newSearchParams.toString()}`);
+    router.push(`${newSearchParams.toString()}`);
   };
 
 
@@ -35,54 +41,19 @@ export const JobLists = () => {
   const handleChangePageSize = (pageNumber: number) => {
     handleApplyFilter({ 'pageSize': pageNumber.toString() })
   };
-  const handleSortStatusChange = (status: DataTableSortStatus<any>) => {
+  const handleSortStatusChange = (status: DataTableSortStatus<IJob>) => {
     handleChangePage(1);
     setSortStatus?.(status);
   };
 
-  const columns = [
-    {
-      accessor: '_id',
-      title: '',
-      render: (data, index) => {
-        return index + 1
-      },
-      width: 25
-    },
-    {
-      accessor: 'title',
-      title: 'Title',
-      ellipsis: true,
-      sortable: true,
-    }
-  ]
-
-  const data = [
-    {
-      _id: '1',
-      title: 'Senior Software Engineer',
-      createdAt: new Date(),
-      status: 'OPEN'
-    },
-    {
-      _id: '2',
-      title: 'Junior Software Engineer',
-      createdAt: new Date(),
-      status: 'OPEN'
-    },
-    {
-      _id: '3',
-      title: 'Senior Business Executive',
-      createdAt: new Date(),
-      status: 'OPEN'
-    },
-  ]
+  const columns = getColumns(sortStatus);
 
   return (
     <DataTable
       idAccessor='_id'
       highlightOnHover
       records={data}
+      fetching={isFetching}
       selectedRecords={[]}
       page={page}
       onPageChange={handleChangePage}

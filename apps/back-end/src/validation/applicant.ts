@@ -5,7 +5,7 @@ const contactInfoSchema = Joi.object({
     address: Joi.string().allow(""),
     city: Joi.string().allow(""),
     email: Joi.string().email().required(),
-    password: Joi.string().required(),
+    password: Joi.string().min(8).required(),
     phoneNumber: Joi.string().allow(""),
     state: Joi.string().allow(""),
 });
@@ -17,7 +17,7 @@ const experienceDetailsSchema = Joi.array().items(
         role: Joi.string().allow(""),
         organization: Joi.string().allow(""),
         duration: Joi.string().allow(""),
-        responsibilities: Joi.string().allow(""),
+        responsibilities: Joi.array().items(Joi.string().allow("")),
     })
 );
 
