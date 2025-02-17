@@ -8,6 +8,7 @@ export interface IApplicant extends ITimestamp {
         city: string;
         state: string;
         email: string;
+        password: string;
         phoneNumber: string;
     };
     firstName: string;
