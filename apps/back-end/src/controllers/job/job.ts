@@ -174,7 +174,10 @@ export const getJobById = async (req: Request, res: Response) => {
                 }
             },
             {
-                $unwind: "$designationData"
+                $unwind: {
+                    path: "$designationData",
+                    preserveNullAndEmptyArrays: true
+                }
             },
             {
                 $lookup: {
@@ -185,7 +188,10 @@ export const getJobById = async (req: Request, res: Response) => {
                 }
             },
             {
-                $unwind: "$roleData"
+                $unwind: {
+                    path: "$roleData",
+                    preserveNullAndEmptyArrays: true
+                }
             },
         ])
 
