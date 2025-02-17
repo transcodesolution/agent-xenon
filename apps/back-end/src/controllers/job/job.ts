@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { FilterQuery } from "mongoose";
-import { createJobSchema, deleteJobSchema, getJobSchema, updateJobSchema } from "../../validation/job";
+import mongoose, { FilterQuery } from "mongoose";
+import { createJobSchema, deleteJobSchema, getJobByIdSchema, getJobSchema, updateJobSchema } from "../../validation/job";
 import Job from "../../database/models/job";
 import InterviewRounds from "../../database/models/interview-round";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
@@ -129,9 +129,32 @@ export const getJob = async (req: Request, res: Response) => {
             match.designation = value.designation;
         }
 
-        const [data] = await Job.aggregate<IPagination<IJob>>([
+        const [totalData, jobData] = await Promise.all([
+            Job.countDocuments(match),
+            Job.find(match).populate("role", "name").populate("designation", "name").sort({ _id: -1 }).skip((value.page - 1) * value.limit).limit(value.limit)
+        ]);
+
+        return res.ok("job", { jobData, totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getJobById = async (req: Request, res: Response) => {
+    const { user } = req.headers;
+    try {
+        Object.assign(req.query, req.params);
+        const { error, value } = getJobByIdSchema.validate(req.query);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IJob> = { deletedAt: null, organizationId: new mongoose.Types.ObjectId(user.organizationId), _id: new mongoose.Types.ObjectId(value.jobId as string) };
+
+        const [job] = await Job.aggregate<IPagination<IJob>>([
             {
-                $match: match
+                $match: match,
             },
             {
                 $lookup: {
@@ -143,24 +166,30 @@ export const getJob = async (req: Request, res: Response) => {
                 }
             },
             {
-                $facet: {
-                    data: [
-                        { $sort: { _id: -1 } },
-                        { $skip: (value.page - 1) * value.limit },
-                        { $limit: value.limit },
-                    ],
-                    totalData: [{ $count: "count" }]
+                $lookup: {
+                    from: "designations",
+                    localField: "designation",
+                    foreignField: "_id",
+                    as: "designationData",
                 }
             },
             {
-                $project: {
-                    totalData: { $arrayElemAt: ["$totalData.count", 0] },
-                    data: "$data",
+                $unwind: "$designationData"
+            },
+            {
+                $lookup: {
+                    from: "jobroles",
+                    localField: "role",
+                    foreignField: "_id",
+                    as: "roleData",
                 }
-            }
+            },
+            {
+                $unwind: "$roleData"
+            },
         ])
 
-        return res.ok("job", { jobData: data.data, totalData: data.totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(data.totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("job", job, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

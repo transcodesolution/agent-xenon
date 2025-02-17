@@ -2,13 +2,13 @@ import { ITimestamp } from "./timestamp";
 import { IInterviewRounds } from "./interview-round";
 import { JobStatus } from "@agent-xenon/constants";
 
-export interface IJob extends ITimestamp {
+export interface IJob<T = string> extends ITimestamp {
     _id: string;
     title: string;
     description: string;
-    role: string;
+    role: T;
     status: JobStatus;
-    designation: string;
+    designation: T;
     qualificationCriteria: string;
     organizationId: string;
     rounds?: Array<Pick<IInterviewRounds, "_id" | "type" | "durationInSeconds" | "qualificationCriteria" | "roundNumber">>;
