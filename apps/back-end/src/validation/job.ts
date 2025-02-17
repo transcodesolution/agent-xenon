@@ -40,3 +40,8 @@ export const getJobSchema = Joi.object().keys({
     designation: Joi.string().optional(),
     ...paginationSchema,
 })
+
+export const getJobByIdSchema = Joi.object().keys({
+    jobId: Joi.string().required(),
+    ...paginationSchema,
+})

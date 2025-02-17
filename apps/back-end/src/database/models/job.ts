@@ -5,9 +5,9 @@ import { JobStatus } from "@agent-xenon/constants";
 const JobSchema: Schema = new Schema({
     title: { type: String },
     description: { type: String },
-    role: { type: Schema.Types.ObjectId, ref: "role" },
+    role: { type: Schema.Types.ObjectId, ref: "JobRole" },
     status: { type: String, enum: JobStatus, default: JobStatus.OPEN },
-    designation: { type: Schema.Types.ObjectId },
+    designation: { type: Schema.Types.ObjectId, ref: "Designation" },
     qualificationCriteria: { type: String },
     organizationId: { type: Schema.Types.ObjectId, ref: "Organization" },
     deletedAt: { type: Date, default: null },
