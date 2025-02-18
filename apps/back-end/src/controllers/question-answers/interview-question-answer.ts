@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { FilterQuery } from "mongoose";
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
-import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getQuestionAnswerSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
+import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getAllQuestionSchema, getQuestionAnswerSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
 import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { TechnicalRoundTypes } from "@agent-xenon/constants";
+import { InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants";
 
 export const createQuestionAnswer = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -126,6 +126,25 @@ export const getQuestions = async (req: Request, res: Response) => {
         ])
 
         return res.ok("question", { questionData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getAllQuestionList = async (req: Request, res: Response) => {
+    const { user } = req.headers;
+    try {
+        const { error, value } = getAllQuestionSchema.validate(req.query);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId, type: InterviewRoundTypes.TECHNICAL, subType: value.subType ?? TechnicalRoundTypes.MCQ };
+
+        const questionAnswerData = await InterviewQuestionAnswer.find(match, "question").sort({ _id: -1 });
+
+        return res.ok("questions", questionAnswerData, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

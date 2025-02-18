@@ -27,7 +27,7 @@ export const updateInterviewRoundSchema = Joi.object().keys({
 })
 
 export const deleteInterviewRoundSchema = Joi.object().keys({
-    roundIds: Joi.string().required(),
+    roundIds: Joi.array().items(Joi.string().required()),
 })
 
 export const getInterviewRoundQuestionSchema = Joi.object().keys({

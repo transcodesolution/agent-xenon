@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { paginationSchema } from "./pagination";
-import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty } from "@agent-xenon/constants";
+import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty, TechnicalRoundTypes } from "@agent-xenon/constants";
 
 const questionAnswerSchema = {
     description: Joi.string().optional(),
@@ -32,4 +32,8 @@ export const deleteQuestionAnswerSchema = Joi.object().keys({
 export const getQuestionAnswerSchema = Joi.object().keys({
     search: Joi.string().allow("").optional(),
     ...paginationSchema,
+})
+
+export const getAllQuestionSchema = Joi.object().keys({
+    subType: Joi.string().valid(...Object.values(TechnicalRoundTypes)).optional(),
 })
