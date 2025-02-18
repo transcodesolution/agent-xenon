@@ -86,6 +86,7 @@ export const deleteApplicantSchema = Joi.object({
 export const getApplicantSchema = Joi.object({
     search: Joi.string().allow("", null).optional(),
     jobId: Joi.string().optional(),
+    roundId: Joi.string().optional(),
     isSelectedByAgent: Joi.boolean().optional(),
     ...paginationSchema,
 });
