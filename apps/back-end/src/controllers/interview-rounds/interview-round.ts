@@ -81,13 +81,11 @@ export const updateInterviewRound = async (req: Request, res: Response) => {
 
 export const deleteInterviewRound = async (req: Request, res: Response) => {
     try {
-        const { error, value } = deleteInterviewRoundSchema.validate(req.query);
+        const { error, value } = deleteInterviewRoundSchema.validate(req.body);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
-
-        value.roundIds = value.roundIds.split("_");
 
         const Query: QuerySelector<Array<string>> = { $in: value.roundIds };
 

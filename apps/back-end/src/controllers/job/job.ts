@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import mongoose, { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery, } from "mongoose";
 import { createJobSchema, deleteJobSchema, getJobByIdSchema, getJobSchema, updateJobSchema } from "../../validation/job";
 import Job from "../../database/models/job";
 import InterviewRounds from "../../database/models/interview-round";
@@ -9,6 +9,9 @@ import Applicant from "../../database/models/applicant";
 import ApplicantRounds from "../../database/models/applicant-round";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
 import { JobStatus } from "@agent-xenon/constants";
+import { JobQueryType } from "../../types/job";
+import Designation from "../../database/models/designation";
+import JobRole from "../../database/models/job-role";
 
 export const createJob = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -73,21 +76,23 @@ export const updateJob = async (req: Request, res: Response) => {
 
 export const deleteJob = async (req: Request, res: Response) => {
     try {
-        const { error, value } = deleteJobSchema.validate(req.params);
+        const { error, value } = deleteJobSchema.validate(req.body);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkJobExist = await Job.findOne({ _id: value.jobId, deletedAt: null });
+        let jobQuery: JobQueryType | { jobId: JobQueryType } = { $in: value.jobIds };
 
-        if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
+        const checkJobExist = await Job.find({ _id: jobQuery, deletedAt: null });
 
-        if (checkJobExist.status === JobStatus.INTERVIEW_STARTED) { return res.badRequest("could not delete job right now as already interview started!", {}, "customMessage"); }
+        if (checkJobExist.length !== value.jobIds.length) return res.badRequest("job", {}, "getDataNotFound");
 
-        const data = await Job.findByIdAndUpdate(value.jobId, { $set: { deletedAt: new Date() } }, { new: true });
+        if (checkJobExist.some((i) => i.status === JobStatus.INTERVIEW_STARTED)) { return res.badRequest("could not delete jobs right now as some jobs already has interview started!", {}, "customMessage"); }
 
-        const jobQuery: FilterQuery<{ jobId: string }> = { jobId: data._id };
+        const jobsUpdateResult = await Job.updateMany({ _id: jobQuery }, { $set: { deletedAt: new Date() } }, { new: true });
+
+        jobQuery = { jobId: jobQuery };
 
         await Promise.all([
             Applicant.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
@@ -96,7 +101,7 @@ export const deleteJob = async (req: Request, res: Response) => {
             RoundQuestionAssign.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
         ])
 
-        return res.ok("job", data, "deleteDataSuccess")
+        return res.ok("job", jobsUpdateResult, "deleteDataSuccess");
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -135,6 +140,22 @@ export const getJob = async (req: Request, res: Response) => {
         ]);
 
         return res.ok("job", { jobData, totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getJobRoleAndDesignation = async (req: Request, res: Response) => {
+    const { user } = req.headers;
+    try {
+        const match: FilterQuery<IJob> = { deletedAt: null, organizationId: user.organizationId }
+
+        const [jobRoleData, designationData] = await Promise.all([
+            JobRole.find(match, "name").sort({ _id: -1 }),
+            Designation.find(match, "name").sort({ _id: -1 }),
+        ]);
+
+        return res.ok("job role and designation", { jobRoleData, designationData }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -195,7 +216,11 @@ export const getJobById = async (req: Request, res: Response) => {
             },
         ])
 
-        return res.ok("job", job, "getDataSuccess")
+        if (!job) {
+            return res.badRequest("job", job, "getDataNotFound");
+        }
+
+        return res.ok("job", job, "getDataSuccess");
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

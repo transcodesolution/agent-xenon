@@ -31,7 +31,7 @@ export const updateJobSchema = Joi.object().keys({
 })
 
 export const deleteJobSchema = Joi.object().keys({
-    ...jobIdSchema
+    jobIds: Joi.array().items(jobIdSchema.jobId)
 })
 
 export const getJobSchema = Joi.object().keys({

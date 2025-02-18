@@ -1,10 +1,11 @@
 import { ITimestamp } from "./timestamp";
-import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty, TechnicalRoundTypes } from "@agent-xenon/constants"
+import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty, InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants"
 
 export interface IInterviewQuestionAnswer extends ITimestamp {
     _id: string;
     description: string;
-    type: TechnicalRoundTypes;
+    type: InterviewRoundTypes;
+    subType: TechnicalRoundTypes;
     question: string;
     promptText: string;
     answerDetails: {
