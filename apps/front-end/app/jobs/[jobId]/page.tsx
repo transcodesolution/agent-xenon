@@ -1,8 +1,10 @@
+import { JobForm } from "./_components/JobForm"
+
+const designations = [{ value: 'senior', label: 'Senior' }, { value: 'junior', label: 'Junior' }]
+const roles = [{ value: 'softwareEngineer', label: 'Software Engineer' }, { value: 'webDesigner', label: 'Web Designer' }]
+
 export default function page() {
   return (
-    <details>
-      <summary>Epcot Center</summary>
-      <p>Epcot is a theme park at Walt Disney World Resort featuring exciting attractions, international pavilions, award-winning fireworks and seasonal special events.</p>
-    </details>
+    <JobForm designations={designations} roles={roles} />
   )
 }

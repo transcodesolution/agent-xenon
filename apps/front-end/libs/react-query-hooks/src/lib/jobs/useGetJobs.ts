@@ -1,4 +1,4 @@
-import { IGetJobsParams } from '@agent-xenon/types-api';
+import { IGetJobsParams } from '@agent-xenon/interfaces';
 import { getJobs } from '@agent-xenon/web-apis';
 import { useQuery } from '@tanstack/react-query';
 

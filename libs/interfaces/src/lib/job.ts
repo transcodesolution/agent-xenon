@@ -13,3 +13,11 @@ export interface IJob extends ITimestamp {
     organizationId: string;
     rounds?: Array<Pick<IInterviewRounds, "_id" | "type" | "durationInSeconds" | "qualificationCriteria" | "roundNumber">>;
 }
+
+export interface IGetJobsParams {
+    page: number;
+    limit: number;
+    search: string;
+    role?: string;
+    designation?: string;
+};
