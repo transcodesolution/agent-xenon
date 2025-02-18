@@ -6,7 +6,7 @@ import Applicant from "../../database/models/applicant";
 import ApplicantRounds from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
 import uploadResumesAgent from "../../agents/resume-extract-info";
-import { JobStatus, RoleTypes } from "@agent-xenon/constants";
+import { InterviewRoundStatus, JobStatus, RoleTypes } from "@agent-xenon/constants";
 import { roleModel } from "../../database";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
@@ -44,8 +44,7 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
-        const roleData = await roleModel.findOne({ name: RoleTypes.CANDIDATE });
-        const data = await uploadResumesAgent(value.resumeUrls, user.organizationId, value.jobId, roleData._id.toString());
+        const data = await uploadResumesAgent(value.resumeUrls, user.organizationId, value.jobId);
 
         await Applicant.insertMany(data);
 
@@ -125,11 +124,14 @@ export const getApplicants = async (req: Request, res: Response) => {
         }
 
         if (value.jobId) {
-            match.jobId = value.jobId
+            match.jobId = value.jobId;
         }
 
-        if (value.isSelectedByAgent) {
-            match.isSelectedByAgent = value.isSelectedByAgent
+        const selectRejectQuery = value.isSelectedByAgent || !value.isSelectedByAgent;
+
+        if (value.roundId || selectRejectQuery) {
+            const applicantIds = await ApplicantRounds.distinct("applicantId", { ...(value.roundId && { roundId: value.roundId }), ...(selectRejectQuery && { isSelected: value.isSelectedByAgent }), deletedAt: null, status: InterviewRoundStatus.COMPLETED });
+            match._id = { $in: applicantIds };
         }
 
         const [totalData, data] = await Promise.all([
