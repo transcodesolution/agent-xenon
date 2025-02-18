@@ -2,10 +2,11 @@
 import { Request, Response } from 'express'
 import { userModel } from '../../database'
 import { loginSchema } from "../../validation/auth"
-import { ILoginResponse } from '@agent-xenon/interfaces'
+import { IApplicant, ILoginResponse, IRole, IUser } from '@agent-xenon/interfaces'
 import Organization from '../../database/models/organization'
-import { generateToken } from '../../utils/generate-token'
+import { decodeEncodedToken, generateToken } from '../../utils/generate-token'
 import { compareHash } from '../../utils/password-hashing'
+import Applicant from '../../database/models/applicant'
 
 export const login = async (req: Request, res: Response) => { //email or password // phone or password
     // reqInfo(req)
@@ -18,16 +19,37 @@ export const login = async (req: Request, res: Response) => { //email or passwor
             return res.badRequest(error?.details[0]?.message, {}, "customMessage")
         }
 
+        if (value.candidateToken) {
+            const decodedString = decodeEncodedToken(value.candidateToken);
+            value.name = decodedString.orgName;
+        }
+
         const checkOrganizationExist = await Organization.findOne({ name: value.name, deletedAt: null })
 
         if (!checkOrganizationExist) return res.badRequest("invalid_organization", {})
 
-        const response = await userModel.findOne({ email: value.email }).populate("roleId").lean()
+        let response: IUser<IRole>;
+        if (value.candidateToken) {
+            const applicantData = await Applicant.findOne<Pick<IApplicant<string, IRole>, "firstName" | "lastName" | "contactInfo" | "roleId">>({ "contactInfo.email": value.email }, "firstName lastName contactInfo roleId").populate<{ roleId: IRole }>("roleId").lean()
+            response = {
+                ...applicantData,
+                email: applicantData?.contactInfo.email,
+                password: applicantData?.contactInfo.password,
+            }
+        } else {
+            response = await userModel.findOne({ email: value.email }).populate<{ roleId: IRole }>("roleId").lean()
+        }
 
         if (!response) return res.badRequest("userNotFound", {})
         // if (response?.isBlock == true) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}))
 
-        const passwordMatch = await compareHash(value.password, response.password)
+        let passwordMatch: boolean;
+        if (value.candidateToken) {
+            passwordMatch = value.password === response.password;
+        } else {
+            passwordMatch = await compareHash(value.password, response.password);
+        }
+
         if (!passwordMatch) return res.badRequest("invalidUserPasswordEmail", {})
 
         let result: ILoginResponse;

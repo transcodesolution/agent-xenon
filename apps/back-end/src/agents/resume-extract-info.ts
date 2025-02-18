@@ -46,6 +46,7 @@ export interface IApplicant extends Document {
     resumeLink: string;
     organizationId: string;
     jobId: string;
+    roleId: string;
 }
 
 Tools:
@@ -94,7 +95,7 @@ async function checkApplicantEmailInJob(jobId: string, email: string) {
     return !!checkApplicantEmailExist;
 }
 
-async function uploadResumesAgent(resumeUrls: string[], organizationId: string, jobId: string) {
+async function uploadResumesAgent(resumeUrls: string[], organizationId: string, jobId: string, roleId: string) {
     const pdfTexts = await Promise.all(resumeUrls.map((i) => (getResumeParsedText(i))));
 
     const finalResumes = [];
@@ -133,6 +134,7 @@ async function uploadResumesAgent(resumeUrls: string[], organizationId: string, 
                     Resume URL: "${resumeUrl}"
                     Organization ID: "${organizationId}"
                     Job ID: "${jobId}"
+                    Role ID: "${roleId}"
                 `,
             }
         ];

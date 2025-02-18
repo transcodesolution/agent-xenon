@@ -1,9 +1,9 @@
 import { ITimestamp } from "@agent-xenon/interfaces";
 import { Document } from "mongoose";
 
-export interface IRoundQuestionAssign extends Document, ITimestamp {
+export interface IRoundQuestionAssign<T = string> extends Document, ITimestamp {
     _id: string;
-    questionId: string | null;
-    jobId: string | null;
-    roundId: string | null;
+    questionId: T;
+    jobId: string;
+    roundId: string;
 }

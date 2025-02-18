@@ -16,7 +16,7 @@ export const config = {
   MAIL_PASSWORD: process.env.MAIL_PASSWORD,
   SERVICE: process.env.SERVICE,
   FCM_KEY: process.env.FCM_KEY,
-  BACKEND_URL: process.env.BACKEND_URL,
+  FRONTEND_URL: process.env.FRONTEND_URL,
   ENV: process.env.ENV,
   S3_BUCKET_KEY: process.env.S3_BUCKET_KEY,
   CORS: process.env.CORS

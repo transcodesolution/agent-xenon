@@ -1,18 +1,18 @@
-import { ChatCompletionMessageParam } from "openai/resources";
+import { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources";
 import createOpenAIClient from "../helper/openai";
-import Applicant from "../database/models/applicant";
 import { IScreeningResponse } from "../types/agent";
+import { getApplicantDetails } from "../utils/applicant";
 import ApplicantRounds from "../database/models/applicant-round";
+import { InterviewRoundStatus } from "@agent-xenon/constants";
+import { sendMail } from "../helper/mail";
 
 const client = createOpenAIClient();
 
-const messages: ChatCompletionMessageParam[] = [
-    {
-        role: "system",
-        content: `You have to use the tools provided to get applicant details.
+const SYSTEM_PROMPT = `You have to use the tools provided to get applicant details.
 
         Tools avaiable:
-        getApplicantDetails(jobId: string, roundId: string): Array<object> => This will return the mongodb array of object from find query. Pass jobId as argument which get applicants by jobId. Also Pass roundId as second argument. This function will get you array of object contains multiple applicants. Call this tool only once not multiple times. wait for developer response.
+        getApplicantDetails(jobId: string, roundId: string, isFirstRound: boolean): Array<object> => This function will get you array of object contains multiple applicants. Call this tool only once not multiple times.
+        updateApplicantSelectedToDb(jobId: string, roundId: string, isSelected: boolean, applicantId: string, email: string): string => This function will get you array of object contains multiple applicants. Call this tool only once not multiple times. It return a string containing "done" or "already exist" if already exist. if you call two times with same applicantId then it will already exist. so don't call it two times.
 
         Here is the applicant schema:
         interface IApplicant extends Document, ITimestamp {
@@ -60,94 +60,172 @@ const messages: ChatCompletionMessageParam[] = [
         2.) just follow the criteria and make decision by take care
         3.) if none candidate selected then check for relevant skills from criteria. ex: nodejs relavant skills : expressjs, nestjs
         4.) Strictly follow the json output.
+        5.) Don't call updateApplicantSelectedToDb method when getApplicantDetails respond with empty array ([]).
 
         Examples:
-        1.) if applicants details contains skills not marked as node.js but they write express, mongo, javascript, etc.
-         criteria gives the skills to be nodejs then you this applicant is selected because the node.js require the following relavant skills such as express, mongo, javascript. if applicant is selected then give mongo _id in new array
-        2.) if criteria mention to have Database management skills, and applicant details contain MySQL, MongoDB then it will be selected. it id store to array.
+        1.) call getApplicantDetails with jobId, roundId, isFirstRound parameters. it return json stringify array of object(bson document mongodb).
+        2.) wait for getApplicantDetails response.
+        3.) filter applicant on basis of criteria given. wait for filtered results.
+        4.) call updateApplicantSelectedToDb one by one for each selected applicant with jobId, roundId, isSelected(true for if selected), applicantId.
+        5.) wait for response of each call.
+        6.) call updateApplicantSelectedToDb with each none selected applicant with same paramater but isSelected(false). wait for response.
+        7.) call updateApplicantSelectedToDb method for each applicantId one time only, selection or rejection.
+        8.) if call for all applicant selection and rejection on basis of criteria done to db then return output. one time call.
 
         Output:
-        {type:'OUTPUT',message:<Put array of selected candidate ids here>}
-        `
-    }
-];
+        {type:'OUTPUT',message:'success'}`
 
-async function getApplicantDetails(jobId: string, roundId: string) {
-    const alreadySelectedApplicantIds = await ApplicantRounds.distinct("applicantId", { jobId, deletedAt: null, roundId, isSelected: true })
-    const data = await Applicant.find({ jobId, deletedAt: null, _id: { $nin: alreadySelectedApplicantIds } });
-    return data;
+async function updateApplicantSelectedToDb(jobId: string, roundId: string, isSelected: boolean, applicantId: string, email: string) {
+    const createObject = { jobId, roundId, applicantId, }
+    const applicantRoundData = await ApplicantRounds.findOne({ ...createObject, deletedAt: null });
+    if (applicantRoundData) {
+        return "already exist";
+    }
+    await ApplicantRounds.create({ ...createObject, isSelected, status: InterviewRoundStatus.COMPLETED });
+    await sendMail(email, "Candidate Interview Status Mail", `Dear Candidate,  
+
+        We appreciate your time and effort in participating in the screening round for the applied position.  
+        
+        ${isSelected ? "Congratulations! You have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your interest and encourage you to apply for future opportunities with us."}  
+        
+        Thank you for your interest in our company.`);
+    return "done";
 }
 
-async function filterCandidateAgent(criteria: string, jobId: string, roundId: string): Promise<IScreeningResponse> {
-    messages.push({
-        role: "user",
-        content: `You are a screening agent. Scan the applicant details and select candidates based on the criteria below.
+async function filterCandidateAgent(criteria: string, jobId: string, roundId: string, isFirstRound: boolean): Promise<IScreeningResponse> {
+    const messages: ChatCompletionMessageParam[] = [
+        {
+            role: "system",
+            content: SYSTEM_PROMPT
+        },
+        {
+            role: "user",
+            content: `You are a screening agent. Scan the applicant details and select or reject candidates based on the criteria below. update to db after your selection and wait for tool call to respond.
+    
+            Criteria: ${criteria}
+            JobId: ${jobId}
+            roundId: ${roundId}
+            isFirstRound: ${isFirstRound}
+        `,
+        },
+    ];
 
-        Criteria: ${criteria}.
-        JobId: ${jobId}
-    `,
+    const tools: Array<ChatCompletionTool> = [
+        {
+            type: "function",
+            function: {
+                name: "getApplicantDetails",
+                description: "Fetch applicant details from the database. Returns an array of MongoDB objects.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        jobId: {
+                            type: "string",
+                            description: "The job ID to fetch applicant details"
+                        },
+                        roundId: {
+                            type: "string",
+                            description: "The round ID to filter selected applicants"
+                        },
+                        isFirstRound: {
+                            type: "boolean",
+                            description: "The isFirstRound to filter selected applicants on basis of round number"
+                        },
+                    },
+                    required: ["jobId"]
+                },
+            }
+        },
+        {
+            type: "function",
+            function: {
+                name: "updateApplicantSelectedToDb",
+                description: "update applicant details selection or rejection into the database.",
+                parameters: {
+                    type: "object",
+                    properties: {
+                        jobId: {
+                            type: "string",
+                            description: "The job ID to fetch applicant details"
+                        },
+                        roundId: {
+                            type: "string",
+                            description: "The round ID to filter selected applicants"
+                        },
+                        isSelected: {
+                            type: "boolean",
+                            description: "The isSelected update applicant detail according to selection by AI. if AI pass false then not selected otherwise for selection AI pass true here."
+                        },
+                        applicantId: {
+                            type: "string",
+                            description: "The applicant ID to filter get which applicant AI is processing. in get applicant details it gives array of object contains _id as applicantId"
+                        },
+                        email: {
+                            type: "string",
+                            description: "The email to send mail to applicant for whose is selected or rejected in screening round."
+                        },
+                    },
+                    required: ["jobId"]
+                },
+            }
+        }
+    ]
+
+    let data = await client.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages,
+        tools,
+        response_format: { type: "json_object" }
     });
 
-    let i = 1;
-    while (i <= 2) {
-        const data = await client.chat.completions.create({
-            model: "gpt-4o-mini",
-            messages,
-            tools: [
-                {
-                    type: "function",
-                    function: {
-                        name: "getApplicantDetails",
-                        description: "Fetch applicant details from the database. Returns an array of MongoDB objects.",
-                        parameters: {
-                            type: "object",
-                            properties: {
-                                jobId: {
-                                    type: "string",
-                                    description: "The job ID to fetch applicant details"
-                                },
-                                roundId: {
-                                    type: "string",
-                                    description: "The round ID to filter selected applicants"
-                                },
-                            },
-                            required: ["jobId"]
-                        },
-                    }
-                }
-            ],
-            response_format: { type: "json_object" }
-        });
-
+    while (data.choices[0].message?.tool_calls) {
         const responseMessage = data.choices[0].message;
+
+        // Push the latest AI response message into messages array
+        messages.push(responseMessage);
 
         if (responseMessage?.tool_calls) {
             for (const toolCall of responseMessage.tool_calls) {
                 if (toolCall.function.name === "getApplicantDetails") {
-                    const applicantDetails = await getApplicantDetails(jobId, roundId);
+                    const { jobId, roundId, isFirstRound } = JSON.parse(toolCall.function.arguments);
+
+                    const applicantDetails = await getApplicantDetails(jobId, roundId, isFirstRound);
 
                     // Add function response to messages
                     messages.push({
-                        role: "developer",
+                        role: "tool",
+                        tool_call_id: toolCall.id,
                         content: JSON.stringify(applicantDetails),
                     });
+                } else if (toolCall.function.name === "updateApplicantSelectedToDb") {
+                    const { jobId, roundId, isSelected, applicantId, email } = JSON.parse(toolCall.function.arguments);
 
-                    break;
+                    const applicantDetails = await updateApplicantSelectedToDb(jobId, roundId, isSelected, applicantId, email);
+
+                    // Add function response to messages
+                    messages.push({
+                        role: "tool",
+                        tool_call_id: toolCall.id,
+                        content: applicantDetails,
+                    });
                 }
             }
 
-            continue;
+            data = await client.chat.completions.create({
+                model: "gpt-4o-mini",
+                messages,
+                tools,
+                response_format: { type: "json_object" }
+            });
         }
 
-        const output = JSON.parse(responseMessage?.content || "{}");
+        else {
+            const output = JSON.parse(responseMessage?.content || "{}");
 
-        if (output?.type === "OUTPUT") {
-            return output; // Return the selected candidate IDs
+            if (output?.type === "OUTPUT") {
+                return output;
+            }
         }
-
-        // Push the latest AI response message into messages array
-        messages.push(responseMessage);
-        i += 1;
     }
 }
 

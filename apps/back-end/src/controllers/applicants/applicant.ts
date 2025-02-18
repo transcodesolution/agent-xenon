@@ -6,7 +6,8 @@ import Applicant from "../../database/models/applicant";
 import ApplicantRounds from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
 import uploadResumesAgent from "../../agents/resume-extract-info";
-import { InterviewRoundStatus, JobStatus } from "@agent-xenon/constants";
+import { InterviewRoundStatus, JobStatus, RoleTypes } from "@agent-xenon/constants";
+import { roleModel } from "../../database";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
     const { user } = req.headers;

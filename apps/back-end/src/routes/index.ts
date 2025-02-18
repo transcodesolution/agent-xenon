@@ -1,6 +1,6 @@
 "use strict"
 import { Request, Router, Response } from 'express'
-import { JWT } from '../helper/jwt'
+import { candidateJWT, JWT } from '../helper/jwt'
 import { jobRoleRouter } from './job-roles'
 import { authRouter } from './auth'
 import { designationRouter } from './job-designation'
@@ -11,6 +11,7 @@ import { jobRouter } from './job'
 import { applicantRouter } from './applicant'
 import { RoleTypes } from '@agent-xenon/constants'
 import { interviewRoundRouter } from './interview-round'
+import { technicalRoundRouter } from './technical-round'
 
 const router = Router()
 const accessControl = (req: Request, res: Response, next: any) => {
@@ -21,6 +22,7 @@ const accessControl = (req: Request, res: Response, next: any) => {
 router.post("/onboard", onBoardOrganization);
 
 router.use('/auth', authRouter)
+router.use('/exam', candidateJWT, technicalRoundRouter)
 router.use(JWT)
 router.use('/jobRole', jobRoleRouter)
 router.use('/designation', designationRouter)

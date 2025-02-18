@@ -1,5 +1,5 @@
 export enum InterviewRoundStatus {
-    PENDING = "pending",
+    YET_TO_START = "yet_to_start",
     COMPLETED = "completed",
     ONGOING = "ongoing",
 }
