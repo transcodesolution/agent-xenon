@@ -20,7 +20,7 @@ const ApplicantSchema: Schema = new Schema({
     salaryExpectation: { type: Number },
     feedback: { type: String },
     jobId: { type: Schema.Types.ObjectId, index: true, },
-    organizationId: { type: Schema.Types.ObjectId, index: true },
+    organizationId: { type: Schema.Types.ObjectId, ref: "Organization", index: true },
     experienceDetails: [{
         duration: { type: String },
         responsibilities: [{ type: String }],
@@ -40,6 +40,7 @@ const ApplicantSchema: Schema = new Schema({
         title: { type: String },
     }],
     resumeLink: { type: String },
+    roleId: { type: mongoose.SchemaTypes.ObjectId, ref: "role" },
     isSelectedByAgent: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null },
 }, { timestamps: true, versionKey: false });

@@ -1,6 +1,6 @@
 import { ITimestamp } from "./timestamp";
 
-export interface IApplicant extends ITimestamp {
+export interface IApplicant<T = string, U = string> extends ITimestamp {
     _id: string;
     lastName: string;
     contactInfo: {
@@ -19,8 +19,9 @@ export interface IApplicant extends ITimestamp {
     strengths: string[];
     salaryExpectation: number;
     feedback: string;
+    roleId: U;
     jobId: string;
-    organizationId: string;
+    organizationId: T;
     experienceDetails: {
         duration: string;
         responsibilities: string[];
