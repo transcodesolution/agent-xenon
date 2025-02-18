@@ -42,9 +42,6 @@
       "@agent-xenon/utils": [
         "../../libs/utils/src/index.ts"
       ],
-      "@agent-xenon/types-api": [
-        "libs/types-api/src/index.ts"
-      ],
       "@agent-xenon/web-apis": [
         "libs/web-apis/src/index.ts"
       ],

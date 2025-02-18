@@ -3,7 +3,6 @@ import 'mantine-datatable/styles.layer.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import MainLayout from './_components/MainLayout';
-import { setupAxiosInterceptors } from '@agent-xenon/web-apis';
 import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryCientProvider';
 
 export const metadata = {
@@ -11,7 +10,6 @@ export const metadata = {
   description: 'Agent Xenon is capable of automate organization repeatedly processes',
 };
 
-setupAxiosInterceptors()
 
 export default function RootLayout({
   children,
