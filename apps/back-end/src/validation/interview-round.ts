@@ -41,3 +41,15 @@ export const manageInterviewRoundSchema = Joi.object().keys({
     roundId: Joi.string().required(),
     jobId: Joi.string().required(),
 })
+
+export const submitExamSchema = Joi.object().keys({
+    roundId: Joi.string().required(),
+    questionAnswers: Joi.array().items(Joi.object().keys({
+        questionId: Joi.string().required(),
+        answerDetails: Joi.object().keys({ codeText: Joi.string().allow("").optional(), text: Joi.string().allow("").optional() }).optional()
+    })),
+})
+
+export const getExamQuestionSchema = Joi.object().keys({
+    candidateToken: Joi.string().required(),
+})

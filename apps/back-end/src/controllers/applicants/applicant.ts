@@ -6,7 +6,8 @@ import Applicant from "../../database/models/applicant";
 import ApplicantRounds from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
 import uploadResumesAgent from "../../agents/resume-extract-info";
-import { JobStatus } from "@agent-xenon/constants";
+import { InterviewRoundStatus, JobStatus, RoleTypes } from "@agent-xenon/constants";
+import { roleModel } from "../../database";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -123,11 +124,14 @@ export const getApplicants = async (req: Request, res: Response) => {
         }
 
         if (value.jobId) {
-            match.jobId = value.jobId
+            match.jobId = value.jobId;
         }
 
-        if (value.isSelectedByAgent) {
-            match.isSelectedByAgent = value.isSelectedByAgent
+        const selectRejectQuery = value.isSelectedByAgent || !value.isSelectedByAgent;
+
+        if (value.roundId || selectRejectQuery) {
+            const applicantIds = await ApplicantRounds.distinct("applicantId", { ...(value.roundId && { roundId: value.roundId }), ...(selectRejectQuery && { isSelected: value.isSelectedByAgent }), deletedAt: null, status: InterviewRoundStatus.COMPLETED });
+            match._id = { $in: applicantIds };
         }
 
         const [totalData, data] = await Promise.all([
