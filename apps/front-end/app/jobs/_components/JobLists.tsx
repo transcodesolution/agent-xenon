@@ -4,18 +4,22 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import React, { useState } from 'react'
 import { IJob } from '@agent-xenon/interfaces';
 import { getColumns } from './Columns';
+import { ActionIcon } from '@mantine/core';
+import { IconTrash } from '@tabler/icons-react';
+
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
 
 interface JobListsProps {
   data: IJob[];
-  isFetching:boolean
+  isFetching: boolean;
+  onDelete: (jobIds: string[]) => void;
 }
 
-export function JobLists({ data,isFetching }: JobListsProps) {
+export function JobLists({ data, isFetching, onDelete }: JobListsProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
-
+  const [selectedJobs, setSelectedJobs] = useState<IJob[]>([]);
   const page = Number(searchParams.get('page')) || 1;
   const pageSize = Number(searchParams.get('pageSize')) || PAGE_SIZES[0];
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
@@ -48,26 +52,39 @@ export function JobLists({ data,isFetching }: JobListsProps) {
 
   const columns = getColumns(sortStatus);
 
+  const handleDeleteSelected = () => {
+    const jobIds = selectedJobs.map((job) => String(job._id));
+    onDelete?.(jobIds);
+    setSelectedJobs([])
+  };
+
   return (
-    <DataTable
-      idAccessor='_id'
-      highlightOnHover
-      records={data}
-      fetching={isFetching}
-      selectedRecords={[]}
-      page={page}
-      onPageChange={handleChangePage}
-      onSelectedRecordsChange={() => console.log('selected')}
-      totalRecords={3}
-      recordsPerPage={pageSize}
-      recordsPerPageOptions={PAGE_SIZES}
-      onRecordsPerPageChange={handleChangePageSize}
-      noRecordsText='No Data To Show'
-      recordsPerPageLabel=""
-      sortStatus={sortStatus}
-      onSortStatusChange={handleSortStatusChange}
-      columns={columns}
-    />
+    <>
+      {selectedJobs.length > 0 &&
+        <ActionIcon color='red' onClick={handleDeleteSelected}>
+          <IconTrash size="1.5rem" />
+        </ActionIcon>
+      }
+      <DataTable
+        idAccessor='_id'
+        highlightOnHover
+        records={data}
+        fetching={isFetching}
+        selectedRecords={selectedJobs}
+        onSelectedRecordsChange={setSelectedJobs}
+        page={page}
+        onPageChange={handleChangePage}
+        totalRecords={3}
+        recordsPerPage={pageSize}
+        recordsPerPageOptions={PAGE_SIZES}
+        onRecordsPerPageChange={handleChangePageSize}
+        noRecordsText='No Data To Show'
+        recordsPerPageLabel=""
+        sortStatus={sortStatus}
+        onSortStatusChange={handleSortStatusChange}
+        columns={columns}
+      />
+    </>
   )
 }
 

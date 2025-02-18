@@ -21,3 +21,12 @@ export interface IGetJobsParams {
     role?: string;
     designation?: string;
 };
+
+interface RoleDesignation {
+    _id: string;
+    name: string;
+}
+export interface IGetJobRoleAndDesignation {
+    jobRoleData: RoleDesignation[];
+    designationData: RoleDesignation[];
+}
