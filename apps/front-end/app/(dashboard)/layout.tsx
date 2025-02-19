@@ -3,7 +3,7 @@ import 'mantine-datatable/styles.layer.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryCientProvider';
-import MainLayout from '../_components/MainLayout';
+import MainLayout from './_components/MainLayout';
 import { cookies } from 'next/headers';
 import { AuthProvider } from '@/libs/components/providers/AuthProvider';
 
