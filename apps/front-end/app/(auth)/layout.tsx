@@ -2,8 +2,6 @@ import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
-import MainLayout from './_components/MainLayout';
-import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryCientProvider';
 
 export const metadata = {
   title: 'Agent Xenon',
@@ -11,7 +9,7 @@ export const metadata = {
 };
 
 
-export default function RootLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -26,12 +24,10 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ReactQueryClientProvider>
-          <MantineProvider>
-            <MainLayout>{children}</MainLayout>
-          </MantineProvider>
-      </ReactQueryClientProvider>
-    </body>
+        <MantineProvider>
+          {children}
+        </MantineProvider>
+      </body>
     </html >
   );
 }

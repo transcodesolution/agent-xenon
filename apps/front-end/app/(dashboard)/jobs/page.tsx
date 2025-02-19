@@ -46,7 +46,6 @@ export default function Page() {
     );
   };
 
-
   return (
     <Stack gap='sm'>
       <Title order={4}>Jobs</Title>

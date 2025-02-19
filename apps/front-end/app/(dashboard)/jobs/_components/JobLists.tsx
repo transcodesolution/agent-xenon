@@ -10,13 +10,13 @@ import { IconTrash } from '@tabler/icons-react';
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
 
-interface JobListsProps {
+interface IJobLists {
   data: IJob[];
   isFetching: boolean;
   onDelete: (jobIds: string[]) => void;
 }
 
-export function JobLists({ data, isFetching, onDelete }: JobListsProps) {
+export function JobLists({ data, isFetching, onDelete }: IJobLists) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [selectedJobs, setSelectedJobs] = useState<IJob[]>([]);
@@ -31,13 +31,12 @@ export function JobLists({ data, isFetching, onDelete }: JobListsProps) {
     columnAccessor: sortColumn,
     direction: sortOrder as 'asc' | 'desc',
   });
+  const columns = getColumns(sortStatus);
 
   const handleApplyFilter = (filters: FilterParams) => {
     const newSearchParams = updateUrlParams(filters);
     router.push(`${newSearchParams.toString()}`);
   };
-
-
 
   const handleChangePage = (pageNumber: number) => {
     handleApplyFilter({ 'page': pageNumber.toString() })
@@ -49,8 +48,6 @@ export function JobLists({ data, isFetching, onDelete }: JobListsProps) {
     handleChangePage(1);
     setSortStatus?.(status);
   };
-
-  const columns = getColumns(sortStatus);
 
   const handleDeleteSelected = () => {
     const jobIds = selectedJobs.map((job) => String(job._id));
@@ -87,4 +84,3 @@ export function JobLists({ data, isFetching, onDelete }: JobListsProps) {
     </React.Fragment>
   )
 }
-

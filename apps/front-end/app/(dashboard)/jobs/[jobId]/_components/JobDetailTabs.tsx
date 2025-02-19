@@ -8,6 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 interface IJobDetailTabs {
   jobId: string
 }
+
 export const JobDetailTabs = ({ jobId }: IJobDetailTabs) => {
   const [rootRef, setRootRef] = useState<HTMLDivElement | null>(null);
   const [controlsRefs, setControlsRefs] = useState<Record<string, HTMLButtonElement | null>>({});
@@ -19,6 +20,7 @@ export const JobDetailTabs = ({ jobId }: IJobDetailTabs) => {
     controlsRefs[val] = node;
     setControlsRefs(controlsRefs);
   };
+  
   const onTabChange = (tab: string | null) => {
     switch (tab) {
       case 'candidates':
