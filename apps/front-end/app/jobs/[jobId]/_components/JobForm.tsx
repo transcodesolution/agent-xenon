@@ -3,9 +3,10 @@ import React, { useState, useEffect } from 'react'
 import { Button, Flex, LoadingOverlay, Modal, Paper, Select, Stack, Textarea, TextInput } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks';
 import { useParams } from 'next/navigation';
-import { useGetJobById } from '@/libs/react-query-hooks/src';
+import { useCreateInterviewRound, useGetJobById } from '@/libs/react-query-hooks/src';
 import { InterviewRound } from './InterviewRound';
 import { useUpdateJob, useJobRoleAndDesignation } from '@agent-xenon/react-query-hooks';
+import { IInterviewRounds } from '@agent-xenon/interfaces';
 
 interface Option {
   value: string;
@@ -30,7 +31,8 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
     role: '',
   });
   const { mutate: updateJob } = useUpdateJob();
-  const { data: jobRoleAndDesignation, isLoading: isJobRolesLoading } = useJobRoleAndDesignation();
+  const { data: jobRoleAndDesignation } = useJobRoleAndDesignation();
+  const { mutate: createRound, } = useCreateInterviewRound();
   const designationsOptions = jobRoleAndDesignation?.data?.designationData.map((designation) => ({
     value: designation._id,
     label: designation.name,
@@ -71,6 +73,15 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
     }, 600);
   };
 
+  const handleAddRound = (params: Partial<IInterviewRounds>) => {
+    createRound(params, {
+      onSuccess: (data) => {
+        close(); // Close the modal on success
+      },
+    });
+  };
+
+
   return (
     <Stack pos='relative'>
       <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
@@ -81,13 +92,13 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
           <Select label='Designation' data={designationsOptions} value={formState.designation} onChange={(val) => handleChange('designation', val)} />
           <Select label='Role' data={rolesOptions} value={formState.role} onChange={(val) => handleChange('role', val)} />
         </Flex>
-        <Button mb='lg' variant='outline' styles={{ root: { width: 'fit-content' } }} onClick={open}>
+        <Button variant='outline' styles={{ root: { width: 'fit-content' } }} onClick={open}>
           Add Interview Round +
         </Button>
       </Paper>
 
       <Modal opened={opened} onClose={close} title="Add Interview Round" size='lg' centered>
-        <InterviewRound />
+        <InterviewRound onAddRound={handleAddRound} />
       </Modal>
     </Stack>
   );
