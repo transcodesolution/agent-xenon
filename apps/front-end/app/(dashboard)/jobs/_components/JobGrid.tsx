@@ -3,12 +3,12 @@ import React from 'react';
 import JobCard from './JobCard';
 import { IJob } from '@agent-xenon/interfaces';
 
-interface JobGridProps {
+interface IJobGrid {
   data: IJob[];
   isFetching:boolean;
 }
 
-export function JobGrid({ data , isFetching }: JobGridProps) {
+export function JobGrid({ data , isFetching }: IJobGrid) {
   const projectsLoading = false;
 
   const jobItems = data.map((job) => (

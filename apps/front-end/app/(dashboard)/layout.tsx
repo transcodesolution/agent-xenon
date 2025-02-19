@@ -2,20 +2,24 @@ import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
-import MainLayout from './_components/MainLayout';
 import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryCientProvider';
+import MainLayout from './_components/MainLayout';
+import { cookies } from 'next/headers';
+import { AuthProvider } from '@/libs/components/providers/AuthProvider';
 
 export const metadata = {
   title: 'Agent Xenon',
   description: 'Agent Xenon is capable of automate organization repeatedly processes',
 };
 
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const bearerToken = cookieStore.get('token')?.value || '';
+
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
@@ -26,12 +30,14 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <ReactQueryClientProvider>
-          <MantineProvider>
-            <MainLayout>{children}</MainLayout>
-          </MantineProvider>
-      </ReactQueryClientProvider>
-    </body>
+        <AuthProvider token={bearerToken}>
+          <ReactQueryClientProvider>
+            <MantineProvider>
+              <MainLayout>{children}</MainLayout>
+            </MantineProvider>
+          </ReactQueryClientProvider>
+        </AuthProvider>
+      </body>
     </html >
   );
 }

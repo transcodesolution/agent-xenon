@@ -7,6 +7,7 @@ import { useParams } from 'next/navigation';
 import React from 'react';
 import { IconTrash } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
+
 interface InterviewRoundProps {
   onAddRound: (params: Partial<IInterviewRounds>) => void;
 }
@@ -33,7 +34,6 @@ export const InterviewRound = ({ onAddRound }: InterviewRoundProps) => {
     selectedQuestions: [],
   });
 
-  // Generic function to update state
   const handleChange = <K extends keyof typeof formState>(key: K, value: typeof formState[K]) => {
     setFormState((prev) => ({ ...prev, [key]: value }));
   };

@@ -43,20 +43,6 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
     label: role.name,
   })) || [];
 
-
-  // Set form data when jobData is available
-  useEffect(() => {
-    if (jobData) {
-      setFormState({
-        title: jobData?.data?.title || '',
-        description: jobData?.data?.description || '',
-        designation: jobData?.data?.designation || '',
-        role: jobData?.data?.role || '',
-      });
-    }
-  }, [jobData]);
-
-  // Handle input changes dynamically
   const handleChange = (field: keyof typeof formState, value: string | null) => {
     const updatedFormState = {
       ...formState,
@@ -75,12 +61,22 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
 
   const handleAddRound = (params: Partial<IInterviewRounds>) => {
     createRound(params, {
-      onSuccess: (data) => {
-        close(); // Close the modal on success
+      onSuccess: () => {
+        close();
       },
     });
   };
 
+  useEffect(() => {
+    if (jobData) {
+      setFormState({
+        title: jobData?.data?.title || '',
+        description: jobData?.data?.description || '',
+        designation: jobData?.data?.designation || '',
+        role: jobData?.data?.role || '',
+      });
+    }
+  }, [jobData]);
 
   return (
     <Stack pos='relative'>
