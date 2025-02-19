@@ -3,7 +3,7 @@ function path(root: string, sublink: string) {
 }
 
 const ROOTS_JOB = '/jobs';
-const ROOTS_AUTH = '/authentication';
+const ROOTS_AUTH = '';
 
 export const PATH_JOB = {
   root: ROOTS_JOB,
