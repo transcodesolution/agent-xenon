@@ -10,7 +10,8 @@ export interface IOrganization extends ITimestamp {
             accessToken: string;
             expiry: Date;
             refreshToken: string;
-            scope: string[];
+            scope: string;
+            email: string,
         };
         //     slack: {
         //  };
