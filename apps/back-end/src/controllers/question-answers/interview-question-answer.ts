@@ -142,6 +142,10 @@ export const getAllQuestionList = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId, type: InterviewRoundTypes.TECHNICAL, subType: value.subType ?? TechnicalRoundTypes.MCQ };
 
+        if (value.search) {
+            match.question = new RegExp(value.search, "i");
+        }
+
         const questionAnswerData = await InterviewQuestionAnswer.find(match, "question").sort({ _id: -1 });
 
         return res.ok("questions", questionAnswerData, "getDataSuccess")

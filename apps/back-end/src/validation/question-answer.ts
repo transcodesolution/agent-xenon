@@ -36,4 +36,5 @@ export const getQuestionAnswerSchema = Joi.object().keys({
 
 export const getAllQuestionSchema = Joi.object().keys({
     subType: Joi.string().valid(...Object.values(TechnicalRoundTypes)).optional(),
+    search: Joi.string().allow("").optional(),
 })
