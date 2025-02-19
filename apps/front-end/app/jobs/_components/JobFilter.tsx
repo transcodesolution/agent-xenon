@@ -53,19 +53,19 @@ export const JobFilter = () => {
           {
             value: 'list',
             label: (
-              <>
+              <React.Fragment>
                 <IconList {...iconProps} />
                 <VisuallyHidden>List</VisuallyHidden>
-              </>
+              </React.Fragment>
             ),
           },
           {
             value: 'grid',
             label: (
-              <>
+              <React.Fragment>
                 <IconLayoutGrid {...iconProps} />
                 <VisuallyHidden>Grid</VisuallyHidden>
-              </>
+              </React.Fragment>
             ),
           },
         ]}
