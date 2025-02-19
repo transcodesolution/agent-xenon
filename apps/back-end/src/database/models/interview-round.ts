@@ -6,6 +6,7 @@ const InterviewRoundsSchema: Schema = new Schema({
     type: { type: String, enum: InterviewRoundTypes },
     subType: { type: String, enum: TechnicalRoundTypes },
     durationInSeconds: { type: Number, default: 172800 },
+    name: { type: String },
     qualificationCriteria: { type: String },
     mcqCriteria: { type: Number },
     jobId: { type: Schema.Types.ObjectId, ref: "Job" },

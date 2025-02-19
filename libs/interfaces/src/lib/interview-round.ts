@@ -6,6 +6,7 @@ export interface IInterviewRounds<T = string> extends ITimestamp {
     type: InterviewRoundTypes;
     subType: TechnicalRoundTypes;
     durationInSeconds: number;
+    name: string;
     qualificationCriteria: string;
     mcqCriteria: number;
     jobId: T;
