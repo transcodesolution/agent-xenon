@@ -8,8 +8,9 @@ const roundSubTypeSchema = Joi.string().valid(...Object.values(TechnicalRoundTyp
 export const createInterviewRoundSchema = Joi.object().keys({
     type: roundTypeSchema.required(),
     subType: roundSubTypeSchema.optional(),
+    name: Joi.string().allow("").optional(),
     durationInSeconds: Joi.number().optional(),
-    qualificationCriteria: Joi.string().optional(),
+    qualificationCriteria: Joi.string().allow("").optional(),
     mcqCriteria: Joi.number().optional(),
     questions: Joi.array().items(Joi.string()).required(),
     jobId: Joi.string().required(),
@@ -18,8 +19,9 @@ export const createInterviewRoundSchema = Joi.object().keys({
 export const updateInterviewRoundSchema = Joi.object().keys({
     type: roundTypeSchema.optional(),
     subType: roundSubTypeSchema.optional(),
+    name: Joi.string().allow("").optional(),
     durationInSeconds: Joi.number().optional(),
-    qualificationCriteria: Joi.string().optional(),
+    qualificationCriteria: Joi.string().allow("").optional(),
     mcqCriteria: Joi.number().optional(),
     newQuestionIds: Joi.array().items(Joi.string()).optional(),
     removeQuestionIds: Joi.array().items(Joi.string()).optional(),
