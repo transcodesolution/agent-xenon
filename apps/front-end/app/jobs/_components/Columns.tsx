@@ -1,8 +1,7 @@
 import { DataTableColumn } from 'mantine-datatable';
 import { IJob } from '@agent-xenon/interfaces';
-import { Badge } from '@mantine/core';
+import { Anchor, Badge } from '@mantine/core';
 import Link from 'next/link';
-import classes from './jobList.module.css'
 
 export const getColumns = (
   sortStatus: {
@@ -26,9 +25,7 @@ export const getColumns = (
       width: 200,
       render: ({ _id, title }) => {
         return (
-          <Link className={classes.link} href={`/jobs/${_id}`} style={{ position: 'relative' }}>
-            {title || '-'}
-          </Link>
+          <Anchor component={Link} href={`/jobs/${_id}`} style={{ position: 'relative' }}>{title || '-'}</Anchor>
         );
       },
     },

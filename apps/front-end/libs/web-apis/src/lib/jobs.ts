@@ -19,7 +19,6 @@ export const createJob = async (params: Partial<IJob>): Promise<IApiResponse<IJo
   }
 };
 
-
 export const getJobById = async (jobId: string): Promise<IApiResponse<IJob>> => {
   try {
     const result = await http.get<IApiResponse<IJob>>(`/job/${jobId}`);
@@ -28,7 +27,6 @@ export const getJobById = async (jobId: string): Promise<IApiResponse<IJob>> => 
     throw new Error(`Error while fetching job by ID: ${error}`);
   }
 };
-
 
 export const updateJob = async (params: Partial<IJob>): Promise<IApiResponse<IJob>> => {
   try {
@@ -40,15 +38,14 @@ export const updateJob = async (params: Partial<IJob>): Promise<IApiResponse<IJo
   }
 };
 
-export const deleteJobs = async (jobIds: string[]): Promise<IApiResponse<IJob>> => {
+export const deleteJobs = async (jobIds: string[]): Promise<IApiResponse> => {
   try {
-    const result = await http.delete<IApiResponse<IJob>>('/job', { data: { jobIds } });
+    const result = await http.delete<IApiResponse>('/job', { data: { jobIds } });
     return result.data;
   } catch (error) {
     throw new Error(`Error while delete job: ${error}`);
   }
 };
-
 
 export const getJobRoleAndDesignation = async (): Promise<IApiResponse<IGetJobRoleAndDesignation>> => {
   try {

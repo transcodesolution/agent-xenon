@@ -59,7 +59,7 @@ export function JobLists({ data, isFetching, onDelete }: JobListsProps) {
   };
 
   return (
-    <>
+    <React.Fragment>
       {selectedJobs.length > 0 &&
         <ActionIcon color='red' onClick={handleDeleteSelected}>
           <IconTrash size="1.5rem" />
@@ -84,7 +84,7 @@ export function JobLists({ data, isFetching, onDelete }: JobListsProps) {
         onSortStatusChange={handleSortStatusChange}
         columns={columns}
       />
-    </>
+    </React.Fragment>
   )
 }
 
