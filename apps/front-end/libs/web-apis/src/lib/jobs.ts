@@ -1,5 +1,6 @@
-import { IApiResponse, IGetJobRoleAndDesignation, IGetJobsParams, IJob, PaginationApiResponseType } from '@agent-xenon/interfaces';
+import { IApiResponse, IInterviewRounds, IJob, PaginationApiResponseType } from '@agent-xenon/interfaces';
 import http from './http-common';
+import { IGetJobRoleAndDesignation, IGetJobsParams } from '@agent-xenon/types-api';
 
 export const getJobs = async (params: IGetJobsParams): Promise<IApiResponse<PaginationApiResponseType<IJob[]>>> => {
   try {
@@ -53,5 +54,14 @@ export const getJobRoleAndDesignation = async (): Promise<IApiResponse<IGetJobRo
     return result.data;
   } catch (error) {
     throw new Error(`Error while fetching role and designation: ${error}`);
+  }
+};
+
+export const createInterviewRound = async (params: Partial<IInterviewRounds>): Promise<IApiResponse<IInterviewRounds>> => {
+  try {
+    const result = await http.post<IApiResponse<IInterviewRounds>>('/interview-round/create', params);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while creating interview round: ${error}`);
   }
 };

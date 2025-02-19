@@ -48,6 +48,9 @@
       "@agent-xenon/react-query-hooks": [
         "libs/react-query-hooks/src/index.ts"
       ],
+      "@agent-xenon/types-api": [
+        "libs/types-api/src/index.ts"
+      ]
     }
   },
   "include": [

@@ -14,7 +14,6 @@ export const JobDetailTabs = ({ jobId }: IJobDetailTabs) => {
   const router = useRouter();
   const pathName = usePathname();
   const value = pathName.split('/')[3] || 'details'
-  console.log(value, pathName.split('/'),'pathName split')
   const setControlRef = (val: string) => (node: HTMLButtonElement) => {
 
     controlsRefs[val] = node;
