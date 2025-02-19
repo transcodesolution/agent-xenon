@@ -1,5 +1,5 @@
 import { IInterviewRounds } from '@agent-xenon/interfaces';
-import { ActionIcon, Button, Combobox,  Flex,  Select, Stack, Text, Textarea, TextInput, useCombobox } from '@mantine/core';
+import { ActionIcon, Button, Combobox, Flex, Select, Stack, Text, Textarea, TextInput, useCombobox } from '@mantine/core';
 import { useState } from 'react';
 import { TechnicalRoundTypes, InterviewRoundTypes } from '@agent-xenon/constants';
 import { useGetMCQQuestions } from '@agent-xenon/react-query-hooks';
@@ -34,7 +34,7 @@ export const InterviewRound = ({ onAddRound }: InterviewRoundProps) => {
   });
 
   // Generic function to update state
-  const handleChange = (key: keyof typeof formState, value: any) => {
+  const handleChange = <K extends keyof typeof formState>(key: K, value: typeof formState[K]) => {
     setFormState((prev) => ({ ...prev, [key]: value }));
   };
 
@@ -87,8 +87,6 @@ export const InterviewRound = ({ onAddRound }: InterviewRoundProps) => {
       {formState.technicalSubType === TechnicalRoundTypes.MCQ && (
         <React.Fragment>
           <Combobox store={combobox} onOptionSubmit={(val) => {
-            console.log('val', val);
-
             const question = mcqQuestionsData?.data?.find((question) => question._id === val);
             if (question) {
               setFormState((prev) => ({
