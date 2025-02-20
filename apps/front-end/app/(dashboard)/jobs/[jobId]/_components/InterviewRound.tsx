@@ -8,11 +8,11 @@ import React from 'react';
 import { IconTrash } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
 
-interface InterviewRoundProps {
-  onAddRound: (params: Partial<IInterviewRounds>) => void;
+interface IInterviewRoundProps {
+  onAddRound: (interviewRound: Partial<IInterviewRounds>) => void;
 }
 
-export const InterviewRound = ({ onAddRound }: InterviewRoundProps) => {
+export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
   const { jobId } = useParams<{ jobId: string }>();
 
   const [searchQuestion, setSearchQuestion] = useState('');
@@ -34,25 +34,27 @@ export const InterviewRound = ({ onAddRound }: InterviewRoundProps) => {
     selectedQuestions: [],
   });
 
-  const handleChange = <K extends keyof typeof formState>(key: K, value: typeof formState[K]) => {
-    setFormState((prev) => ({ ...prev, [key]: value }));
+  const handleChange = (updatesFormFields: Partial<typeof formState> | keyof typeof formState, value?: any) => {
+    if (typeof updatesFormFields === 'string') {
+      setFormState((prev) => ({ ...prev, [updatesFormFields]: value }));
+    } else {
+      setFormState((prev) => ({ ...prev, ...updatesFormFields }));
+    }
   };
-
   const handleAddRound = () => {
-    const params: Partial<IInterviewRounds> = {
+    const interviewRound: Partial<IInterviewRounds> = {
       type: formState.roundType,
-      qualificationCriteria: formState.qualificationCriteria,
+      qualificationCriteria: formState.qualificationCriteria || '',
       jobId,
-      ...(formState.roundType === InterviewRoundTypes.TECHNICAL && { subType: formState.technicalSubType }),
-      ...(formState.technicalSubType === TechnicalRoundTypes.MCQ &&
-        formState.selectedQuestions.length > 0 && {
-        questions: formState.selectedQuestions.map((q) => q._id),
+      ...(formState.roundType === InterviewRoundTypes.TECHNICAL && {
+        subType: formState.technicalSubType || undefined
       }),
-      ...(formState.technicalSubType === TechnicalRoundTypes.MCQ && {
-        mcqCriteria: formState.mcqCriteria,
-      }),
+      questions: formState.selectedQuestions.length > 0
+        ? formState.selectedQuestions.map((q) => q._id)
+        : [],
+      mcqCriteria: formState.mcqCriteria ?? undefined,
     };
-    onAddRound?.(params);
+    onAddRound?.(interviewRound);
   };
 
   const combobox = useCombobox({
@@ -69,8 +71,12 @@ export const InterviewRound = ({ onAddRound }: InterviewRoundProps) => {
           data={Object.values(InterviewRoundTypes).map((type) => ({ value: type, label: type }))}
           value={formState.roundType}
           onChange={(value) => {
-            handleChange('roundType', value as InterviewRoundTypes);
-            handleChange('technicalSubType', value === InterviewRoundTypes.TECHNICAL ? TechnicalRoundTypes.MCQ : undefined);
+            handleChange({
+              roundType: value as InterviewRoundTypes,
+              technicalSubType: value === InterviewRoundTypes.TECHNICAL ? TechnicalRoundTypes.MCQ : undefined,
+              mcqCriteria: value === InterviewRoundTypes.TECHNICAL ? formState.mcqCriteria : undefined,
+              selectedQuestions: value === InterviewRoundTypes.TECHNICAL ? formState.selectedQuestions : [],
+            })
           }}
         />
         {formState.roundType === InterviewRoundTypes.TECHNICAL && (
