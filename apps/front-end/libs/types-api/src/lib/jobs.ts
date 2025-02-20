@@ -14,3 +14,7 @@ export interface IGetJobRoleAndDesignation {
   jobRoleData: IRoleDesignation[];
   designationData: IRoleDesignation[];
 }
+
+export interface IDeleteInterviewRoundsRequest {
+  roundIds: string[];
+}

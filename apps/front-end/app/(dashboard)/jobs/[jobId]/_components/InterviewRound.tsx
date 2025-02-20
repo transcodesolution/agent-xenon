@@ -9,7 +9,7 @@ import { IconTrash } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
 
 interface IInterviewRoundProps {
-  onAddRound: (params: Partial<IInterviewRounds>) => void;
+  onAddRound: (interviewRound: Partial<IInterviewRounds>) => void;
 }
 
 export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
@@ -42,7 +42,7 @@ export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
     }
   };
   const handleAddRound = () => {
-    const params: Partial<IInterviewRounds> = {
+    const interviewRound: Partial<IInterviewRounds> = {
       type: formState.roundType,
       qualificationCriteria: formState.qualificationCriteria || '',
       jobId,
@@ -54,7 +54,7 @@ export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
         : [],
       mcqCriteria: formState.mcqCriteria ?? undefined,
     };
-    onAddRound?.(params);
+    onAddRound?.(interviewRound);
   };
 
   const combobox = useCombobox({

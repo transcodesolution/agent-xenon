@@ -1,13 +1,10 @@
 import { deleteInterviewRounds } from '@agent-xenon/web-apis';
 import { IApiResponse } from '@agent-xenon/interfaces';
 import { useMutation } from '@tanstack/react-query';
-
-interface IDeleteInterviewRoundsParams {
-  roundIds: string[];
-}
+import { IDeleteInterviewRoundsRequest } from '@agent-xenon/types-api';
 
 export const useDeleteInterviewRounds = () => {
-  const deleteInterviewRoundMutation = useMutation<IApiResponse, Error, IDeleteInterviewRoundsParams>({
+  const deleteInterviewRoundMutation = useMutation<IApiResponse, Error, IDeleteInterviewRoundsRequest>({
     mutationFn: async ({ roundIds }) => deleteInterviewRounds(roundIds),
   });
   return {

@@ -3,12 +3,12 @@ import { DataTable } from 'mantine-datatable';
 import React from 'react';
 import { IJob } from '@agent-xenon/interfaces';
 
-interface IJobInterviewRoundsProps {
+interface IJobInterviewRoundList {
   rounds?: IJob['rounds'];
   onDeleteRound: (roundId: string[]) => void;
 }
 
-export const JobInterviewRoundList: React.FC<IJobInterviewRoundsProps> = ({ rounds, onDeleteRound }) => {
+export const JobInterviewRoundList = ({ rounds, onDeleteRound }: IJobInterviewRoundList) => {
   const columns = [
     { accessor: 'name', title: 'Name', render: (round: { name?: string }) => round.name || '-' },
     { accessor: 'type', title: 'Type' },
