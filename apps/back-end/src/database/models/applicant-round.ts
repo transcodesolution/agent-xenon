@@ -3,7 +3,7 @@ import { IApplicantRounds } from "@agent-xenon/interfaces";
 import mongoose, { Schema } from "mongoose";
 
 const ApplicantRoundsSchema: Schema = new Schema({
-    roundId: { type: Schema.Types.ObjectId },
+    roundIds: { type: [Schema.Types.ObjectId] },
     status: { type: String, enum: InterviewRoundStatus, default: InterviewRoundStatus.YET_TO_START },
     jobId: { type: Schema.Types.ObjectId, ref: "Job" },
     applicantId: { type: Schema.Types.ObjectId, ref: "Applicant" },
