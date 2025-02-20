@@ -65,3 +65,12 @@ export const createInterviewRound = async (params: Partial<IInterviewRounds>): P
     throw new Error(`Error while creating interview round: ${error}`);
   }
 };
+
+export const deleteInterviewRounds = async (roundIds: string[]): Promise<IApiResponse> => {
+  try {
+    const result = await http.delete<IApiResponse>('/interview-round', { data: { roundIds } });
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while deleting interview rounds: ${error}`);
+  }
+};

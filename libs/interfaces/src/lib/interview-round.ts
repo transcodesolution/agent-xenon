@@ -16,4 +16,5 @@ export interface IInterviewRounds<T = string> extends ITimestamp {
     status: InterviewRoundStatus;
     _doc: IInterviewRounds<T>;
     previousRound?: Partial<IInterviewRounds<T>>;
+    questions?: T[]
 }

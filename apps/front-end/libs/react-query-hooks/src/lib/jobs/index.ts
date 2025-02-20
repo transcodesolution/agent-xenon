@@ -5,3 +5,4 @@ export * from './useUpdateJob';
 export * from './useDeleteJobs';
 export * from './useJobRoleAndDesignation';
 export * from './useCreateInterviewRound';
+export * from './useDeleteInterviewRounds';

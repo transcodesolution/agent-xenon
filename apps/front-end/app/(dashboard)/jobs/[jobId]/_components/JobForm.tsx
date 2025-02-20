@@ -3,27 +3,17 @@ import React, { useState, useEffect } from 'react'
 import { Button, Flex, LoadingOverlay, Modal, Paper, Select, Stack, Textarea, TextInput } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks';
 import { useParams } from 'next/navigation';
-import { useCreateInterviewRound, useGetJobById } from '@/libs/react-query-hooks/src';
 import { InterviewRound } from './InterviewRound';
-import { useUpdateJob, useJobRoleAndDesignation } from '@agent-xenon/react-query-hooks';
+import { useUpdateJob, useJobRoleAndDesignation, useCreateInterviewRound, useDeleteInterviewRounds, useGetJobById } from '@agent-xenon/react-query-hooks';
 import { IInterviewRounds } from '@agent-xenon/interfaces';
-
-interface Option {
-  value: string;
-  label: string;
-}
-
-interface JobFormsProps {
-  designations: Option[];
-  roles: Option[];
-}
+import { JobInterviewRoundList } from './JobInterviewRoundList';
 
 let timeOut: string | number | NodeJS.Timeout | undefined;
 
-export const JobForm = ({ designations, roles }: JobFormsProps) => {
+export const JobForm = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const { jobId } = useParams<{ jobId: string }>();
-  const { data: jobData, isLoading } = useGetJobById({ jobId: jobId });
+  const { data: jobData, isLoading, refetch } = useGetJobById({ jobId: jobId });
   const [formState, setFormState] = useState({
     title: '',
     description: '',
@@ -33,6 +23,8 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
   const { mutate: updateJob } = useUpdateJob();
   const { data: jobRoleAndDesignation } = useJobRoleAndDesignation();
   const { mutate: createRound, } = useCreateInterviewRound();
+  const { deleteInterviewRoundMutation } = useDeleteInterviewRounds();
+
   const designationsOptions = jobRoleAndDesignation?.data?.designationData.map((designation) => ({
     value: designation._id,
     label: designation.name,
@@ -63,6 +55,7 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
     createRound(params, {
       onSuccess: () => {
         close();
+        refetch()
       },
     });
   };
@@ -78,6 +71,17 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
     }
   }, [jobData]);
 
+  const onDelete = (roundIds: string[]) => {
+    deleteInterviewRoundMutation.mutate(
+      { roundIds },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
+  };
+
   return (
     <Stack pos='relative'>
       <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
@@ -88,9 +92,13 @@ export const JobForm = ({ designations, roles }: JobFormsProps) => {
           <Select label='Designation' data={designationsOptions} value={formState.designation} onChange={(val) => handleChange('designation', val)} />
           <Select label='Role' data={rolesOptions} value={formState.role} onChange={(val) => handleChange('role', val)} />
         </Flex>
-        <Button variant='outline' styles={{ root: { width: 'fit-content' } }} onClick={open}>
+        <Button variant='outline' styles={{ root: { width: 'fit-content' } }} onClick={open} mb='md'>
           Add Interview Round +
         </Button>
+        <JobInterviewRoundList
+          rounds={jobData?.data?.rounds}
+          onDeleteRound={onDelete}
+        />
       </Paper>
 
       <Modal opened={opened} onClose={close} title="Add Interview Round" size='lg' centered>
