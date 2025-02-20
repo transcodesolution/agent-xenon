@@ -1,5 +1,5 @@
 "use strict"
-import { Request, Router, Response } from 'express'
+import { Router } from 'express'
 import { candidateJWT, JWT } from '../helper/jwt'
 import { jobRoleRouter } from './job-roles'
 import { authRouter } from './auth'
@@ -9,17 +9,18 @@ import { onBoardOrganization } from '../controllers/organization/organization'
 import { organizationRouter } from './organization'
 import { jobRouter } from './job'
 import { applicantRouter } from './applicant'
-import { RoleTypes } from '@agent-xenon/constants'
 import { interviewRoundRouter } from './interview-round'
 import { technicalRoundRouter } from './technical-round'
+import { thirdPartyRedirectRouter } from './third-party-redirect'
 
 const router = Router()
-const accessControl = (req: Request, res: Response, next: any) => {
-    req.headers.userType = RoleTypes[req.originalUrl.split('/')[1]]
-    next()
-}
+// const accessControl = (req: Request, res: Response, next: any) => {
+//     req.headers.userType = RoleTypes[req.originalUrl.split('/')[1]]
+//     next()
+// }
 
 router.post("/onboard", onBoardOrganization);
+router.use("/google", thirdPartyRedirectRouter);
 
 router.use('/auth', authRouter)
 router.use('/exam', candidateJWT, technicalRoundRouter)

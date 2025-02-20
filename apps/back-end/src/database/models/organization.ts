@@ -11,7 +11,8 @@ const OrganizationSchema: Schema = new Schema({
                 accessToken: { type: String },
                 expiry: { type: Date },
                 refreshToken: { type: String },
-                scope: [{ type: String, }],
+                scope: { type: String, },
+                email: { type: String },
             },
             // Slack: {
 

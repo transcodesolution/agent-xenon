@@ -55,3 +55,10 @@ export const submitExamSchema = Joi.object().keys({
 export const getExamQuestionSchema = Joi.object().keys({
     candidateToken: Joi.string().required(),
 })
+
+export const googleRedirectSchema = Joi.object().keys({
+    organizationId: Joi.string().required(),
+    jobId: Joi.string().required(),
+    roundId: Joi.string().required(),
+    isFirstRound: Joi.boolean().required(),
+})
