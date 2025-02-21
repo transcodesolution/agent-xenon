@@ -156,18 +156,6 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
 
         if (interviewRoundData.status === InterviewRoundStatus.COMPLETED) return res.badRequest("round already completed", {}, "customMessage");
 
-        const isFirstRound = interviewRoundData.roundNumber === 1;
-
-        let getPreviousRoundData: IInterviewRounds;
-        if (!isFirstRound) {
-            getPreviousRoundData = await InterviewRounds.findOne({ jobId: interviewRoundData.jobId._id }, { _id: 1, type: 1, }).sort({ roundNumber: 1 }).limit(1);
-            console.log(getPreviousRoundData)
-            interviewRoundData._doc.previousRound = {
-                _id: getPreviousRoundData._id.toString(),
-                type: getPreviousRoundData.type
-            };
-        }
-
         // const currentDate = new Date();
 
         await InterviewRounds.updateOne(Query, { $set: { status: InterviewRoundStatus.ONGOING } });
@@ -175,20 +163,37 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
         switch (interviewRoundData.type) {
             case InterviewRoundTypes.SCREENING:
                 res.ok("interview round is in progress. You will notify once it will complete", {}, "customMessage")
-                await manageScreeningRound(interviewRoundData, isFirstRound);
+                await manageScreeningRound(interviewRoundData);
                 break;
             case InterviewRoundTypes.TECHNICAL:
                 // if (interviewRoundData?.startDate && interviewRoundData?.endDate && (interviewRoundData.startDate <= currentDate && currentDate < interviewRoundData.endDate)) {
                 //     return res.badRequest("technical round already in progress", {}, "customMessage");
                 // }
-                await manageTechnicalRound(interviewRoundData, isFirstRound);
+                await manageTechnicalRound(interviewRoundData);
                 return res.ok("interview round started successfully", {}, "customMessage");
             case InterviewRoundTypes.MEETING:
-                await manageMeetingRound(interviewRoundData, isFirstRound, user.organizationId, res);
+                await manageMeetingRound(interviewRoundData, user.organizationId, res);
         }
 
     } catch (error) {
-        return res.internalServerError(error.message, error.stack, "customMessage")
+        if (error.response && error.response.data && error.response.data.error === "invalid_grant") {
+            console.error("Refresh token expired or revoked. User needs to re-authenticate.");
+
+            // Redirect user for authentication
+            const redirectUrl = oauth2Client.generateAuthUrl({
+                access_type: "offline",
+                scope: [
+                    "https://www.googleapis.com/auth/calendar",
+                    "https://www.googleapis.com/auth/userinfo.email",
+                ],
+                prompt: "consent",  // Ensures user grants a new refresh token
+            });
+
+            return res.ok("Google login required! Please redirect using the given URL", { redirectUrl }, "customMessage");
+        } else {
+            console.error("Error refreshing access token:", error);
+            return res.internalServerError(error.message, error.stack, "customMessage")
+        }
     }
 }
 
@@ -197,9 +202,9 @@ export const googleAuthRedirectLogic = async (req: Request, res: Response) => {
         const code = req.query.code as string;
         const string = req.query.state as string;
 
-        const [organizationId, jobId, roundId, isFirstRound] = string?.split("_") ?? [];
+        const [organizationId, jobId, roundId] = string?.split("_") ?? [];
 
-        const { error, value } = googleRedirectSchema.validate({ organizationId, jobId, roundId, isFirstRound });
+        const { error, value } = googleRedirectSchema.validate({ organizationId, jobId, roundId });
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
@@ -221,9 +226,9 @@ export const googleAuthRedirectLogic = async (req: Request, res: Response) => {
 
         await Organization.updateOne({ _id: organizationId }, { $set: { "serviceProviders.google": { accessToken: tokens.access_token, refreshToken: tokens.refresh_token, scope: tokens.scope, expiry: tokens.expiry_date, email: obj.data.email } } });
 
-        const eventDetails = await manageMeetingScheduleWithCandidate(value.jobId, value.roundId, value.isFirstRound, obj.data.email);
+        const eventDetails = await manageMeetingScheduleWithCandidate(value.jobId, obj.data.email, value.roundId);
 
-        return res.ok("successfully login", { eventDetails }, "customMessage");
+        return res.ok("successfully login and meeting round completed successfully", { eventDetails }, "customMessage");
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage");
     }
@@ -247,7 +252,7 @@ export const submitExam = async (req: Request, res: Response) => {
         const Query: RootFilterQuery<QuerySelector<IApplicantRounds>> = {
             applicantId: user._id,
             jobId: interviewRoundData.jobId,
-            roundId: interviewRoundData._id,
+            roundIds: { $elemMatch: { $eq: interviewRoundData._id } },
             isSelected: { $exists: false },
             status: InterviewRoundStatus.ONGOING
         };
@@ -313,7 +318,7 @@ export const getExamQuestions = async (req: Request, res: Response) => {
             return res.badRequest("interview round", {}, "getDataNotFound")
         }
 
-        const applicantRoundData = await ApplicantRounds.findOne<IApplicantRounds>({ roundId, deletedAt: null, applicantId: user._id, });
+        const applicantRoundData = await ApplicantRounds.findOne<IApplicantRounds>({ roundIds: { $elemMatch: { $eq: roundId } }, deletedAt: null, applicantId: user._id, });
 
         const currentDate = new Date();
 
@@ -327,12 +332,12 @@ export const getExamQuestions = async (req: Request, res: Response) => {
 
         const questions = await RoundQuestionAssign.find({ deletedAt: null, roundId }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes inputFormat").sort({ _id: 1 }).skip((value.page - 1) * value.limit).limit(value.limit)
 
-        await ApplicantRounds.create({
+        const queryFilter = {
             applicantId: user._id,
             jobId: interviewRoundData.jobId,
-            roundId: interviewRoundData._id,
-            status: InterviewRoundStatus.ONGOING
-        });
+        };
+
+        await ApplicantRounds.updateOne(queryFilter, { $set: { ...queryFilter, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: interviewRoundData._id } }, { upsert: true });
 
         return res.ok("interview questions", { roundId, questions }, "getDataSuccess")
     } catch (error) {

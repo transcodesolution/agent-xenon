@@ -1,17 +1,19 @@
 import { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources";
 import createOpenAIClient from "../helper/openai";
 import { IScreeningResponse } from "../types/agent";
-import { getApplicantDetails } from "../utils/applicant";
+import { getSelectedApplicantDetails } from "../utils/applicant";
 import ApplicantRounds from "../database/models/applicant-round";
 import { InterviewRoundStatus } from "@agent-xenon/constants";
 import { sendMail } from "../helper/mail";
+import { RootFilterQuery } from "mongoose";
+import { IApplicantRounds } from "@agent-xenon/interfaces";
 
 const client = createOpenAIClient();
 
 const SYSTEM_PROMPT = `You have to use the tools provided to get applicant details.
 
         Tools avaiable:
-        getApplicantDetails(jobId: string, roundId: string, isFirstRound: boolean): Array<object> => This function will get you array of object contains multiple applicants. Call this tool only once not multiple times.
+        getSelectedApplicantDetails(jobId: string): Array<object> => This function will get you array of object contains multiple applicants. Call this tool only once not multiple times.
         updateApplicantSelectedToDb(jobId: string, roundId: string, isSelected: boolean, applicantId: string, email: string): string => This function will get you array of object contains multiple applicants. Call this tool only once not multiple times. It return a string containing "done" or "already exist" if already exist. if you call two times with same applicantId then it will already exist. so don't call it two times.
 
         Here is the applicant schema:
@@ -60,11 +62,11 @@ const SYSTEM_PROMPT = `You have to use the tools provided to get applicant detai
         2.) just follow the criteria and make decision by take care
         3.) if none candidate selected then check for relevant skills from criteria. ex: nodejs relavant skills : expressjs, nestjs
         4.) Strictly follow the json output.
-        5.) Don't call updateApplicantSelectedToDb method when getApplicantDetails respond with empty array ([]).
+        5.) Don't call updateApplicantSelectedToDb method when getSelectedApplicantDetails respond with empty array ([]).
 
         Examples:
-        1.) call getApplicantDetails with jobId, roundId, isFirstRound parameters. it return json stringify array of object(bson document mongodb).
-        2.) wait for getApplicantDetails response.
+        1.) call getSelectedApplicantDetails with jobId, parameter. it return json stringify array of object(bson document mongodb).
+        2.) wait for getSelectedApplicantDetails response.
         3.) filter applicant on basis of criteria given. wait for filtered results.
         4.) call updateApplicantSelectedToDb one by one for each selected applicant with jobId, roundId, isSelected(true for if selected), applicantId.
         5.) wait for response of each call.
@@ -76,12 +78,15 @@ const SYSTEM_PROMPT = `You have to use the tools provided to get applicant detai
         {type:'OUTPUT',message:'success'}`
 
 async function updateApplicantSelectedToDb(jobId: string, roundId: string, isSelected: boolean, applicantId: string, email: string) {
-    const createObject = { jobId, roundId, applicantId, }
-    const applicantRoundData = await ApplicantRounds.findOne({ ...createObject, deletedAt: null });
+    const queryFilter: RootFilterQuery<IApplicantRounds> = { jobId, applicantId, deletedAt: null };
+    const applicantRoundData = await ApplicantRounds.findOne({ ...queryFilter, roundIds: { $elemMatch: { $eq: roundId } } });
     if (applicantRoundData) {
         return "already exist";
     }
-    await ApplicantRounds.create({ ...createObject, isSelected, status: InterviewRoundStatus.COMPLETED });
+    await ApplicantRounds.updateOne(queryFilter, {
+        $set: { ...queryFilter, isSelected, status: InterviewRoundStatus.COMPLETED },
+        $push: { roundIds: roundId }
+    }, { upsert: true });
     await sendMail(email, "Candidate Interview Status Mail", `Dear Candidate,  
 
         We appreciate your time and effort in participating in the screening round for the applied position.  
@@ -92,7 +97,7 @@ async function updateApplicantSelectedToDb(jobId: string, roundId: string, isSel
     return "done";
 }
 
-async function filterCandidateAgent(criteria: string, jobId: string, roundId: string, isFirstRound: boolean): Promise<IScreeningResponse> {
+async function filterCandidateAgent(criteria: string, jobId: string, roundId: string): Promise<IScreeningResponse> {
     const messages: ChatCompletionMessageParam[] = [
         {
             role: "system",
@@ -105,7 +110,6 @@ async function filterCandidateAgent(criteria: string, jobId: string, roundId: st
             Criteria: ${criteria}
             JobId: ${jobId}
             roundId: ${roundId}
-            isFirstRound: ${isFirstRound}
         `,
         },
     ];
@@ -114,7 +118,7 @@ async function filterCandidateAgent(criteria: string, jobId: string, roundId: st
         {
             type: "function",
             function: {
-                name: "getApplicantDetails",
+                name: "getSelectedApplicantDetails",
                 description: "Fetch applicant details from the database. Returns an array of MongoDB objects.",
                 parameters: {
                     type: "object",
@@ -122,14 +126,6 @@ async function filterCandidateAgent(criteria: string, jobId: string, roundId: st
                         jobId: {
                             type: "string",
                             description: "The job ID to fetch applicant details"
-                        },
-                        roundId: {
-                            type: "string",
-                            description: "The round ID to filter selected applicants"
-                        },
-                        isFirstRound: {
-                            type: "boolean",
-                            description: "The isFirstRound to filter selected applicants on basis of round number"
                         },
                     },
                     required: ["jobId"]
@@ -187,9 +183,9 @@ async function filterCandidateAgent(criteria: string, jobId: string, roundId: st
         if (responseMessage?.tool_calls) {
             for (const toolCall of responseMessage.tool_calls) {
                 if (toolCall.function.name === "getApplicantDetails") {
-                    const { jobId, roundId, isFirstRound } = JSON.parse(toolCall.function.arguments);
+                    const { jobId } = JSON.parse(toolCall.function.arguments);
 
-                    const applicantDetails = await getApplicantDetails(jobId, roundId, isFirstRound);
+                    const applicantDetails = await getSelectedApplicantDetails(jobId);
 
                     // Add function response to messages
                     messages.push({

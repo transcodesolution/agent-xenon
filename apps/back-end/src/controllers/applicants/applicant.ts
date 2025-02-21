@@ -128,10 +128,10 @@ export const getApplicants = async (req: Request, res: Response) => {
             match.jobId = value.jobId;
         }
 
-        const selectRejectQuery = value.isSelectedByAgent || !value.isSelectedByAgent;
+        const selectRejectQuery = value.isSelectedByAgent || value.isSelectedByAgent === false;
 
         if (value.roundId || selectRejectQuery) {
-            const applicantIds = await ApplicantRounds.distinct("applicantId", { ...(value.roundId && { roundId: value.roundId }), ...(selectRejectQuery && { isSelected: value.isSelectedByAgent }), deletedAt: null, status: InterviewRoundStatus.COMPLETED });
+            const applicantIds = await ApplicantRounds.distinct("applicantId", { ...(value.roundId && { roundIds: { $elemMatch: { $eq: value.roundId } } }), ...(selectRejectQuery && { isSelected: value.isSelectedByAgent }), deletedAt: null, status: InterviewRoundStatus.COMPLETED });
             match._id = { $in: applicantIds };
         }
 
