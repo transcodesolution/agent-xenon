@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import mongoose, { FilterQuery, } from "mongoose";
-import { createJobSchema, deleteJobSchema, getJobByIdSchema, getJobSchema, updateJobSchema } from "../../validation/job";
+import mongoose, { FilterQuery, RootFilterQuery, } from "mongoose";
+import { addResumeLinkSchema, createJobSchema, deleteJobSchema, deleteResumeLinkSchema, getJobByIdSchema, getJobSchema, getResumeLinkSchema, updateJobSchema } from "../../validation/job";
 import Job from "../../database/models/job";
 import InterviewRounds from "../../database/models/interview-round";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
@@ -12,6 +12,7 @@ import { JobStatus } from "@agent-xenon/constants";
 import { JobQueryType } from "../../types/job";
 import Designation from "../../database/models/designation";
 import JobRole from "../../database/models/job-role";
+import { s3deleteObjects } from "../../utils/s3";
 
 export const createJob = async (req: Request, res: Response) => {
     const { user } = req.headers;
