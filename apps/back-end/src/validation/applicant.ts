@@ -79,7 +79,7 @@ export const updateApplicantSchema = Joi.object({
 });
 
 export const deleteApplicantSchema = Joi.object({
-    applicantId: Joi.string().required(),
+    applicantIds: Joi.array().items(Joi.string()).required(),
 });
 
 export const getApplicantSchema = Joi.object({
@@ -88,4 +88,8 @@ export const getApplicantSchema = Joi.object({
     roundId: Joi.string().optional(),
     isSelectedByAgent: Joi.boolean().optional(),
     ...paginationSchema,
+});
+
+export const getApplicantByIdSchema = Joi.object({
+    applicantId: Joi.string().required(),
 });
