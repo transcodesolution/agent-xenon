@@ -57,7 +57,6 @@ export const createApplicantByUserSchema = Joi.object({
 });
 
 export const createApplicantByAgentSchema = Joi.object({
-    resumeUrls: Joi.array().items(Joi.string().required()),
     jobId: Joi.string().required(),
 });
 

@@ -34,6 +34,18 @@ export const deleteJobSchema = Joi.object().keys({
     jobIds: Joi.array().items(jobIdSchema.jobId)
 })
 
+export const addResumeLinkSchema = Joi.object().keys({
+    ...jobIdSchema,
+    resumeUrls: Joi.array().items(jobIdSchema.jobId),
+})
+
+export const deleteResumeLinkSchema = Joi.object().keys({
+    resumeUrl: jobIdSchema.jobId,
+    ...jobIdSchema,
+})
+
+export const getResumeLinkSchema = Joi.object().keys(jobIdSchema)
+
 export const getJobSchema = Joi.object().keys({
     search: Joi.string().allow("").optional(),
     role: Joi.string().optional(),

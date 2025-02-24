@@ -10,6 +10,7 @@ const JobSchema: Schema = new Schema({
     designation: { type: Schema.Types.ObjectId, ref: "Designation" },
     qualificationCriteria: { type: String },
     organizationId: { type: Schema.Types.ObjectId, ref: "Organization" },
+    resumeUrls: { type: [String], default: [] },
     deletedAt: { type: Date, default: null },
 }, { timestamps: true, versionKey: false });
 

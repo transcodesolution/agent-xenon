@@ -225,3 +225,68 @@ export const getJobById = async (req: Request, res: Response) => {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
 }
+
+export const addResumeUrl = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = addResumeLinkSchema.validate(req.body);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const checkJobExist = await Job.findOne({ _id: value.jobId, deletedAt: null });
+
+        if (!checkJobExist) {
+            return res.badRequest("job", {}, "getDataNotFound");
+        }
+
+        await Job.updateOne({ _id: value.jobId }, { $push: { resumeUrls: value.resumeUrls } });
+
+        return res.ok("resume links", { resumeUrls: value.resumeUrls }, "addDataSuccess");
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage");
+    }
+}
+
+export const getResumesUrlsByJobId = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = getResumeLinkSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const resumeUrls = await Job.findOne({ _id: value.jobId, deletedAt: null }, "resumeUrls");
+
+        return res.ok("resume link", resumeUrls ?? {}, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const deleteResumeUrls = async (req: Request, res: Response) => {
+    try {
+        Object.assign(req.query, req.params);
+        const { error, value } = deleteResumeLinkSchema.validate(req.query);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const Query: RootFilterQuery<IJob> = { _id: value.jobId, deletedAt: null };
+
+        const checkJobExist = await Job.findOne(Query);
+
+        if (!checkJobExist) {
+            return res.badRequest("job", {}, "getDataNotFound");
+        }
+
+        await s3deleteObjects([value.resumeUrl]);
+
+        const resumeUrls = await Job.findOneAndUpdate(Query, { $pull: { resumeUrls: value.resumeUrl } }, { new: true });
+
+        return res.ok("resume link", resumeUrls, "deleteDataSuccess");
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage");
+    }
+}

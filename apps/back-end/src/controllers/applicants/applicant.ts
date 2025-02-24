@@ -45,9 +45,12 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
         const roleData = await roleModel.findOne({ name: RoleTypes.CANDIDATE, deletedAt: null });
-        const data = await uploadResumesAgent(value.resumeUrls, user.organizationId, value.jobId, roleData._id.toString());
+        const data = await uploadResumesAgent(checkJobExist.resumeUrls, user.organizationId, value.jobId, roleData._id.toString());
 
         await Applicant.insertMany(data);
+
+        checkJobExist.resumeUrls = [];
+        await checkJobExist.save();
 
         return res.ok("applicant", data, "addDataSuccess")
     } catch (error) {
