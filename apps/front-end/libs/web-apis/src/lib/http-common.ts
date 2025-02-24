@@ -3,9 +3,18 @@ import axios, { AxiosResponse, InternalAxiosRequestConfig, AxiosError as Origina
 type AxiosError = { config: { _retry: boolean } } & OriginalAxiosError;
 
 export const BASE_API_URL = 'http://localhost:7000';
+export const NEXT_APP_URL = 'http://localhost:3000';
 
-export const axiosInstance = axios.create({
+const axiosInstance = axios.create({
   baseURL: BASE_API_URL,
+  responseType: 'json',
+  headers: {
+    'Content-Type': 'application/json; charset=utf-8',
+  },
+});
+
+export const axiosNextServerInstance = axios.create({
+  baseURL: NEXT_APP_URL,
   responseType: 'json',
   headers: {
     'Content-Type': 'application/json; charset=utf-8',

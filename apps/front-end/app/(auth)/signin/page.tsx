@@ -14,14 +14,13 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import Surface from '@/libs/components/custom/surface';
 import { PATH_AUTH } from '@/libs/routes';
 import classes from './signin.module.scss';
-import { signIn } from '@/libs/web-apis/src';
+import { nextServerSignIn } from '@/libs/web-apis/src';
+import { showNotification } from '@mantine/notifications';
 
 export default function Page() {
-  const { push } = useRouter();
   const form = useForm({
     initialValues: { email: '', password: '' },
 
@@ -33,6 +32,16 @@ export default function Page() {
           : null,
     },
   });
+
+  const handleSignInFormSubmit = form.onSubmit(async ({ email, password }) => {
+    try {
+      await nextServerSignIn({ email, password, name: 'transcodezy' })
+    } catch (error: any) {
+      showNotification({
+        message: error.message
+      })
+    }
+  })
 
   return (
     <>
@@ -48,12 +57,7 @@ export default function Page() {
 
           <Surface component={Paper} className={classes.card}>
             <form
-              onSubmit={form.onSubmit(async ({ email, password }) => {
-                const result = await signIn({ email, password })
-                if (result.message) {
-                  push('/jobs')
-                }
-              })}
+              onSubmit={handleSignInFormSubmit}
             >
               <TextInput
                 label="Email"

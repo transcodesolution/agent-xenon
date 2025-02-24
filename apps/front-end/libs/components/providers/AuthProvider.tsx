@@ -17,7 +17,7 @@ export const AuthProvider = ({ children, token, permissions }: { token: string, 
     }
   }, [token, permissions])
 
-  if (!token) router.push('/login');
+  if (!token) router.push('/signin');
 
   return children
 }
