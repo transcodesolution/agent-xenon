@@ -5,9 +5,9 @@ import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplic
 import Applicant from "../../database/models/applicant";
 import ApplicantRounds from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
-import uploadResumesAgent from "../../agents/resume-extract-info";
 import { InterviewRoundStatus, JobStatus, RoleTypes } from "@agent-xenon/constants";
 import { roleModel } from "../../database";
+import { resumeExtractAgent } from "../../helper/queue";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -45,14 +45,16 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
         const roleData = await roleModel.findOne({ name: RoleTypes.CANDIDATE, deletedAt: null });
-        const data = await uploadResumesAgent(checkJobExist.resumeUrls, user.organizationId, value.jobId, roleData._id.toString());
+        value.resumeUrls = checkJobExist.resumeUrls;
+        value.organizationId = user.organizationId;
+        value.roleId = roleData._id.toString();
 
-        await Applicant.insertMany(data);
+        await resumeExtractAgent.add("resumeExtractAgent", value);
 
         checkJobExist.resumeUrls = [];
         await checkJobExist.save();
 
-        return res.ok("applicant", data, "addDataSuccess")
+        return res.ok("applicant resume extract process is in progress!", {}, "customMessage")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

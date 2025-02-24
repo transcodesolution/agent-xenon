@@ -1,7 +1,8 @@
 import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants";
 import { ITimestamp } from "./timestamp";
+import { Document } from "mongoose";
 
-export interface IInterviewRounds<T = string> extends ITimestamp {
+export interface IInterviewRounds<T = string> extends Partial<Document>, ITimestamp {
     _id: string;
     type: InterviewRoundTypes;
     subType: TechnicalRoundTypes;

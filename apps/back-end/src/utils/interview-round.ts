@@ -14,6 +14,7 @@ import { google } from "googleapis";
 import { generatePossibleTimeSlots, getDaysInCurrentMonth } from "./manage-dates";
 import Job from "../database/models/job";
 import ApplicantRounds from "../database/models/applicant-round";
+import { socketIo } from "../helper/socket";
 
 export const manageScreeningRound = async (roundData: IInterviewRounds<IJob>) => {
     const Query: RootFilterQuery<IInterviewRounds> = { _id: roundData._id };
@@ -21,6 +22,7 @@ export const manageScreeningRound = async (roundData: IInterviewRounds<IJob>) =>
         const jobId = roundData.jobId._id.toString();
         await filterCandidateAgent(roundData.qualificationCriteria, jobId, roundData._id.toString());
         await InterviewRounds.updateOne(Query, { $set: { status: InterviewRoundStatus.COMPLETED } });
+        socketIo.emit("round-status", { status: InterviewRoundStatus.COMPLETED, message: "Screening round is completed! You can check the status!" });
     } catch (error) {
         console.log("manageScreeningRound: error: ", error);
         await InterviewRounds.updateOne(Query, { $set: { status: InterviewRoundStatus.YET_TO_START } });
