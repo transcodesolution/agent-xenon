@@ -12,7 +12,9 @@ import { Server } from "http";
 import responseHandler from "./helper/response-handler";
 import { router } from './routes';
 import { createGoogleOAuth } from './helper/third-party-oauth';
+import { getMemoryUsage } from './utils/memory-usage';
 
+getMemoryUsage();
 const app = express();
 
 app.use(cors({ origin: config.CORS }));
@@ -33,6 +35,8 @@ app.get('/api', (req: Request, res: Response) =>
 
 app.use(router);
 app.use("*", bad_gateway);
+
+app.use((error: Error, req: Request, res: Response) => res.internalServerError(error.message, error, "customMessage"));
 
 const port = process.env.PORT || 3333;
 const server = new Server(app);

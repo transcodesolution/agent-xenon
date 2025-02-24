@@ -3,6 +3,7 @@ import OpenAI from "openai";
 import { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources";
 import { IResumeExtractResponse } from "../types/agent";
 import Applicant from "../database/models/applicant";
+import { IApplicant } from "@agent-xenon/interfaces";
 
 const client = new OpenAI();
 
@@ -95,7 +96,7 @@ async function checkApplicantEmailInJob(jobId: string, email: string) {
     return !!checkApplicantEmailExist;
 }
 
-async function uploadResumesAgent(resumeUrls: string[], organizationId: string, jobId: string, roleId: string) {
+async function uploadResumesAgent(resumeUrls: string[], organizationId: string, jobId: string, roleId: string): Promise<IApplicant[]> {
     const pdfTexts = await Promise.all(resumeUrls.map((i) => (getResumeParsedText(i))));
 
     const finalResumes = [];

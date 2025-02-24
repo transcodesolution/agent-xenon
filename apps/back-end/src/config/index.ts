@@ -19,7 +19,6 @@ export const config = {
   FRONTEND_URL: process.env.FRONTEND_URL,
   BACKEND_URL: process.env.BACKEND_URL,
   ENV: process.env.ENV,
-  S3_BUCKET_KEY: process.env.S3_BUCKET_KEY,
   CORS: process.env.CORS,
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
