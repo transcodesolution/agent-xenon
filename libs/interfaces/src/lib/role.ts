@@ -1,8 +1,9 @@
-import { RoleTypes } from "@agent-xenon/constants";
+import { Permission } from "@agent-xenon/constants";
 import { ITimestamp } from "./timestamp";
 
 export interface IRole extends ITimestamp {
     _id: string;
-    name: RoleTypes;
+    name: string;
+    permissions: Permission[];
     isAdministratorRole: boolean;
 }

@@ -1,11 +1,18 @@
 export interface ISignInRequest {
+  name: string;
   email: string;
   password: string;
 }
 
 export interface ISignInResponse {
-  message: string;
+  status: number,
+  message: string,
   data: {
-    name: string
+    userType: string,
+    firstName: string,
+    lastName: string,
+    _id: string,
+    email: string,
+    token: string
   }
 }

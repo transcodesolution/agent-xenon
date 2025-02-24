@@ -1,37 +1,47 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-
+import { signIn } from '@/libs/web-apis/src';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    const body = await request.json();
+    const { name, email, password } = body;
 
-    //need to add one more layer of validation here
-    if (!body.email || !body.password) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'email and password are required' },
+        { error: 'Email and password are required' },
         { status: 400 }
-      )
+      );
     }
 
-    //logic will be as follow
-    // 1. call the rest api for login
-    // 2. get the token from the response
-    // 3. set the token in cookie
-    
-    const cookieStore = await cookies();
-    cookieStore.set('agentXenonToken', 'new-token-is-set');
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Organization Name is required' },
+        { status: 400 }
+      );
+    }
 
-    return NextResponse.json({
-      message: 'You Are Logged In Successfully',
-      data: { name: 'shubham' }
-    }, { status: 201 })
+    const result = await signIn({ name, email, password });
 
+    if (result.status === 200) {
+      const cookieStore = await cookies();
+      cookieStore.set('agentXenonToken', result.data.token, { path: '/' });
+
+      const redirectUrl = new URL('/', request.url);
+      console.log(redirectUrl, 'redirectUrl')
+      return NextResponse.redirect(redirectUrl);
+
+    } else {
+      return NextResponse.json(
+        { error: 'Error while signing in' },
+        { status: result.status }
+      );
+    }
   } catch (error) {
-    console.log(error, 'Error While Signin')
+    console.error('Error during sign-in:', error);
     return NextResponse.json(
-      { error: 'Invalid JSON' },
-      { status: 400 }
-    )
+      { error: 'An unexpected error occurred' },
+      { status: 500 }
+    );
   }
 }
