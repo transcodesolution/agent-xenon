@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import { FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
+import mongoose, { FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRounds, IInterviewRounds, IJob } from "@agent-xenon/interfaces";
 import { InterviewRoundStatus, InterviewRoundTypes, JobStatus, TechnicalRoundTypes } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundQuestionSchema, googleRedirectSchema, manageInterviewRoundSchema, submitExamSchema, updateInterviewRoundSchema } from "../../validation/interview-round";
+import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundQuestionSchema, getInterviewRoundsByIdSchema, googleRedirectSchema, manageInterviewRoundSchema, submitExamSchema, updateInterviewRoundSchema } from "../../validation/interview-round";
 import InterviewRounds from "../../database/models/interview-round";
 import Job from "../../database/models/job";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
@@ -132,6 +132,57 @@ export const getInterviewRoundQuestions = async (req: Request, res: Response) =>
         ])
 
         return res.ok("interview questions", { interviewRoundData, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getInterviewRoundsById = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = getInterviewRoundsByIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IInterviewRounds> = { deletedAt: null, _id: value.roundId }
+
+        const interviewRoundData = await InterviewRounds.findOne(match, "type subType durationInSeconds status qualificationCriteria mcqCriteria name");
+
+        const matchApplicantRoundQuery: FilterQuery<IApplicantRounds> = { deletedAt: null, roundIds: { $elemMatch: { $eq: value.roundId } } };
+
+        const applicants = await ApplicantRounds.find<IApplicantRounds<IApplicant>>(matchApplicantRoundQuery, {
+            "isSelected": {
+                $cond: {
+                    if: { $ne: [{ $arrayElemAt: ["$roundIds", -1] }, new mongoose.Types.ObjectId(value.roundId)] },
+                    then: true,
+                    else: "$isSelected"
+                }
+            },
+            "status": 1,
+        }).populate("applicantId");
+
+        interviewRoundData._doc.applicants = applicants;
+
+        return res.ok("interview round", interviewRoundData ?? {}, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getInterviewRoundByJobId = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = getInterviewRoundByJobIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IInterviewRounds> = { deletedAt: null, jobId: value.jobId }
+
+        const interviewRounds = await InterviewRounds.find(match, "type subType durationInSeconds status qualificationCriteria mcqCriteria name").sort({ _id: 1 });
+
+        return res.ok("interview round", interviewRounds, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
