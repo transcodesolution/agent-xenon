@@ -6,3 +6,6 @@ export * from './useDeleteJobs';
 export * from './useJobRoleAndDesignation';
 export * from './useCreateInterviewRound';
 export * from './useDeleteInterviewRounds';
+export * from './useGetResumeUrls';
+export * from './useGetInterviewRoundsById';
+export * from './useUpdateInterviewRound'

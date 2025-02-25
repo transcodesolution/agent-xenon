@@ -4,7 +4,7 @@ import { Button, Flex, LoadingOverlay, Modal, Paper, Select, Stack, Textarea, Te
 import { useDisclosure } from '@mantine/hooks';
 import { useParams } from 'next/navigation';
 import { InterviewRound } from './InterviewRound';
-import { useUpdateJob, useJobRoleAndDesignation, useCreateInterviewRound, useDeleteInterviewRounds, useGetJobById } from '@agent-xenon/react-query-hooks';
+import { useUpdateJob, useJobRoleAndDesignation, useCreateInterviewRound, useDeleteInterviewRounds, useGetJobById, useUpdateInterviewRound } from '@agent-xenon/react-query-hooks';
 import { IInterviewRounds } from '@agent-xenon/interfaces';
 import { JobInterviewRoundList } from './JobInterviewRoundList';
 
@@ -23,7 +23,9 @@ export const JobForm = () => {
   const { mutate: updateJob } = useUpdateJob();
   const { data: jobRoleAndDesignation } = useJobRoleAndDesignation();
   const { mutate: createRound, } = useCreateInterviewRound();
+  const { mutate: updateRound, } = useUpdateInterviewRound();
   const { deleteInterviewRoundMutation } = useDeleteInterviewRounds();
+  const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
 
   const designationsOptions = jobRoleAndDesignation?.data?.designationData.map((designation) => ({
     value: designation._id,
@@ -52,12 +54,21 @@ export const JobForm = () => {
   };
 
   const handleAddRound = (params: Partial<IInterviewRounds>) => {
-    createRound(params, {
-      onSuccess: () => {
-        close();
-        refetch()
-      },
-    });
+    if (selectedRoundId) {
+      updateRound(params, {
+        onSuccess: () => {
+          close();
+          refetch()
+        },
+      });
+    } else {
+      createRound(params, {
+        onSuccess: () => {
+          close();
+          refetch()
+        },
+      });
+    }
   };
 
   useEffect(() => {
@@ -82,6 +93,11 @@ export const JobForm = () => {
     );
   };
 
+  const handleEditRound = (roundId: string) => {
+    setSelectedRoundId(roundId);
+    open();
+  };
+
   return (
     <Stack pos='relative'>
       <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
@@ -98,11 +114,12 @@ export const JobForm = () => {
         <JobInterviewRoundList
           rounds={jobData?.data?.rounds}
           onDeleteRound={onDelete}
+          onEditRound={handleEditRound}
         />
       </Paper>
 
-      <Modal opened={opened} onClose={close} title="Add Interview Round" size='lg' centered>
-        <InterviewRound onAddRound={handleAddRound} />
+      <Modal opened={opened} onClose={close} title={selectedRoundId ? "Update Interview Round" : "Add Interview Round"} size='lg' centered>
+        <InterviewRound onAddRound={handleAddRound} roundId={selectedRoundId ?? ''} />
       </Modal>
     </Stack>
   );
