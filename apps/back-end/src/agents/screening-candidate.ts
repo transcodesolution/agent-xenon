@@ -182,7 +182,7 @@ async function filterCandidateAgent(criteria: string, jobId: string, roundId: st
 
         if (responseMessage?.tool_calls) {
             for (const toolCall of responseMessage.tool_calls) {
-                if (toolCall.function.name === "getApplicantDetails") {
+                if (toolCall.function.name === "getSelectedApplicantDetails") {
                     const { jobId } = JSON.parse(toolCall.function.arguments);
 
                     const applicantDetails = await getSelectedApplicantDetails(jobId);

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
+import { Document, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRounds, IInterviewRounds, IJob } from "@agent-xenon/interfaces";
 import { InterviewRoundStatus, InterviewRoundTypes, JobStatus, TechnicalRoundTypes } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
@@ -150,6 +150,7 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
 
         const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds<IJob>>(Query).populate("jobId", "status");
 
+
         if (interviewRoundData.jobId._id.toString() !== value.jobId) return res.badRequest("job is invalid for this round", {}, "customMessage");
 
         if (interviewRoundData.status === InterviewRoundStatus.ONGOING) return res.badRequest("round already in progress", {}, "customMessage");
@@ -158,7 +159,8 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
 
         // const currentDate = new Date();
 
-        await InterviewRounds.updateOne(Query, { $set: { status: InterviewRoundStatus.ONGOING } });
+        interviewRoundData.status = InterviewRoundStatus.ONGOING;
+        await interviewRoundData.save();
 
         switch (interviewRoundData.type) {
             case InterviewRoundTypes.SCREENING:

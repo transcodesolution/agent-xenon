@@ -3,7 +3,7 @@ import OpenAI from "openai";
 import { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources";
 import { IResumeExtractResponse } from "../types/agent";
 import Applicant from "../database/models/applicant";
-import { IApplicant } from "@agent-xenon/interfaces";
+import { Job } from "bullmq";
 
 const client = new OpenAI();
 
@@ -96,7 +96,17 @@ async function checkApplicantEmailInJob(jobId: string, email: string) {
     return !!checkApplicantEmailExist;
 }
 
-async function uploadResumesAgent(resumeUrls: string[], organizationId: string, jobId: string, roleId: string): Promise<IApplicant[]> {
+async function resumeExtractAgentJobHandler(job: Job) {
+    try {
+        const value = job.data;
+        const data = await saveResumesExtractInfoAgent(value.resumeUrls, value.organizationId, value.jobId, value.roleId);
+        await Applicant.insertMany(data);
+    } catch (error) {
+        console.error("resumeExtractAgentJobHandler => ", error)
+    }
+}
+
+async function saveResumesExtractInfoAgent(resumeUrls: string[], organizationId: string, jobId: string, roleId: string) {
     const pdfTexts = await Promise.all(resumeUrls.map((i) => (getResumeParsedText(i))));
 
     const finalResumes = [];
@@ -184,4 +194,4 @@ async function uploadResumesAgent(resumeUrls: string[], organizationId: string, 
     return finalResumes.filter(Boolean);
 }
 
-export default uploadResumesAgent;
+export default resumeExtractAgentJobHandler;
