@@ -201,6 +201,7 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
 
         const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds<IJob>>(Query).populate("jobId", "status");
 
+
         if (interviewRoundData.jobId._id.toString() !== value.jobId) return res.badRequest("job is invalid for this round", {}, "customMessage");
 
         if (interviewRoundData.status === InterviewRoundStatus.ONGOING) return res.badRequest("round already in progress", {}, "customMessage");
@@ -209,7 +210,8 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
 
         // const currentDate = new Date();
 
-        await InterviewRounds.updateOne(Query, { $set: { status: InterviewRoundStatus.ONGOING } });
+        interviewRoundData.status = InterviewRoundStatus.ONGOING;
+        await interviewRoundData.save();
 
         switch (interviewRoundData.type) {
             case InterviewRoundTypes.SCREENING:

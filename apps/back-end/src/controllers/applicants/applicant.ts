@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, QuerySelector } from "mongoose";
 import { IApplicant } from "@agent-xenon/interfaces";
-import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
+import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
 import Applicant from "../../database/models/applicant";
 import ApplicantRounds from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
-import uploadResumesAgent from "../../agents/resume-extract-info";
 import { InterviewRoundStatus, JobStatus, RoleTypes } from "@agent-xenon/constants";
 import { roleModel } from "../../database";
+import { resumeExtractAgent } from "../../helper/queue";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -45,14 +45,16 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
         const roleData = await roleModel.findOne({ name: RoleTypes.CANDIDATE, deletedAt: null });
-        const data = await uploadResumesAgent(checkJobExist.resumeUrls, user.organizationId, value.jobId, roleData._id.toString());
+        value.resumeUrls = checkJobExist.resumeUrls;
+        value.organizationId = user.organizationId;
+        value.roleId = roleData._id.toString();
 
-        await Applicant.insertMany(data);
+        await resumeExtractAgent.add("resumeExtractAgent", value);
 
         checkJobExist.resumeUrls = [];
         await checkJobExist.save();
 
-        return res.ok("applicant", data, "addDataSuccess")
+        return res.ok("applicant resume extract process is in progress!", {}, "customMessage")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -86,22 +88,26 @@ export const updateApplicant = async (req: Request, res: Response) => {
 export const deleteApplicant = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
-        const { error, value } = deleteApplicantSchema.validate(req.params);
+        const { error, value } = deleteApplicantSchema.validate(req.body);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkApplicantExist = await Applicant.findOne({ _id: value.applicantId, deletedAt: null });
+        const condition: QuerySelector<IApplicant> = { $in: value.applicantIds };
 
-        if (!checkApplicantExist) return res.badRequest("applicant", {}, "getDataNotFound");
+        const match: FilterQuery<IApplicant> = { _id: condition, deletedAt: null };
+
+        const checkApplicantsExist = await Applicant.find(match);
+
+        if (checkApplicantsExist.length !== value.applicantIds.length) return res.badRequest("applicant", {}, "getDataNotFound");
 
         value.organizationId = user.organizationId;
-        const data = await Applicant.findByIdAndUpdate(value.applicantId, { $set: { deletedAt: new Date() } }, { new: true });
+        const deletedApplicants = await Applicant.findOneAndUpdate(match, { $set: { deletedAt: new Date() } }, { new: true });
 
-        await ApplicantRounds.updateMany({ applicantId: value.applicantId, jobId: checkApplicantExist.jobId }, { $set: { deletedAt: new Date() } });
+        await ApplicantRounds.updateMany({ applicantId: condition, jobId: checkApplicantsExist[0].jobId }, { $set: { deletedAt: new Date() } });
 
-        return res.ok("applicant", data, "deleteDataSuccess")
+        return res.ok("applicants", deletedApplicants, "deleteDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -144,6 +150,25 @@ export const getApplicants = async (req: Request, res: Response) => {
         ])
 
         return res.ok("applicant", { applicantData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getApplicantById = async (req: Request, res: Response) => {
+    const { user } = req.headers;
+    try {
+        const { error, value } = getApplicantByIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IApplicant> = { deletedAt: null, organizationId: user.organizationId, _id: value.applicantId };
+
+        const applicantData = await Applicant.findOne<IApplicant>(match);
+
+        return res.ok("applicant", applicantData ?? {}, "getDataSuccess");
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

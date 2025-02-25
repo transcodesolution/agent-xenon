@@ -2,7 +2,7 @@ import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundTypes } from "
 import { ITimestamp } from "./timestamp";
 import { IApplicant } from "./applicant";
 
-export interface IInterviewRounds<T = string> extends ITimestamp {
+export interface IInterviewRounds<T = string> extends Partial<Document>, ITimestamp {
     _id: string;
     type: InterviewRoundTypes;
     subType: TechnicalRoundTypes;
