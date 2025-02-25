@@ -1,6 +1,6 @@
 import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants";
 import { ITimestamp } from "./timestamp";
-import { Document } from "mongoose";
+import { IApplicant } from "./applicant";
 
 export interface IInterviewRounds<T = string> extends Partial<Document>, ITimestamp {
     _id: string;
@@ -18,4 +18,10 @@ export interface IInterviewRounds<T = string> extends Partial<Document>, ITimest
     _doc: IInterviewRounds<T>;
     previousRound?: Partial<IInterviewRounds<T>>;
     questions?: T[]
+    applicants?: {
+        _id: string;
+        status: InterviewRoundStatus;
+        isSelected: boolean;
+        applicantId: IApplicant
+    }[]
 }

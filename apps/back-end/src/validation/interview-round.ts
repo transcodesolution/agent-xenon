@@ -39,6 +39,14 @@ export const getInterviewRoundQuestionSchema = Joi.object().keys({
     ...paginationSchema,
 })
 
+export const getInterviewRoundsByIdSchema = Joi.object().keys({
+    roundId: Joi.string().required(),
+})
+
+export const getInterviewRoundByJobIdSchema = Joi.object().keys({
+    jobId: Joi.string().required(),
+})
+
 export const manageInterviewRoundSchema = Joi.object().keys({
     roundId: Joi.string().required(),
     jobId: Joi.string().required(),
