@@ -10,7 +10,7 @@ import { RootFilterQuery } from "mongoose";
 import Organization from "../database/models/organization";
 import { oauth2Client } from "../helper/third-party-oauth";
 import { Response } from "express";
-import { google } from "googleapis";
+import { calendar_v3, google } from "googleapis";
 import { generatePossibleTimeSlots, getDaysInCurrentMonth } from "./manage-dates";
 import Job from "../database/models/job";
 import ApplicantRounds from "../database/models/applicant-round";
@@ -31,14 +31,15 @@ export const manageScreeningRound = async (roundData: IInterviewRounds<IJob>) =>
 
 export const manageTechnicalRound = async (roundData: IInterviewRounds<IJob>) => {
     const applicants = await getSelectedApplicantDetails(roundData.jobId._id);
+    const domainUrl = config.FRONTEND_URL.replace(/\/\/([^.]*)/, `//${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
     await Promise.all(applicants.map((i) => {
-        const token = createEncodedShortToken(roundData._id.toString(), i._id.toString(), i.organizationId.name)
+        const token = createEncodedShortToken(roundData._id.toString(), roundData.jobId._id.toString(), i.organizationId.name);
         return sendMail(i.contactInfo.email, `Technical Round Exam Link`, `
             Dear candidate,
 
             We have receive your inquiry in our organization as your are looking to collaborate in our team.
 
-            ${roundData?.previousRound?.type ? `You are selected in ${roundData.previousRound.type} round. And now ready for ${roundData.type} round.` : `Get ready for your first ${roundData.type} round.`}
+            Get ready for your first ${roundData.type} round.
 
             We are sending you a link to give examnication from your home.
 
@@ -48,7 +49,7 @@ export const manageTechnicalRound = async (roundData: IInterviewRounds<IJob>) =>
 
             Please login with above credentials and start examination.
 
-            Here is your examincation link: ${config.FRONTEND_URL.replace(/\/\/([^.]*)/, `//${i.organizationId.name.replace(/\s+/g, "")}`)}?token=${token}
+            Here is your examincation link: ${domainUrl}?token=${token}
 
             Best wishes and good luck.
             Thank you.
@@ -82,9 +83,8 @@ export const manageMeetingRound = async (roundData: IInterviewRounds<IJob>, orga
         oauth2Client.setCredentials({ access_token: accessToken, expiry_date: expiry.getTime(), scope });
     }
 
-    const eventDetails = await manageMeetingScheduleWithCandidate(jobId, checkTokenExist.serviceProviders.google.email, roundId);
-
-    return res.ok("interview round started successfully", { eventDetails }, "customMessage");
+    res.ok("meeting round is started successfully", {}, "customMessage");
+    await manageMeetingScheduleWithCandidate(jobId, checkTokenExist.serviceProviders.google.email, roundId);
 }
 
 export const getCalenderEvents = async (startDateTime: string, endDateTime: string) => {
@@ -105,7 +105,7 @@ export const getCalenderEvents = async (startDateTime: string, endDateTime: stri
 export const createEventInCalender = async (title: string, interviewerEmail: string, candidateEmail: string, startDateTime: string, endDateTime: string) => {
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
-    const event = {
+    const event: calendar_v3.Schema$Event = {
         description: `Interview Schedule For ${title}`,
         start: { dateTime: startDateTime, timeZone: 'Asia/Kolkata' },
         end: {
@@ -122,7 +122,6 @@ export const createEventInCalender = async (title: string, interviewerEmail: str
                 { method: "popup", minutes: 10 },
             ],
         },
-        sendUpdates: "all",
         conferenceData: {
             createRequest: {
                 requestId: "ABC_" + Date.now(),
@@ -136,42 +135,48 @@ export const createEventInCalender = async (title: string, interviewerEmail: str
     const eventData = await calendar.events.insert({
         calendarId: "primary",
         requestBody: event,
-        conferenceDataVersion: 1
+        conferenceDataVersion: 1,
+        sendUpdates: "all",
     });
 
     return eventData;
 }
 
 export const manageMeetingScheduleWithCandidate = async (jobId: string, interviewerEmail: string, roundId: string) => {
-    const daysInCurrentMonth = getDaysInCurrentMonth();
+    try {
+        const daysInCurrentMonth = getDaysInCurrentMonth();
 
-    let startDateTime = new Date();
-    const endDateTime = new Date(new Date().setHours(23 * daysInCurrentMonth, 59 * daysInCurrentMonth, 59 * daysInCurrentMonth, 999 * daysInCurrentMonth)).toISOString();
+        let startDateTime = new Date();
+        const endDateTime = new Date(new Date().setHours(23 * daysInCurrentMonth, 59 * daysInCurrentMonth, 59 * daysInCurrentMonth, 999 * daysInCurrentMonth)).toISOString();
 
-    const { data } = await getCalenderEvents(startDateTime.toISOString(), endDateTime);
-    const { items } = data;
+        const { data } = await getCalenderEvents(startDateTime.toISOString(), endDateTime);
+        const { items } = data;
 
-    const applicants = await getSelectedApplicantDetails(jobId);
+        const applicants = await getSelectedApplicantDetails(jobId);
 
-    const scheduledMeetings = [];
-    for (const applicant of applicants) {
-        const applicantId = applicant._id.toString();
-        startDateTime = generatePossibleTimeSlots(startDateTime.toISOString(), endDateTime, items);
-        if (startDateTime) {
-            const jobData = await Job.findOne<Pick<IJob, "title">>({ _id: jobId, deletedAt: null }, "title");
-            const start = startDateTime.toISOString();
-            startDateTime.setMinutes(startDateTime.getMinutes() + 60);
-            const end = startDateTime.toISOString();
-            const eventData = await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
-            scheduledMeetings.push(eventData.data);
-            await ApplicantRounds.updateOne({ roundIds: { $elemMatch: { $eq: roundId } }, jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.COMPLETED, }, $push: { roundIds: roundId } }, { upsert: true })
-        } else {
-            console.error(`No available slots for ${applicant.contactInfo.email}`);
-            break;
+        // const scheduledMeetings = [];
+        for (const applicant of applicants) {
+            const applicantId = applicant._id.toString();
+            startDateTime = generatePossibleTimeSlots(startDateTime.toISOString(), endDateTime, items);
+            if (startDateTime) {
+                const jobData = await Job.findOne<Pick<IJob, "title">>({ _id: jobId, deletedAt: null }, "title");
+                const start = startDateTime.toISOString();
+                startDateTime.setMinutes(startDateTime.getMinutes() + 60);
+                const end = startDateTime.toISOString();
+                const eventData = await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
+                // scheduledMeetings.push(eventData.data);
+                await ApplicantRounds.updateOne({ roundIds: { $elemMatch: { $eq: roundId } }, jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundId } }, { upsert: true })
+            } else {
+                console.error(`No available slots for ${applicant.contactInfo.email}`);
+                break;
+            }
         }
+
+        // await InterviewRounds.updateOne({ _id: roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
+
+        // return scheduledMeetings;
+    } catch (error) {
+        console.error("manageMeetingScheduleWithCandidate: ", error);
+        console.error("dateTime: ", new Date());
     }
-
-    await InterviewRounds.updateOne({ _id: roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
-
-    return scheduledMeetings;
 }
