@@ -1,6 +1,5 @@
 import Joi from "joi";
-import { InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants";
-import { paginationSchema } from "./pagination";
+import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants";
 
 const roundTypeSchema = Joi.string().valid(...Object.values(InterviewRoundTypes))
 const roundSubTypeSchema = Joi.string().valid(...Object.values(TechnicalRoundTypes))
@@ -32,11 +31,12 @@ export const deleteInterviewRoundSchema = Joi.object().keys({
     roundIds: Joi.array().items(Joi.string().required()),
 })
 
-export const getInterviewRoundQuestionSchema = Joi.object().keys({
-    search: Joi.string().allow("").optional(),
-    roundId: Joi.string().required(),
+export const updateRoundStatusSchema = Joi.object().keys({
+    status: Joi.string().valid(...Object.values(InterviewRoundStatus)).optional(),
+    isSelected: Joi.boolean().optional(),
     jobId: Joi.string().required(),
-    ...paginationSchema,
+    roundId: Joi.string().required(),
+    applicantId: Joi.string(),
 })
 
 export const getInterviewRoundsByIdSchema = Joi.object().keys({

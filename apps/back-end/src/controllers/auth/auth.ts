@@ -12,7 +12,6 @@ export const login = async (req: Request, res: Response) => { //email or passwor
     // reqInfo(req)
     // let rootTabs: any;
     try {
-
         const { error, value } = loginSchema.validate(req.body)
 
         if (error) {
@@ -22,6 +21,7 @@ export const login = async (req: Request, res: Response) => { //email or passwor
         if (value.candidateToken) {
             const decodedString = decodeEncodedToken(value.candidateToken);
             value.name = decodedString.orgName;
+            value.jobId = decodedString.jobId;
         }
 
         const checkOrganizationExist = await Organization.findOne({ name: value.name, deletedAt: null })
@@ -30,7 +30,7 @@ export const login = async (req: Request, res: Response) => { //email or passwor
 
         let response: IUser<IRole>;
         if (value.candidateToken) {
-            const applicantData = await Applicant.findOne<Pick<IApplicant<string, IRole>, "firstName" | "lastName" | "contactInfo" | "roleId">>({ "contactInfo.email": value.email }, "firstName lastName contactInfo roleId").populate<{ roleId: IRole }>("roleId").lean()
+            const applicantData = await Applicant.findOne<Pick<IApplicant<string, IRole>, "firstName" | "lastName" | "contactInfo" | "roleId">>({ "contactInfo.email": value.email, jobId: value.jobId }, "firstName lastName contactInfo roleId").populate<{ roleId: IRole }>("roleId").lean()
             response = {
                 ...applicantData,
                 email: applicantData?.contactInfo.email,
