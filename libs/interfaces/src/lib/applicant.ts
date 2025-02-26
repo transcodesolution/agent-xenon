@@ -23,8 +23,9 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     jobId: string;
     organizationId: T;
     experienceDetails: {
-        duration: string;
-        responsibilities: string[];
+        durationStart: Date;
+        durationEnd: Date;
+        responsibilities: string;
         role: string;
         organization: string;
     }[];
@@ -36,7 +37,8 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     }[];
     projects: {
         description: string;
-        duration: string;
+        durationStart: Date;
+        durationEnd: Date;
         technologiesUsed: string[];
         title: string;
     }[];

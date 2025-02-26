@@ -22,8 +22,9 @@ const ApplicantSchema: Schema = new Schema({
     jobId: { type: Schema.Types.ObjectId, index: true, },
     organizationId: { type: Schema.Types.ObjectId, ref: "Organization", index: true },
     experienceDetails: [{
-        duration: { type: String },
-        responsibilities: [{ type: String }],
+        durationStart: { type: Date },
+        durationEnd: { type: Date },
+        responsibilities: { type: String },
         role: { type: String },
         organization: { type: String },
     }],
@@ -35,7 +36,8 @@ const ApplicantSchema: Schema = new Schema({
     }],
     projects: [{
         description: { type: String },
-        duration: { type: String },
+        durationStart: { type: Date },
+        durationEnd: { type: Date },
         technologiesUsed: [{ type: String }],
         title: { type: String },
     }],

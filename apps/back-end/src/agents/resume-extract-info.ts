@@ -27,8 +27,9 @@ export interface IApplicant extends Document {
     salaryExpectation: number;
     feedback: string;
     experienceDetails: {
-        duration: string;
-        responsibilities: string[];
+        durationStart: Date;
+        durationEnd: Date;
+        responsibilities: string;
         role: string;
         organization: string;
     }[];
@@ -40,7 +41,8 @@ export interface IApplicant extends Document {
     }[];
     projects: {
         description: string;
-        duration: string;
+        durationStart: Date;
+        durationEnd: Date;
         technologiesUsed: string[];
         title: string;
     }[];
