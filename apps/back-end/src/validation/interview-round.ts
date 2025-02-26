@@ -22,8 +22,7 @@ export const updateInterviewRoundSchema = Joi.object().keys({
     durationInSeconds: Joi.number().optional(),
     qualificationCriteria: Joi.string().allow("").optional(),
     mcqCriteria: Joi.number().optional(),
-    newQuestionIds: Joi.array().items(Joi.string()).optional(),
-    removeQuestionIds: Joi.array().items(Joi.string()).optional(),
+    questions: Joi.array().items(Joi.string()).optional(),
     roundId: Joi.string().required(),
 })
 

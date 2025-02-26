@@ -65,16 +65,29 @@ export const updateInterviewRound = async (req: Request, res: Response) => {
 
         const interviewRoundData = await InterviewRounds.findByIdAndUpdate(value.roundId, { $set: value }, { new: true });
 
-        if (value.newQuestionIds.length > 0) {
-            await RoundQuestionAssign.insertMany(value.newQuestionIds.map((i: string) => ({
-                questionId: i,
-                jobId: checkRoundExist.jobId._id,
-                roundId: interviewRoundData._id
-            })))
+        let questions = await RoundQuestionAssign.distinct("questionId", { roundId: value.roundId, jobId: checkRoundExist.jobId._id });
+        questions = questions.map(i => i.toString());
+
+        value.removeQuestionIds = questions.filter((i: string) => !value.questions.includes(i));
+
+        const jobRoundFilter: FilterQuery<IRoundQuestionAssign> = {
+            jobId: checkRoundExist.jobId._id,
+            roundId: interviewRoundData._id
+        };
+
+        if (value.questions?.length || 0 > 0) {
+            await RoundQuestionAssign.insertMany(value.questions.map((i: string) => {
+                if (!questions.includes(i)) {
+                    return {
+                        questionId: i,
+                        ...jobRoundFilter,
+                    }
+                }
+            }).filter(Boolean) ?? [])
         }
 
         if (value.removeQuestionIds.length > 0) {
-            await RoundQuestionAssign.deleteMany({ _id: { $in: value.removeQuestionIds } })
+            await RoundQuestionAssign.deleteMany({ questionId: { $in: value.removeQuestionIds }, ...jobRoundFilter })
         }
 
         return res.ok("interview round", interviewRoundData, "updateDataSuccess")
