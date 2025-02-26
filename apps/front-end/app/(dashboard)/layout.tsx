@@ -1,5 +1,7 @@
 import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
+import '@mantine/dates/styles.css';
+import '@mantine/dropzone/styles.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryClientProvider';
@@ -21,7 +23,6 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const permissions = await getPermissions();
   const bearerToken = cookieStore.get('agentXenonToken')?.value || '';
-  
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>

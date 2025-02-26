@@ -1,5 +1,28 @@
 import { ITimestamp } from "./timestamp";
 
+export interface IProject {
+    title: string;
+    durationStart: Date;
+    durationEnd: Date;
+    technologiesUsed: string[];
+    description: string;
+}
+
+export interface IEducation {
+    degree: string;
+    institution: string;
+    yearOfGraduation: string;
+    description: string;
+}
+
+export interface IExperienceDetail {
+    durationStart: Date;
+    durationEnd: Date;
+    responsibilities: string;
+    role: string;
+    organization: string;
+}
+
 export interface IApplicant<T = string, U = string> extends ITimestamp {
     _id: string;
     lastName: string;
@@ -22,26 +45,9 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     roleId: U;
     jobId: string;
     organizationId: T;
-    experienceDetails: {
-        durationStart: Date;
-        durationEnd: Date;
-        responsibilities: string;
-        role: string;
-        organization: string;
-    }[];
-    education: {
-        degree: string;
-        institution: string;
-        yearOfGraduation: string;
-        description: string;
-    }[];
-    projects: {
-        description: string;
-        durationStart: Date;
-        durationEnd: Date;
-        technologiesUsed: string[];
-        title: string;
-    }[];
+    experienceDetails: IExperienceDetail[];
+    education: IEducation[];
+    projects: IProject[];
     resumeLink: string;
     isSelectedByAgent: boolean;
 }

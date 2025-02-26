@@ -74,3 +74,48 @@ export const deleteInterviewRounds = async (roundIds: string[]): Promise<IApiRes
     throw new Error(`Error while deleting interview rounds: ${error}`);
   }
 };
+
+export const getResumeUrls = async (jobId: string): Promise<IApiResponse<Pick<IJob, 'resumeUrls'>>> => {
+  try {
+    const result = await http.get<IApiResponse<Pick<IJob, 'resumeUrls'>>>(`/job/resume-url/${jobId}`);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while fetching resume URLs: ${error}`);
+  }
+};
+
+export const addResumeUrl = async (params: { resumeUrls: string[], jobId: string }): Promise<IApiResponse<Pick<IJob, 'resumeUrls'>>> => {
+  try {
+    const result = await http.post<IApiResponse<Pick<IJob, 'resumeUrls'>>>('/job/resume-url/add', params);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while adding resume URLs: ${error}`);
+  }
+};
+export const deleteResumeUrl = async (params: { resumeUrls: string, jobId: string }): Promise<IApiResponse<IJob>> => {
+  try {
+    const result = await http.delete<IApiResponse<IJob>>(`/job/resume-url/${params.jobId}?resumeUrl=${params.resumeUrls}`,);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while deleting resume URL: ${error}`);
+  }
+};
+
+export const getInterviewRoundsById = async (roundId: string): Promise<IApiResponse<IInterviewRounds>> => {
+  try {
+    const result = await http.get<IApiResponse<IInterviewRounds>>(`/interview-round/${roundId}`);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while fetching round by ID: ${error}`);
+  }
+};
+
+export const updateInterviewRound = async (params: Partial<IInterviewRounds>): Promise<IApiResponse<IInterviewRounds>> => {
+  try {
+    const { _id, ...otherParams } = params;
+    const result = await http.patch<IApiResponse<IInterviewRounds>>(`/interview-round/${_id}`, otherParams);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while updating interviewRound: ${error}`);
+  }
+};

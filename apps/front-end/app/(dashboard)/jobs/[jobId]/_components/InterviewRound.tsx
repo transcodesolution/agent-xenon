@@ -1,23 +1,30 @@
 import { IInterviewRounds } from '@agent-xenon/interfaces';
 import { ActionIcon, Button, Combobox, Flex, Select, Stack, Text, Textarea, TextInput, useCombobox } from '@mantine/core';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { TechnicalRoundTypes, InterviewRoundTypes } from '@agent-xenon/constants';
-import { useGetMCQQuestions } from '@agent-xenon/react-query-hooks';
+import { useGetInterviewRoundsById, useGetMCQQuestions } from '@agent-xenon/react-query-hooks';
 import { useParams } from 'next/navigation';
-import React from 'react';
 import { IconTrash } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
 
 interface IInterviewRoundProps {
   onAddRound: (interviewRound: Partial<IInterviewRounds>) => void;
+  roundId: string;
 }
 
-export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
+export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) => {
   const { jobId } = useParams<{ jobId: string }>();
 
   const [searchQuestion, setSearchQuestion] = useState('');
   const [debouncedSearch] = useDebouncedValue(searchQuestion, 600);
-  const { data: mcqQuestionsData } = useGetMCQQuestions({ searchString: debouncedSearch, enabled: debouncedSearch.length > 0 });
+
+  const { data: mcqQuestionsData } = useGetMCQQuestions({
+    searchString: debouncedSearch,
+    enabled: debouncedSearch.length > 0,
+  });
+
+  const { data: roundData } = useGetInterviewRoundsById({ roundId });
+
   const [formState, setFormState] = useState<{
     name: string;
     roundType?: InterviewRoundTypes;
@@ -34,27 +41,55 @@ export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
     selectedQuestions: [],
   });
 
-  const handleChange = (updatesFormFields: Partial<typeof formState> | keyof typeof formState, value?: any) => {
-    if (typeof updatesFormFields === 'string') {
-      setFormState((prev) => ({ ...prev, [updatesFormFields]: value }));
-    } else {
-      setFormState((prev) => ({ ...prev, ...updatesFormFields }));
+  useEffect(() => {
+    if (roundData && roundData.data) {
+      const round = roundData.data;
+      setFormState({
+        name: round.name || '',
+        roundType: round.type || undefined,
+        technicalSubType: round.subType || undefined,
+        qualificationCriteria: round.qualificationCriteria || '',
+        mcqCriteria: round.mcqCriteria ?? undefined,
+        selectedQuestions: Array.isArray(round.questions)
+          ? round.questions.map((q) =>
+            typeof q === 'string' ? { _id: q, question: '' } : q
+          )
+          : [],
+      });
     }
+  }, [roundData]);
+
+  const handleChange = (field: keyof typeof formState, value: any) => {
+    setFormState((prev) => ({ ...prev, [field]: value }));
   };
-  const handleAddRound = () => {
+
+  const handleSaveRound = () => {
     const interviewRound: Partial<IInterviewRounds> = {
+      name: formState.name,
       type: formState.roundType,
       qualificationCriteria: formState.qualificationCriteria || '',
-      jobId,
       ...(formState.roundType === InterviewRoundTypes.TECHNICAL && {
-        subType: formState.technicalSubType || undefined
+        subType: formState.technicalSubType || undefined,
       }),
-      questions: formState.selectedQuestions.length > 0
-        ? formState.selectedQuestions.map((q) => q._id)
-        : [],
+      questions: formState.selectedQuestions.map((q) => q._id),
       mcqCriteria: formState.mcqCriteria ?? undefined,
     };
+
+    if (!roundId) {
+      interviewRound.jobId = jobId;
+    } else {
+      interviewRound._id = roundId;
+    }
+
     onAddRound?.(interviewRound);
+    setFormState({
+      name: '',
+      roundType: undefined,
+      technicalSubType: undefined,
+      qualificationCriteria: '',
+      mcqCriteria: undefined,
+      selectedQuestions: [],
+    });
   };
 
   const combobox = useCombobox({
@@ -64,20 +99,16 @@ export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
   return (
     <Stack>
       <TextInput label="Name" value={formState.name} onChange={(e) => handleChange('name', e.target.value)} />
+
       <Flex gap="md">
         <Select
           w={286}
           label="Round Type"
           data={Object.values(InterviewRoundTypes).map((type) => ({ value: type, label: type }))}
           value={formState.roundType}
-          onChange={(value) => {
-            handleChange({
-              roundType: value as InterviewRoundTypes,
-              technicalSubType: value === InterviewRoundTypes.TECHNICAL ? TechnicalRoundTypes.MCQ : undefined,
-              mcqCriteria: value === InterviewRoundTypes.TECHNICAL ? formState.mcqCriteria : undefined,
-              selectedQuestions: value === InterviewRoundTypes.TECHNICAL ? formState.selectedQuestions : [],
-            })
-          }}
+          onChange={(value) =>
+            handleChange('roundType', value as InterviewRoundTypes)
+          }
         />
         {formState.roundType === InterviewRoundTypes.TECHNICAL && (
           <Select
@@ -91,18 +122,21 @@ export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
       </Flex>
 
       {formState.technicalSubType === TechnicalRoundTypes.MCQ && (
-        <React.Fragment>
-          <Combobox store={combobox} onOptionSubmit={(val) => {
-            const question = mcqQuestionsData?.data?.find((question) => question._id === val);
-            if (question) {
-              setFormState((prev) => ({
-                ...prev,
-                selectedQuestions: [...prev.selectedQuestions, question],
-              }));
-            }
-            combobox.closeDropdown();
-            setSearchQuestion('');
-          }}>
+        <>
+          <Combobox
+            store={combobox}
+            onOptionSubmit={(val) => {
+              const question = mcqQuestionsData?.data?.find((q) => q._id === val);
+              if (question) {
+                setFormState((prev) => ({
+                  ...prev,
+                  selectedQuestions: [...prev.selectedQuestions, question],
+                }));
+              }
+              combobox.closeDropdown();
+              setSearchQuestion('');
+            }}
+          >
             <Combobox.Target>
               <TextInput
                 label="Pick a question"
@@ -125,10 +159,7 @@ export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
                   <Combobox.Empty>Nothing found</Combobox.Empty>
                 ) : (
                   mcqQuestionsData?.data?.map((question) => (
-                    <Combobox.Option
-                      key={question._id}
-                      value={question._id}
-                    >
+                    <Combobox.Option key={question._id} value={question._id}>
                       {question.question}
                     </Combobox.Option>
                   ))
@@ -138,34 +169,33 @@ export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
           </Combobox>
 
           {formState.selectedQuestions.map((question) => (
-            <Flex key={question._id} justify='space-between'>
-              <Text >{question.question}</Text>
+            <Flex key={question._id} justify="space-between">
+              <Text>{question.question}</Text>
               <ActionIcon
                 variant="light"
                 aria-label="Delete"
-                onClick={() => {
+                onClick={() =>
                   setFormState((prev) => ({
                     ...prev,
                     selectedQuestions: prev.selectedQuestions.filter((q) => q._id !== question._id),
-                  }));
-                }}
-                color='red'
+                  }))
+                }
+                color="red"
               >
                 <IconTrash />
               </ActionIcon>
             </Flex>
           ))}
+
           <TextInput
             label="MCQ Criteria"
             placeholder="Enter MCQ Criteria"
             value={formState.mcqCriteria || ''}
             onChange={(event) => handleChange('mcqCriteria', Number(event.currentTarget.value))}
             type="number"
-
           />
-        </React.Fragment>
-      )
-      }
+        </>
+      )}
 
       <Textarea
         label="Qualification Criteria"
@@ -173,9 +203,9 @@ export const InterviewRound = ({ onAddRound }: IInterviewRoundProps) => {
         onChange={(e) => handleChange('qualificationCriteria', e.target.value)}
       />
 
-      <Button mx="auto" styles={{ root: { width: 'fit-content' } }} onClick={handleAddRound}>
-        Add Round
+      <Button mx="auto" styles={{ root: { width: 'fit-content' } }} onClick={handleSaveRound}>
+        {roundId ? 'Update Round' : 'Add Round'}
       </Button>
-    </Stack >
+    </Stack>
   );
 };
