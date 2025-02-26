@@ -16,8 +16,9 @@ const experienceDetailsSchema = Joi.array().items(
     Joi.object({
         role: Joi.string().allow(""),
         organization: Joi.string().allow(""),
-        duration: Joi.string().allow(""),
-        responsibilities: Joi.array().items(Joi.string().allow("")),
+        durationStart: Joi.date().iso().allow(""),
+        durationEnd: Joi.date().iso().allow(""),
+        responsibilities: Joi.string().allow(""),
     })
 );
 
@@ -26,7 +27,8 @@ const projectsSchema = Joi.array().items(
         title: Joi.string().allow(""),
         description: Joi.string().allow(""),
         technologiesUsed: Joi.array().items(Joi.string().allow("")),
-        duration: Joi.string().allow(""),
+        durationStart: Joi.date().iso().allow(""),
+        durationEnd: Joi.date().iso().allow(""),
     })
 );
 

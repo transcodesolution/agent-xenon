@@ -2,7 +2,8 @@ import { ITimestamp } from "./timestamp";
 
 export interface IProject {
     title: string;
-    duration: string;
+    durationStart: Date;
+    durationEnd: Date;
     technologiesUsed: string[];
     description: string;
 }
@@ -15,8 +16,9 @@ export interface IEducation {
 }
 
 export interface IExperienceDetail {
-    duration: string;
-    responsibilities: string[];
+    durationStart: Date;
+    durationEnd: Date;
+    responsibilities: string;
     role: string;
     organization: string;
 }
