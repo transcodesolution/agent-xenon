@@ -126,6 +126,5 @@ export const socketJWTAndRoomJoin = async (socket: Socket) => {
             }
         }
     }
-    console.log("round-status")
     return socket.emit("round-status", { status: "Error", message: "We can't find valid token in header!" });
 }
