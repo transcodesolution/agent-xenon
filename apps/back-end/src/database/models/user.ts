@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IUser } from "@agent-xenon/interfaces";
+import { IRole, IUser } from "@agent-xenon/interfaces";
 
 const userSchema = new mongoose.Schema({
     firstName: { type: String, required: true },
@@ -11,4 +11,4 @@ const userSchema = new mongoose.Schema({
     deletedAt: { type: Date, default: null, },
 }, { timestamps: true, versionKey: false })
 
-export const userModel = mongoose.model<IUser>('user', userSchema);
+export const userModel = mongoose.model<IUser<IRole>>('user', userSchema);

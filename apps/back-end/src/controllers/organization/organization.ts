@@ -13,6 +13,7 @@ import RoundQuestionAssign from "../../database/models/round-question-assign";
 import ApplicantRounds from "../../database/models/applicant-round";
 import JobRole from "../../database/models/job-role";
 import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
+import { Permission, RoleTypes } from "@agent-xenon/constants";
 
 export const onBoardOrganization = async (req: Request, res: Response) => {
     // reqInfo(req)
@@ -30,16 +31,28 @@ export const onBoardOrganization = async (req: Request, res: Response) => {
 
         if (checkOrganizationNameExist) return res.badRequest("organization", {}, "dataAlreadyExist");
 
+        const response = new Organization(value);
+        await response.save();
+
+        const superAdminPermission = Object.values(Permission).filter((i) => i !== Permission.EXAM_PAGE);
+        const candidatePermission = [Permission.EXAM_PAGE]
+
+        const commonRoleDetails = { deletedAt: null, organizationId: response._id };
+        const softwareRoles = [
+            { type: RoleTypes.ADMINISTRATOR, ...commonRoleDetails, permissions: superAdminPermission },
+            { type: RoleTypes.CANDIDATE, ...commonRoleDetails, permissions: candidatePermission },
+        ];
+
+        const roles = await roleModel.insertMany(softwareRoles);
+
         // if (isAlready?.isBlock == true) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}))
 
         const hashPassword = await generateHash(value.password);
         delete value.password
         value.password = hashPassword
-        const response = new Organization(value)
-        await response.save()
         value.organizationId = response._id;
-        value.roleId = (await roleModel.findOne({ isAdministratorRole: true, deletedAt: null }))._id;
-        await new userModel(value).save()
+        value.roleId = roles.find(i => i.type === RoleTypes.ADMINISTRATOR)?._id;
+        await new userModel(value).save();
 
         // let result: any = await email_verification_mail(response, otp);
         // if (result) {

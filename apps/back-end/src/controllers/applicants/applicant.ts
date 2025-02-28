@@ -44,7 +44,7 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
-        const roleData = await roleModel.findOne({ name: RoleTypes.CANDIDATE, deletedAt: null });
+        const roleData = await roleModel.findOne({ type: RoleTypes.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
         value.resumeUrls = checkJobExist.resumeUrls;
         value.organizationId = user.organizationId;
         value.roleId = roleData._id.toString();
