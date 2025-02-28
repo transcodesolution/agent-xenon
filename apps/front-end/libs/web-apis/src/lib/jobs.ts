@@ -119,3 +119,21 @@ export const updateInterviewRound = async (params: Partial<IInterviewRounds>): P
     throw new Error(`Error while updating interviewRound: ${error}`);
   }
 };
+
+export const getInterviewRoundsByJobId = async (jobId: string): Promise<IApiResponse<IInterviewRounds[]>> => {
+  try {
+    const result = await http.get<IApiResponse<IInterviewRounds[]>>(`/interview-round/by-job/${jobId}`);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while fetching round by Job ID: ${error}`);
+  }
+};
+
+export const interviewRoundStart = async (params: { jobId: string, roundId: string }): Promise<IApiResponse<IInterviewRounds>> => {
+  try {
+    const result = await http.post<IApiResponse<IInterviewRounds>>(`/interview-round/start`, params);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while start round: ${error}`);
+  }
+};

@@ -7,6 +7,7 @@ export const useGetInterviewRoundsById = ({
   return useQuery({
     queryKey: ['getInterviewRoundsById', roundId],
     queryFn: async () => getInterviewRoundsById(roundId),
+    enabled: !!roundId,
     refetchOnWindowFocus: false,
   });
 };

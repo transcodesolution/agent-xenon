@@ -1,3 +1,7 @@
+import InterviewRounds from "./_components/InterviewRounds";
+
 export default function page() {
-  return 'This is Round Listing Page of Particular Job'
+
+
+  return <InterviewRounds />
 }
