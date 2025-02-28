@@ -258,7 +258,7 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
         switch (interviewRoundData.type) {
             case InterviewRoundTypes.SCREENING:
                 res.ok("interview round is in progress. You will notify once it will complete", {}, "customMessage")
-                await manageScreeningRound(interviewRoundData);
+                await manageScreeningRound(interviewRoundData, user.organizationId.toString());
                 break;
             case InterviewRoundTypes.TECHNICAL:
                 // if (interviewRoundData?.startDate && interviewRoundData?.endDate && (interviewRoundData.startDate <= currentDate && currentDate < interviewRoundData.endDate)) {
