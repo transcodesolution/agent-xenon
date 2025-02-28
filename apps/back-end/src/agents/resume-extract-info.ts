@@ -1,11 +1,11 @@
 import { getResumeParsedText } from "@agent-xenon/utils";
-import OpenAI from "openai";
 import { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources";
 import { IResumeExtractResponse } from "../types/agent";
 import Applicant from "../database/models/applicant";
 import { Job } from "bullmq";
+import createOpenAIClient from "../helper/openai";
 
-const client = new OpenAI();
+const client = createOpenAIClient();
 
 const SYSTEM_PROMPT = `Here is Applicant schema,
 export interface IApplicant extends Document {
