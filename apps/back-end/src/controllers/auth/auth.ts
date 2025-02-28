@@ -56,14 +56,14 @@ export const login = async (req: Request, res: Response) => { //email or passwor
         if (typeof response.roleId !== "string") {
             const token = generateToken({
                 _id: response._id,
-                type: response.roleId.name,
+                type: response.roleId.type,
                 organizationId: checkOrganizationExist._id,
                 status: "Login",
                 generatedOn: (new Date().getTime())
             })
             result = {
                 // isEmailVerified: response?.isEmailVerified,
-                userType: response.roleId.name,
+                userType: response.roleId.type,
                 firstName: response?.firstName,
                 lastName: response?.lastName,
                 _id: response?._id,
@@ -71,44 +71,6 @@ export const login = async (req: Request, res: Response) => { //email or passwor
                 token,
             }
         }
-
-        // if (response.roleId && typeof response.roleId !== "string") {
-        //     const roleId = await roleModel.findOne({ _id: ObjectId(response.roleId?._id), deletedAt: null })
-        //     let match: any = {}
-        //     match.roleId = ObjectId(roleId._id)
-
-        //     roleDetails = await permissionModel.find({ roleId: ObjectId(roleId._id), deletedAt: null }).populate('moduleId').lean()
-
-        //     const tabMap = new Map();
-        //     roleDetails.forEach(roleDetail => {
-        //         const tab = roleDetail.moduleId;
-        //         const moduleId = tab._id.toString();
-
-        //         if (!tabMap.has(moduleId)) {
-        //             tab.childTabs = [];
-        //             tabMap.set(moduleId, tab);
-        //         }
-        //     });
-
-        //     Build the hierarchy by adding child tabs to their respective parent tabs
-        //     rootTabs = [];
-        //     roleDetails.forEach(roleDetail => {
-
-        //         const tab = roleDetail.moduleId;
-
-        //         const parentId = tab.parentId ? tab.parentId.toString() : null;
-
-        //         const parentTab = tabMap.get(parentId);
-
-        //         if (parentTab) {
-        //             parentTab.childTabs.push(roleDetail);
-        //         } else {
-        //             //if parentId null then and then push
-        //             rootTabs.push(roleDetail);
-        //         }
-        //     });
-        //     result.tabs = rootTabs
-        // }
 
         return res.ok("loginSuccess", result)
 

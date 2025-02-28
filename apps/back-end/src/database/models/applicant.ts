@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IApplicant } from '@agent-xenon/interfaces';
+import { IApplicant, IRole } from '@agent-xenon/interfaces';
 
 const ApplicantSchema: Schema = new Schema({
     lastName: { type: String },
@@ -50,6 +50,6 @@ const ApplicantSchema: Schema = new Schema({
     deletedAt: { type: Date, default: null },
 }, { timestamps: true, versionKey: false });
 
-const Applicant = mongoose.model<IApplicant>('Applicant', ApplicantSchema);
+const Applicant = mongoose.model<IApplicant<string, IRole>>('Applicant', ApplicantSchema);
 
 export default Applicant;

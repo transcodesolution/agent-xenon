@@ -1,22 +1,22 @@
-import { RoleTypes } from "@agent-xenon/constants";
+import { Permission, RoleTypes } from "@agent-xenon/constants";
 import { NextFunction, Request, Response } from "express";
 import { FileDataType } from "../types/response-data";
 
-export const validateRole = (roles: Array<string>) => async (req: Request, res: Response, next: NextFunction) => {
+export const validateRoleAndPermissions = (permissions: Permission[]) => async (req: Request, res: Response, next: NextFunction) => {
     const { user } = req.headers;
     try {
         if (typeof user.roleId !== "string") {
-            if (user.roleId.name === RoleTypes.ADMINISTRATOR) {
+            if (user.roleId.type === RoleTypes.ADMINISTRATOR) {
                 return next();
             }
 
-            if (roles.includes(user.roleId.name)) {
+            if (permissions.find((permission) => user.roleId.permissions.includes(permission))) {
                 return next();
             }
-            return res.unAuthorizedAccess("invalidAction", {})
+            return res.forbidden("invalidAction", {})
         }
-    } catch (err) {
-        console.log(err);
+    } catch (error) {
+        console.error("validateRoleAndPermissions: ", error)
         return res.unAuthorizedAccess("unauthorized", {})
     }
 }
