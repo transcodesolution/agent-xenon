@@ -61,7 +61,7 @@ export const manageTechnicalRound = async (roundData: IInterviewRounds<IJob>) =>
 }
 
 export const manageMeetingRound = async (roundData: IInterviewRounds<IJob>, organizationId?: string, res?: Response) => {
-    const checkTokenExist = await Organization.findOne({ _id: organizationId, deletedAt: null });
+    const checkTokenExist = await Organization.findOne({ _id: organizationId, deletedAt: null, serviceProviders: { $exists: true } });
     const jobId = roundData.jobId._id.toString();
     const roundId = roundData._id.toString();
     if (!checkTokenExist) {
