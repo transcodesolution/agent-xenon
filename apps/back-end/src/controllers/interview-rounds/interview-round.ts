@@ -240,8 +240,7 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
         const interviewRoundData = interviewRounds.find(i => i._id.toString() === value.roundId);
         const previousInterviewRoundData = interviewRounds.slice(0, interviewRounds.findIndex(i => i._id.toString() === value.roundId)).pop();
 
-        if (interviewRoundData.jobId._id.toString() !== value.jobId) return res.badRequest("job is invalid for this round", {}, "customMessage");
-
+        if (interviewRoundData?.jobId._id.toString() !== value.jobId) return res.badRequest("job is invalid for this round", {}, "customMessage");
 
         if (interviewRoundData.status === InterviewRoundStatus.ONGOING) return res.badRequest("round already in progress", {}, "customMessage");
 
@@ -309,6 +308,10 @@ export const googleAuthRedirectLogic = async (req: Request, res: Response) => {
 
         if (!checkOrganizationId) {
             return res.badRequest("organization", {}, "getDataNotFound");
+        }
+
+        if (checkOrganizationId.serviceProviders.google.expiry > new Date()) {
+            return res.badRequest("You have already logged in with google. Can't perform multiple times", {}, "customMessage");
         }
 
         const { tokens } = await oauth2Client.getToken(code);
