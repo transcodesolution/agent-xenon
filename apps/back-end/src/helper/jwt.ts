@@ -5,6 +5,7 @@ import { userModel } from '../database'
 import Applicant from '../database/models/applicant';
 import { IApplicant, IRole, IUser } from '@agent-xenon/interfaces';
 import { RoleTypes } from '@agent-xenon/constants';
+import { Socket } from 'socket.io';
 import { Model } from 'mongoose';
 
 const jwt_token_secret = config.JWT_TOKEN_SECRET;
@@ -59,4 +60,33 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
     } else {
         return res.unAuthorizedAccess("tokenNotFound", {})
     }
+}
+
+export const socketJWTAndRoomJoin = async (socket: Socket) => {
+    const { authorization } = socket.handshake.headers;
+    if (authorization) {
+        const isVerifyToken = jwt.verify(authorization, config.JWT_TOKEN_SECRET);
+        const checkToken = typeof isVerifyToken !== "string";
+        if (process?.env?.NODE_ENV == 'production' && checkToken) {
+            // 1 day expiration
+            if (parseInt(isVerifyToken.generatedOn + 86400000) < new Date().getTime()) {
+                // if (parseInt(isVerifyToken.generatedOn + 120000) < new Date().getTime()) {
+                return socket.emit("round-status", { status: "Error", message: "Token has been expired!" });
+            }
+        }
+        if (checkToken) {
+            const Query = { _id: isVerifyToken?._id, deletedAt: null };
+            const result = await userModel.findOne(Query).populate<{ roleId: IRole }>("roleId");
+            if (isVerifyToken.organizationId !== result.organizationId.toString()) {
+                return socket.emit("round-status", { status: "Error", message: "Do not try a different organization token!" });
+            }
+            if (result) {
+                socket.join(isVerifyToken.organizationId);
+                return socket.emit("round-status", { status: "Success", message: "You have joined the organization room!" });
+            } else {
+                return socket.emit("round-status", { status: "Error", message: "Invalid token" });
+            }
+        }
+    }
+    return socket.emit("round-status", { status: "Error", message: "We can't find valid token in header!" });
 }

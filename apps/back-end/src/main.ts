@@ -14,6 +14,7 @@ import { router } from './routes';
 import { createGoogleOAuth } from './helper/third-party-oauth';
 import { getMemoryUsage } from './utils/memory-usage';
 import { createSocketServer } from './helper/socket';
+import checkForTechnicalRoundStatus from './controllers/cron-automation/technical-round-status-update';
 
 getMemoryUsage();
 const app = express();
@@ -42,6 +43,7 @@ app.use((error: Error, req: Request, res: Response) => res.internalServerError(e
 const port = process.env.PORT || 3333;
 const server = new Server(app);
 createSocketServer(server);
+checkForTechnicalRoundStatus.start();
 server.listen(port, () => {
   console.log(`Listening at http://localhost:${port}/api`);
 });
