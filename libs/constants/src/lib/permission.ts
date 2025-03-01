@@ -24,6 +24,7 @@ export enum Permission {
   APPLICANT_READ = 'applicant_read',
   JOB_CANDIDATES_TAB = 'job_candidates_tab',
   JOB_ROUNDS_TAB = 'job_rounds_tab',
+  ROUND_ORDER_UPDATE = 'round_order_update',
   INTERVIEW_ROUND_CREATE = 'interview_round_create',
   INTERVIEW_ROUND_UPDATE = 'interview_round_update',
   INTERVIEW_ROUND_DELETE = 'interview_round_delete',
