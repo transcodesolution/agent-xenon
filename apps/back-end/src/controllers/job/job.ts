@@ -184,7 +184,7 @@ export const getJobById = async (req: Request, res: Response) => {
                     localField: "_id",
                     foreignField: "jobId",
                     as: "rounds",
-                    pipeline: [{ $match: { deletedAt: null } }, { $sort: { _id: 1 } }, { $project: { type: 1, durationInSeconds: 1, qualificationCriteria: 1, roundNumber: 1, mcqCriteria: 1, status: 1 } }]
+                    pipeline: [{ $match: { deletedAt: null } }, { $sort: { _id: 1 } }, { $project: { type: 1, endDate: 1, startDate: 1, qualificationCriteria: 1, roundNumber: 1, mcqCriteria: 1, status: 1 } }]
                 }
             },
             {

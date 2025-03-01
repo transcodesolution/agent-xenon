@@ -77,7 +77,7 @@ export const socketJWTAndRoomJoin = async (socket: Socket) => {
         if (checkToken) {
             const Query = { _id: isVerifyToken?._id, deletedAt: null };
             const result = await userModel.findOne(Query).populate<{ roleId: IRole }>("roleId");
-            if (isVerifyToken.organizationId !== result.organizationId.toString()) {
+            if (isVerifyToken.organizationId !== result?.organizationId.toString()) {
                 return socket.emit("round-status", { status: "Error", message: "Do not try a different organization token!" });
             }
             if (result) {

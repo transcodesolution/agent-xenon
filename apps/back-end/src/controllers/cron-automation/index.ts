@@ -1,1 +1,1 @@
-export * from "./technical-round-status-update";
+export * from "./round-status-update";

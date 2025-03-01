@@ -16,7 +16,7 @@ export const createJobSchema = Joi.object().keys({
     rounds: Joi.array().items(Joi.object().keys({
         type: Joi.string().valid(...Object.values(InterviewRoundTypes)),
         subType: Joi.string().valid(...Object.values(TechnicalRoundTypes)).optional(),
-        durationInSeconds: Joi.number(),
+        endDate: Joi.date().iso(),
         qualificationCriteria: Joi.string(),
         mcqCriteria: Joi.number(),
         roundNumber: Joi.number(),

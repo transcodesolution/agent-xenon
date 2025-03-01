@@ -179,7 +179,7 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewRounds> = { deletedAt: null, _id: value.roundId }
 
-        const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds<IInterviewQuestionAnswer>>(match, "type subType durationInSeconds status qualificationCriteria mcqCriteria name");
+        const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds<IInterviewQuestionAnswer>>(match, "type subType endDate startDate status qualificationCriteria mcqCriteria name");
 
         const matchApplicantRoundQuery: FilterQuery<IApplicantRounds> = { deletedAt: null, roundIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.roundId) } } };
 
@@ -216,7 +216,7 @@ export const getInterviewRoundByJobId = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewRounds> = { deletedAt: null, jobId: value.jobId }
 
-        const interviewRounds = await InterviewRounds.find(match, "type subType durationInSeconds status qualificationCriteria mcqCriteria name").sort({ _id: 1 });
+        const interviewRounds = await InterviewRounds.find(match, "type subType endDate startDate status qualificationCriteria mcqCriteria name").sort({ _id: 1 });
 
         return res.ok("interview round", interviewRounds, "getDataSuccess")
     } catch (error) {
@@ -249,9 +249,10 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
 
         if (previousInterviewRoundData && previousInterviewRoundData.status !== InterviewRoundStatus.COMPLETED) return res.badRequest("previous round is not completed", {}, "customMessage");
 
-        // const currentDate = new Date();
+        const currentDate = new Date();
 
         interviewRoundData.status = InterviewRoundStatus.ONGOING;
+        interviewRoundData.startDate = currentDate;
         await interviewRoundData.save();
 
         switch (interviewRoundData.type) {
