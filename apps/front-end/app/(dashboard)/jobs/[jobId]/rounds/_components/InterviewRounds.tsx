@@ -3,12 +3,12 @@ import { useGetInterviewRoundsById, useGetInterviewRoundsByJobId, useInterviewRo
 import { Stack } from '@mantine/core';
 import { useParams } from 'next/navigation';
 import React, { useState } from 'react'
-import RoundCard from './RoundCard';
 import { IInterviewRounds } from '@agent-xenon/interfaces';
-import CandidateModal from './CandidateModal';
 import { InterviewRoundStatus } from '@agent-xenon/constants';
+import { RoundCard } from './RoundCard';
+import { JobApplicantListModal } from './JobApplicantListModal';
 
-const InterviewRounds = () => {
+export const InterviewRounds = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const { data: rounds, refetch } = useGetInterviewRoundsByJobId({ jobId });
   const [selectedRoundId, setSelectedRoundId] = useState<string>('');
@@ -23,14 +23,12 @@ const InterviewRounds = () => {
     })
   }
 
-
-  const handleShowCandidates = (roundId: string) => {
+  const handleShowApplicants = (roundId: string) => {
     setSelectedRoundId(roundId);
   };
 
-  const handleUpdateCandidateStatus = (roundId: string, candidateId: string) => {
-    // updateCandidateStatus({ roundId, jobId })
-
+  const handleUpdateApplicantStatus = (roundId: string, ApplicantId: string) => {
+    // updateApplicantStatus({ roundId, jobId })
   };
 
   return (
@@ -44,21 +42,19 @@ const InterviewRounds = () => {
             round={round}
             isDisabled={!isPreviousRoundsCompleted || round?.status === InterviewRoundStatus.COMPLETED}
             onStartRound={handleStartRound}
-            onShowCandidates={handleShowCandidates}
+            onShowApplicants={handleShowApplicants}
             key={round._id}
           />
         );
       })}
 
-      <CandidateModal
+      <JobApplicantListModal
         isOpen={!!selectedRoundId}
         onClose={() => setSelectedRoundId("")}
-        candidates={roundData?.data?.applicants || []}
+        Applicants={roundData?.data?.applicants || []}
         roundId={selectedRoundId || ''}
-        onUpdateStatus={handleUpdateCandidateStatus}
+        onUpdateStatus={handleUpdateApplicantStatus}
       />
     </Stack>
   )
 }
-
-export default InterviewRounds

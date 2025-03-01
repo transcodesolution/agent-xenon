@@ -1,47 +1,24 @@
+import { getRoundTypeColor, getStatusColor } from '@/libs/utils/ui-helpers';
+import { InterviewRoundStatus } from '@agent-xenon/constants';
 import { IInterviewRounds } from '@agent-xenon/interfaces';
 import { ActionIcon, Badge, Card, Flex, Group, Stack, Text, Tooltip } from '@mantine/core';
 import { IconClock, IconPlayerPlay, IconPlayerStop, IconUsers } from '@tabler/icons-react';
-import React, { useState } from 'react'
-
-const getRoundTypeColor = (type: string) => {
-  switch (type) {
-    case 'screening':
-      return 'blue';
-    case 'technical':
-      return 'green';
-    case 'meeting':
-      return 'purple';
-    default:
-      return 'gray';
-  }
-};
-
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'ongoing':
-      return 'yellow';
-    case 'completed':
-      return 'teal';
-    default:
-      return 'gray';
-  }
-};
 
 const formatDuration = (seconds: number) => {
   const days = Math.floor(seconds / (24 * 60 * 60));
   return `${days} days`;
 };
 
-interface IRoundCardProps {
+interface IRoundCardList {
   round: IInterviewRounds;
   isDisabled?: boolean;
   onStartRound?: (roundId: string) => void;
-  onShowCandidates: (roundId: string) => void;
+  onShowApplicants: (roundId: string) => void;
 }
 
-function RoundCard({ round, isDisabled, onStartRound, onShowCandidates }: IRoundCardProps) {
-  const isOngoing = round.status === 'ongoing';
-  const isCompleted = round.status === 'completed';
+export const RoundCard = ({ round, isDisabled, onStartRound, onShowApplicants }: IRoundCardList) => {
+  const isOngoing = round.status === InterviewRoundStatus.ONGOING;
+  const isCompleted = round.status === InterviewRoundStatus.COMPLETED;
 
   return (
     <Card
@@ -50,7 +27,6 @@ function RoundCard({ round, isDisabled, onStartRound, onShowCandidates }: IRound
       p="lg"
     >
       <Card.Section inheritPadding py="xs">
-
         <Group justify="space-between" wrap="nowrap">
           <Stack>
             <Text fw='600' size='xl'> {round.name || "-"}</Text>
@@ -64,11 +40,11 @@ function RoundCard({ round, isDisabled, onStartRound, onShowCandidates }: IRound
               </Group>
             </Tooltip>
 
-            <Tooltip label="View Candidates">
+            <Tooltip label="View Applicants">
               <ActionIcon
                 variant="subtle"
                 onClick={(e) => {
-                  onShowCandidates(round._id);
+                  onShowApplicants(round._id);
                 }}
               >
                 <IconUsers size={18} />
@@ -117,5 +93,3 @@ function RoundCard({ round, isDisabled, onStartRound, onShowCandidates }: IRound
     </Card>
   );
 }
-
-export default RoundCard
