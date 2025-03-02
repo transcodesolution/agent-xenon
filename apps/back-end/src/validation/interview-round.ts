@@ -31,8 +31,7 @@ export const deleteInterviewRoundSchema = Joi.object().keys({
 })
 
 export const updateRoundStatusSchema = Joi.object().keys({
-    status: Joi.string().valid(...Object.values(InterviewRoundStatus)).optional(),
-    isSelected: Joi.boolean().optional(),
+    roundStatus: Joi.string().valid(...Object.values(InterviewRoundStatus)).optional(),
     jobId: Joi.string().required(),
     roundId: Joi.string().required(),
     applicantId: Joi.string(),
@@ -44,6 +43,10 @@ export const getInterviewRoundsByIdSchema = Joi.object().keys({
 
 export const getInterviewRoundByJobIdSchema = Joi.object().keys({
     jobId: Joi.string().required(),
+})
+
+export const updateRoundOrderSchema = Joi.object().keys({
+    roundOrderIds: Joi.array().items(Joi.string().required()).required(),
 })
 
 export const manageInterviewRoundSchema = Joi.object().keys({
