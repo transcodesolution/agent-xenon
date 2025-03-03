@@ -7,7 +7,6 @@ export interface IInterviewRounds<T = string> extends Partial<Document>, ITimest
     _id: string;
     type: InterviewRoundTypes;
     subType: TechnicalRoundTypes;
-    durationInSeconds: number;
     name: string;
     qualificationCriteria: string;
     mcqCriteria: number;

@@ -12,6 +12,6 @@ export interface IJob<T = string> extends ITimestamp {
     qualificationCriteria: string;
     organizationId: string;
     name: string;
-    rounds?: Array<Pick<IInterviewRounds, "_id" | "type" | "durationInSeconds" | "qualificationCriteria" | "roundNumber" | "name">>;
+    rounds?: Array<Pick<IInterviewRounds, "_id" | "type" | "endDate" | "startDate" | "qualificationCriteria" | "roundNumber" | "name">>;
     resumeUrls: string[];
 }

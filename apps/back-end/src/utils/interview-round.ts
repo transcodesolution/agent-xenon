@@ -56,8 +56,6 @@ export const manageTechnicalRound = async (roundData: IInterviewRounds<IJob>) =>
             HR ${i.organizationId.name}.
         `)
     }));
-    const currentDate = Date.now();
-    await InterviewRounds.updateOne({ _id: roundData._id }, { $set: { startDate: currentDate, endDate: currentDate + (roundData.durationInSeconds * 1000) } });
 }
 
 export const manageMeetingRound = async (roundData: IInterviewRounds<IJob>, organizationId?: string, res?: Response) => {
