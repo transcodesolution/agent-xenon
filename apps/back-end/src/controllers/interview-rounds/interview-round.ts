@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
-import mongoose, { FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
+import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRounds, IInterviewQuestionAnswer, IInterviewRounds, IJob } from "@agent-xenon/interfaces";
 import { ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus, TechnicalRoundTypes } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, googleRedirectSchema, manageInterviewRoundSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundStatusSchema } from "../../validation/interview-round";
+import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, googleRedirectSchema, manageInterviewRoundSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
 import InterviewRounds from "../../database/models/interview-round";
 import Job from "../../database/models/job";
 import { manageMeetingRound, manageMeetingScheduleWithCandidate, manageScreeningRound, manageTechnicalRound } from "../../utils/interview-round";
@@ -142,26 +142,27 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
 
         if (!applicantRoundData) return res.badRequest("applicant round", {}, "getDataNotFound");
 
+        value.isSelected = value.roundStatus === InterviewRoundStatus.SELECTED;
+
+        if (applicantRoundData.status !== InterviewRoundStatus.COMPLETED) {
+            value.status = InterviewRoundStatus.COMPLETED;
+        }
+
         await ApplicantRounds.updateOne(Query, { $set: value });
 
-        if (value?.status === InterviewRoundStatus.COMPLETED) {
-            const selectedApplicants = await getSelectedApplicantDetails(value.jobId);
-            jobWiseQuery.status = InterviewRoundStatus.COMPLETED;
-            const applicantIds = await ApplicantRounds.distinct("applicantId", jobWiseQuery);
-            if (selectedApplicants.length <= applicantIds.length) {
-                await InterviewRounds.updateOne({ _id: value.roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
-            }
+        const selectedApplicants = await getSelectedApplicantDetails(value.jobId);
+        const applicantIds = await ApplicantRounds.distinct("applicantId", jobWiseQuery);
+        if (selectedApplicants.length <= applicantIds.length) {
+            await InterviewRounds.updateOne({ _id: value.roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
         }
 
-        if ("isSelected" in value) {
-            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
+        await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
 
-                We appreciate your time and effort in participating in the technical round for the applied position.  
-                
-                ${value.isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
-                
-                Thank you for your interest in our company.`)
-        }
+            We appreciate your time and effort in participating in the technical round for the applied position.  
+            
+            ${value.isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
+            
+            Thank you for your interest in our company.`)
 
         return res.ok("applicant round status", {}, "updateDataSuccess")
     } catch (error) {
@@ -184,14 +185,10 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
         const matchApplicantRoundQuery: FilterQuery<IApplicantRounds> = { deletedAt: null, roundIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.roundId) } } };
 
         const checkNotCurrentRound = { $ne: [{ $arrayElemAt: ["$roundIds", -1] }, new mongoose.Types.ObjectId(value.roundId)] };
-        const nullValue = null;
 
         const applicants = await ApplicantRounds.find<IApplicantRounds<IApplicant>>(matchApplicantRoundQuery, {
             "status": {
-                $cond: [checkNotCurrentRound, InterviewRoundStatus.COMPLETED, "$status"]
-            },
-            "isSelected": {
-                $cond: [checkNotCurrentRound, true, { $cond: [{ $eq: ["$status", InterviewRoundStatus.ONGOING] }, nullValue, "$isSelected"] }]
+                $cond: [checkNotCurrentRound, InterviewRoundStatus.SELECTED, { $cond: [{ $eq: ["$status", InterviewRoundStatus.ONGOING] }, "$status", { $cond: ["$isSelected", InterviewRoundStatus.SELECTED, InterviewRoundStatus.REJECTED] }] }]
             },
         }).populate("applicantId");
 
@@ -224,6 +221,29 @@ export const getInterviewRoundByJobId = async (req: Request, res: Response) => {
     }
 }
 
+export const updateRoundOrder = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = updateRoundOrderSchema.validate(req.body);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const bulkOps: AnyBulkWriteOperation[] = value.roundOrderIds.map((roundId: string, index: number) => ({
+            updateOne: {
+                filter: { _id: roundId },
+                update: { $set: { roundNumber: index + 1 } }
+            }
+        }));
+
+        await InterviewRounds.bulkWrite(bulkOps);
+
+        return res.ok("interview round", {}, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
 export const manageInterviewRound = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
@@ -245,7 +265,6 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
         if (interviewRoundData.status === InterviewRoundStatus.ONGOING) return res.badRequest("round already in progress", {}, "customMessage");
 
         if (interviewRoundData.status === InterviewRoundStatus.COMPLETED) return res.badRequest("round already completed", {}, "customMessage");
-
 
         if (previousInterviewRoundData && previousInterviewRoundData.status !== InterviewRoundStatus.COMPLETED) return res.badRequest("previous round is not completed", {}, "customMessage");
 
