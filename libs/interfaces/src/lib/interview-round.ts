@@ -3,6 +3,12 @@ import { ITimestamp } from "./timestamp";
 import { IApplicant } from "./applicant";
 import { Document } from "mongoose";
 
+export interface IApplicantRound {
+    _id: string;
+    status: InterviewRoundStatus;
+    isSelected: boolean;
+    applicantId: IApplicant
+}
 export interface IInterviewRounds<T = string> extends Partial<Document>, ITimestamp {
     _id: string;
     type: InterviewRoundTypes;
@@ -18,10 +24,6 @@ export interface IInterviewRounds<T = string> extends Partial<Document>, ITimest
     _doc: IInterviewRounds<T>;
     previousRound?: Partial<IInterviewRounds<T>>;
     questions?: T[]
-    applicants?: {
-        _id: string;
-        status: InterviewRoundStatus;
-        isSelected: boolean;
-        applicantId: IApplicant
-    }[]
+    applicants?: IApplicantRound[]
+    expiredDate: Date;
 }
