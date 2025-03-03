@@ -32,11 +32,11 @@ router.use('/designation', designationRouter)
 router.use('/questionAnswer', interviewQuestionAnswerRouter)
 router.use('/organization', organizationRouter)
 router.use('/job', jobRouter)
+router.use('/applicant/exam', technicalRoundRouter)
 router.use('/applicant', applicantRouter)
 router.use('/interview-round', interviewRoundRouter)
 router.use('/document', documentRouter)
 router.use('/role', roleRouter)
-router.use('/exam', technicalRoundRouter)
 router.use('/user', userRouter)
 
 export { router }

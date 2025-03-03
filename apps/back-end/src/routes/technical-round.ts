@@ -1,5 +1,5 @@
 import express from 'express';
-import { getExamQuestions, submitExam } from '../controllers/interview-rounds/interview-round';
+import { getExamQuestionsByRoundId, submitExam } from '../controllers/interview-rounds/interview-round';
 import { validateRoleAndPermissions } from '../helper/middleware';
 import { Permission } from '@agent-xenon/constants';
 
@@ -10,6 +10,6 @@ router.use(validateRoleAndPermissions([
 ]));
 
 router.post("/submit", submitExam);
-router.get("/questions", getExamQuestions);
+router.get("/questions/:roundId", getExamQuestionsByRoundId);
 
 export const technicalRoundRouter = router;

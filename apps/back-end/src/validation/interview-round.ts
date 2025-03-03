@@ -13,6 +13,7 @@ export const createInterviewRoundSchema = Joi.object().keys({
     mcqCriteria: Joi.number().optional(),
     questions: Joi.array().items(Joi.string()).required(),
     jobId: Joi.string().required(),
+    roundNumber: Joi.number().required(),
 })
 
 export const updateInterviewRoundSchema = Joi.object().keys({
@@ -24,6 +25,7 @@ export const updateInterviewRoundSchema = Joi.object().keys({
     mcqCriteria: Joi.number().optional(),
     questions: Joi.array().items(Joi.string()).optional(),
     roundId: Joi.string().required(),
+    roundNumber: Joi.number().optional(),
 })
 
 export const deleteInterviewRoundSchema = Joi.object().keys({
@@ -63,7 +65,7 @@ export const submitExamSchema = Joi.object().keys({
 })
 
 export const getExamQuestionSchema = Joi.object().keys({
-    candidateToken: Joi.string().required(),
+    roundId: Joi.string().required(),
 })
 
 export const googleRedirectSchema = Joi.object().keys({

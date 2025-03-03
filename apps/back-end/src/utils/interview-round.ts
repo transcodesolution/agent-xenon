@@ -32,8 +32,9 @@ export const manageScreeningRound = async (roundData: IInterviewRounds<IJob>, or
 export const manageTechnicalRound = async (roundData: IInterviewRounds<IJob>) => {
     const applicants = await getSelectedApplicantDetails(roundData.jobId._id);
     const domainUrl = config.FRONTEND_URL.replace(/\/\/([^.]*)/, `//${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
+    const roundId = roundData._id.toString();
+    const token = createEncodedShortToken(roundData.jobId._id.toString(), applicants[0].organizationId.name);
     await Promise.all(applicants.map((i) => {
-        const token = createEncodedShortToken(roundData._id.toString(), roundData.jobId._id.toString(), i.organizationId.name);
         return sendMail(i.contactInfo.email, `Technical Round Exam Link`, `
             Dear candidate,
 
@@ -49,7 +50,7 @@ export const manageTechnicalRound = async (roundData: IInterviewRounds<IJob>) =>
 
             Please login with above credentials and start examination.
 
-            Here is your examincation link: ${domainUrl}?token=${token}
+            Here is your examincation link: ${domainUrl}/${roundId}?token=${token}
 
             Best wishes and good luck.
             Thank you.

@@ -11,7 +11,6 @@ import ApplicantRounds from "../../database/models/applicant-round";
 import { questionAnswerType } from "../../types/technical-round";
 import { manageMCQAnswers } from "../../utils/technical-round";
 import { sendMail } from "../../helper/mail";
-import { decodeEncodedToken } from "../../utils/generate-token";
 import { oauth2Client } from "../../helper/third-party-oauth";
 import Organization from "../../database/models/organization";
 import { google } from "googleapis";
@@ -31,9 +30,6 @@ export const createInterviewRound = async (req: Request, res: Response) => {
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
         if (checkJobExist.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can create round right now interview is already started!", {}, "getDataNotFound");
 
-        const count = await InterviewRounds.countDocuments({ jobId: value.jobId, deletedAt: null })
-
-        value.roundNumber = count + 1;
         const interviewRoundData = await InterviewRounds.create(value);
 
         await RoundQuestionAssign.insertMany(value.questions.map((i: string) => ({
@@ -422,24 +418,22 @@ export const submitExam = async (req: Request, res: Response) => {
     }
 }
 
-export const getExamQuestions = async (req: Request, res: Response) => {
+export const getExamQuestionsByRoundId = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
-        const { error, value } = getExamQuestionSchema.validate(req.query);
+        const { error, value } = getExamQuestionSchema.validate(req.params);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const { roundId } = decodeEncodedToken(value.candidateToken);
-
-        const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds>({ _id: roundId, deletedAt: null });
+        const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds>({ _id: value.roundId, deletedAt: null });
 
         if (!interviewRoundData) {
             return res.badRequest("interview round", {}, "getDataNotFound")
         }
 
-        const applicantRoundData = await ApplicantRounds.findOne<IApplicantRounds>({ roundIds: { $elemMatch: { $eq: roundId } }, deletedAt: null, applicantId: user._id, });
+        const applicantRoundData = await ApplicantRounds.findOne<IApplicantRounds>({ roundIds: { $elemMatch: { $eq: value.roundId } }, deletedAt: null, applicantId: user._id, });
 
         const currentDate = new Date();
 
@@ -451,7 +445,7 @@ export const getExamQuestions = async (req: Request, res: Response) => {
             return res.ok("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED }, "customMessage")
         }
 
-        const questions = await RoundQuestionAssign.find({ deletedAt: null, roundId }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes inputFormat").sort({ _id: 1 });
+        const questions = await RoundQuestionAssign.find({ deletedAt: null, roundId: value.roundId }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes inputFormat").sort({ _id: 1 });
 
         const queryFilter = {
             applicantId: user._id,
@@ -462,7 +456,7 @@ export const getExamQuestions = async (req: Request, res: Response) => {
             await ApplicantRounds.updateOne(queryFilter, { $set: { ...queryFilter, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: interviewRoundData._id } }, { upsert: true });
         }
 
-        return res.ok("interview questions", { roundId, questions }, "getDataSuccess")
+        return res.ok("interview questions", { roundId: value.roundId, questions }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
