@@ -5,6 +5,7 @@ type AxiosError = { config: { _retry: boolean } } & OriginalAxiosError;
 export const BASE_API_URL = 'http://localhost:7000';
 export const NEXT_APP_URL = 'http://localhost:3000';
 
+//this instance created to talk with back-end
 const axiosInstance = axios.create({
   baseURL: BASE_API_URL,
   responseType: 'json',
@@ -13,6 +14,7 @@ const axiosInstance = axios.create({
   },
 });
 
+//this instance is created to talk with next server
 export const axiosNextServerInstance = axios.create({
   baseURL: NEXT_APP_URL,
   responseType: 'json',
