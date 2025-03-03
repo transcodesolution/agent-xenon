@@ -140,7 +140,7 @@ export const getAllQuestionList = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId, type: InterviewRoundTypes.TECHNICAL, subType: value.subType ?? TechnicalRoundTypes.MCQ };
+        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId, type: value.subType ?? TechnicalRoundTypes.MCQ };
 
         if (value.search) {
             match.question = new RegExp(value.search, "i");
