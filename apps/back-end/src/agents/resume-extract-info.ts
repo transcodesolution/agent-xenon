@@ -63,6 +63,7 @@ Tools:
    - **Do NOT call the function again for the same email.**
    - **please trict boolean as string => function return "false", "true" so give me according to this**
    - **strict to tool_call_id, compare result with each tool properly. match id and take result.
+   - **durationStart** and **durationEnd** take from pdf text convert into timestamp. If found Present then take null.
 
 2. **Mandatory Fields**:
    - If \`contactInfo.email\` is missing, empty, or null, **ignore** that applicant.
@@ -87,7 +88,7 @@ Tools:
         If the response is "false" (email does not exist), send the object according to schema formatted.
     5.) Return the Final Processed Data
 
-        Output the final object of extracted resume in strict JSON format.
+        Output the final object of extracted resume in strict JSON format, well formatted json.
         Ensure the format adheres to the expected schema.
 
 ### **Response Format**
