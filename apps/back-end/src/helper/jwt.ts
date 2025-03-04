@@ -4,7 +4,7 @@ import { config } from '../config'
 import { userModel } from '../database'
 import Applicant from '../database/models/applicant';
 import { IApplicant, IRole, IUser } from '@agent-xenon/interfaces';
-import { RoleTypes } from '@agent-xenon/constants';
+import { RoleType } from '@agent-xenon/constants';
 import { Socket } from 'socket.io';
 import { Model } from 'mongoose';
 
@@ -13,7 +13,7 @@ const jwt_token_secret = config.JWT_TOKEN_SECRET;
 declare module "jsonwebtoken" {
     interface JwtPayload {
         _id: string;
-        type: RoleTypes;
+        type: RoleType;
         organizationId: string;
         orgName: string;
         status: string;
@@ -38,7 +38,7 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
 
             if (checkToken) {
                 const Query = { _id: isVerifyToken?._id, deletedAt: null };
-                const model: Model<IApplicant<string, IRole> | IUser<IRole>> = isVerifyToken.type === RoleTypes.CANDIDATE ? Applicant : userModel;
+                const model: Model<IApplicant<string, IRole> | IUser<IRole>> = isVerifyToken.type === RoleType.CANDIDATE ? Applicant : userModel;
                 const result = await model.findOne(Query).populate("roleId");
                 // if (result?.isBlocked) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}));
                 if (isVerifyToken.organizationId !== result.organizationId.toString()) {

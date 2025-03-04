@@ -1,18 +1,19 @@
-import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants";
+import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundType } from "@agent-xenon/constants";
 import { ITimestamp } from "./timestamp";
 import { IApplicant } from "./applicant";
 import { Document } from "mongoose";
 
-export interface IApplicantRound {
+export interface IApplicantRoundList {
     _id: string;
     status: InterviewRoundStatus;
     isSelected: boolean;
     applicantId: IApplicant
 }
-export interface IInterviewRounds<T = string> extends Partial<Document>, ITimestamp {
+
+export interface IInterviewRound<T = string> extends Partial<Document>, ITimestamp {
     _id: string;
     type: InterviewRoundTypes;
-    subType: TechnicalRoundTypes;
+    subType: TechnicalRoundType;
     name: string;
     qualificationCriteria: string;
     mcqCriteria: number;
@@ -21,9 +22,9 @@ export interface IInterviewRounds<T = string> extends Partial<Document>, ITimest
     endDate: Date;
     roundNumber: number;
     status: InterviewRoundStatus;
-    _doc: IInterviewRounds<T>;
-    previousRound?: Partial<IInterviewRounds<T>>;
+    _doc: IInterviewRound<T>;
+    previousRound?: Partial<IInterviewRound<T>>;
     questions?: T[]
-    applicants?: IApplicantRound[]
+    applicants?: IApplicantRoundList[]
     expiredDate: Date;
 }

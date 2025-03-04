@@ -1,5 +1,5 @@
 import { ITimestamp } from "./timestamp";
-import { IInterviewRounds } from "./interview-round";
+import { IInterviewRound } from "./interview-round";
 import { JobStatus } from "@agent-xenon/constants";
 
 export interface IJob<T = string> extends ITimestamp {
@@ -12,6 +12,6 @@ export interface IJob<T = string> extends ITimestamp {
     qualificationCriteria: string;
     organizationId: string;
     name: string;
-    rounds?: Array<Pick<IInterviewRounds, "_id" | "type" | "endDate" | "startDate" | "qualificationCriteria" | "roundNumber" | "name">>;
+    rounds?: Array<Pick<IInterviewRound, "_id" | "type" | "endDate" | "startDate" | "qualificationCriteria" | "roundNumber" | "name">>;
     resumeUrls: string[];
 }

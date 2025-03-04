@@ -1,8 +1,8 @@
 import Joi from "joi";
-import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants";
+import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundType } from "@agent-xenon/constants";
 
 const roundTypeSchema = Joi.string().valid(...Object.values(InterviewRoundTypes))
-const roundSubTypeSchema = Joi.string().valid(...Object.values(TechnicalRoundTypes))
+const roundSubTypeSchema = Joi.string().valid(...Object.values(TechnicalRoundType))
 
 export const createInterviewRoundSchema = Joi.object().keys({
     type: roundTypeSchema.required(),

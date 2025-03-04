@@ -18,7 +18,7 @@ import { userRouter } from './user'
 
 const router = Router()
 // const accessControl = (req: Request, res: Response, next: any) => {
-//     req.headers.userType = RoleTypes[req.originalUrl.split('/')[1]]
+//     req.headers.userType = RoleType[req.originalUrl.split('/')[1]]
 //     next()
 // }
 

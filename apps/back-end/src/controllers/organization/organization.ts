@@ -8,12 +8,12 @@ import Organization from "../../database/models/organization";
 import { generateHash } from "../../utils/password-hashing";
 import Job from "../../database/models/job";
 import Applicant from "../../database/models/applicant";
-import InterviewRounds from "../../database/models/interview-round";
+import InterviewRound from "../../database/models/interview-round";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import ApplicantRounds from "../../database/models/applicant-round";
+import ApplicantRound from "../../database/models/applicant-round";
 import JobRole from "../../database/models/job-role";
 import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
-import { Permission, RoleTypes } from "@agent-xenon/constants";
+import { Permission, RoleType } from "@agent-xenon/constants";
 
 export const onBoardOrganization = async (req: Request, res: Response) => {
     // reqInfo(req)
@@ -39,8 +39,8 @@ export const onBoardOrganization = async (req: Request, res: Response) => {
 
         const commonRoleDetails = { deletedAt: null, organizationId: response._id };
         const softwareRoles = [
-            { type: RoleTypes.ADMINISTRATOR, ...commonRoleDetails, permissions: superAdminPermission },
-            { type: RoleTypes.CANDIDATE, ...commonRoleDetails, permissions: candidatePermission },
+            { type: RoleType.ADMINISTRATOR, ...commonRoleDetails, permissions: superAdminPermission },
+            { type: RoleType.CANDIDATE, ...commonRoleDetails, permissions: candidatePermission },
         ];
 
         const roles = await roleModel.insertMany(softwareRoles);
@@ -51,7 +51,7 @@ export const onBoardOrganization = async (req: Request, res: Response) => {
         delete value.password
         value.password = hashPassword
         value.organizationId = response._id;
-        value.roleId = roles.find(i => i.type === RoleTypes.ADMINISTRATOR)?._id;
+        value.roleId = roles.find(i => i.type === RoleType.ADMINISTRATOR)?._id;
         await new userModel(value).save();
 
         // let result: any = await email_verification_mail(response, otp);
@@ -117,9 +117,9 @@ export const deleteOrganization = async (req: Request, res: Response) => {
         await Promise.all([
             Applicant.updateMany(organizationQuery, { $set: { deletedAt: Date.now() } }),
             Job.updateMany(jobQuery, { $set: { deletedAt: Date.now() } }),
-            InterviewRounds.updateMany(jobQuery, { $set: { deletedAt: Date.now() } }),
+            InterviewRound.updateMany(jobQuery, { $set: { deletedAt: Date.now() } }),
             RoundQuestionAssign.updateMany(jobQuery, { $set: { deletedAt: Date.now() } }),
-            ApplicantRounds.updateMany(jobQuery, { $set: { deletedAt: Date.now() } }),
+            ApplicantRound.updateMany(jobQuery, { $set: { deletedAt: Date.now() } }),
             Designation.updateMany(organizationQuery, { $set: { deletedAt: Date.now() } }),
             JobRole.updateMany(organizationQuery, { $set: { deletedAt: Date.now() } }),
             InterviewQuestionAnswer.updateMany(organizationQuery, { $set: { deletedAt: Date.now() } }),

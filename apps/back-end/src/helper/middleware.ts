@@ -1,4 +1,4 @@
-import { Permission, RoleTypes } from "@agent-xenon/constants";
+import { Permission, RoleType } from "@agent-xenon/constants";
 import { NextFunction, Request, Response } from "express";
 import { FileDataType } from "../types/response-data";
 
@@ -6,7 +6,7 @@ export const validateRoleAndPermissions = (permissions: Permission[]) => async (
     const { user } = req.headers;
     try {
         if (typeof user.roleId !== "string") {
-            if (user.roleId.type === RoleTypes.ADMINISTRATOR) {
+            if (user.roleId.type === RoleType.ADMINISTRATOR) {
                 return next();
             }
 

@@ -3,9 +3,9 @@ import { FilterQuery, QuerySelector } from "mongoose";
 import { IApplicant } from "@agent-xenon/interfaces";
 import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
 import Applicant from "../../database/models/applicant";
-import ApplicantRounds from "../../database/models/applicant-round";
+import ApplicantRound from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
-import { InterviewRoundStatus, JobStatus, RoleTypes } from "@agent-xenon/constants";
+import { InterviewRoundStatus, JobStatus, RoleType } from "@agent-xenon/constants";
 import { roleModel } from "../../database";
 import { resumeExtractAgent } from "../../helper/queue";
 
@@ -44,7 +44,7 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
-        const roleData = await roleModel.findOne({ type: RoleTypes.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
+        const roleData = await roleModel.findOne({ type: RoleType.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
         value.resumeUrls = checkJobExist.resumeUrls;
         value.organizationId = user.organizationId;
         value.roleId = roleData._id.toString();
@@ -105,7 +105,7 @@ export const deleteApplicant = async (req: Request, res: Response) => {
         value.organizationId = user.organizationId;
         const deletedApplicants = await Applicant.findOneAndUpdate(match, { $set: { deletedAt: new Date() } }, { new: true });
 
-        await ApplicantRounds.updateMany({ applicantId: condition, jobId: checkApplicantsExist[0].jobId }, { $set: { deletedAt: new Date() } });
+        await ApplicantRound.updateMany({ applicantId: condition, jobId: checkApplicantsExist[0].jobId }, { $set: { deletedAt: new Date() } });
 
         return res.ok("applicants", deletedApplicants, "deleteDataSuccess")
     } catch (error) {
@@ -140,7 +140,7 @@ export const getApplicants = async (req: Request, res: Response) => {
         const selectRejectQuery = value.isSelectedByAgent || value.isSelectedByAgent === false;
 
         if (value.roundId || selectRejectQuery) {
-            const applicantIds = await ApplicantRounds.distinct("applicantId", { ...(value.roundId && { roundIds: { $elemMatch: { $eq: value.roundId } } }), ...(selectRejectQuery && { isSelected: value.isSelectedByAgent }), deletedAt: null, status: InterviewRoundStatus.COMPLETED });
+            const applicantIds = await ApplicantRound.distinct("applicantId", { ...(value.roundId && { roundIds: { $elemMatch: { $eq: value.roundId } } }), ...(selectRejectQuery && { isSelected: value.isSelectedByAgent }), deletedAt: null, status: InterviewRoundStatus.COMPLETED });
             match._id = { $in: applicantIds };
         }
 

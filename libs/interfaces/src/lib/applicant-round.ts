@@ -1,7 +1,7 @@
 import { InterviewRoundStatus } from "@agent-xenon/constants";
 import { ITimestamp } from "./timestamp";
 
-export interface IApplicantRounds<T = string> extends ITimestamp {
+export interface IApplicantRound<T = string> extends ITimestamp {
     _id: string;
     roundIds: T[];
     status: InterviewRoundStatus;

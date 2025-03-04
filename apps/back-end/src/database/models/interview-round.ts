@@ -1,10 +1,10 @@
-import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundTypes } from "@agent-xenon/constants";
-import { IInterviewRounds } from "@agent-xenon/interfaces";
+import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundType } from "@agent-xenon/constants";
+import { IInterviewRound } from "@agent-xenon/interfaces";
 import mongoose, { Schema } from "mongoose";
 
-const InterviewRoundsSchema: Schema = new Schema({
+const InterviewRoundSchema: Schema = new Schema({
     type: { type: String, enum: InterviewRoundTypes },
-    subType: { type: String, enum: TechnicalRoundTypes },
+    subType: { type: String, enum: TechnicalRoundType },
     name: { type: String },
     qualificationCriteria: { type: String },
     mcqCriteria: { type: Number },
@@ -16,6 +16,6 @@ const InterviewRoundsSchema: Schema = new Schema({
     deletedAt: { type: Date, default: null },
 }, { timestamps: true, versionKey: false });
 
-const InterviewRounds = mongoose.model<IInterviewRounds>('InterviewRounds', InterviewRoundsSchema);
+const InterviewRound = mongoose.model<IInterviewRound>('InterviewRounds', InterviewRoundSchema);
 
-export default InterviewRounds;
+export default InterviewRound;

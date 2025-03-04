@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
-import { IApplicant, IApplicantRounds, IInterviewQuestionAnswer, IInterviewRounds, IJob } from "@agent-xenon/interfaces";
-import { ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus, TechnicalRoundTypes } from "@agent-xenon/constants";
+import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
+import { ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus, TechnicalRoundType } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, googleRedirectSchema, manageInterviewRoundSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
-import InterviewRounds from "../../database/models/interview-round";
+import InterviewRound from "../../database/models/interview-round";
 import Job from "../../database/models/job";
 import { manageMeetingRound, manageMeetingScheduleWithCandidate, manageScreeningRound, manageTechnicalRound } from "../../utils/interview-round";
-import ApplicantRounds from "../../database/models/applicant-round";
+import ApplicantRound from "../../database/models/applicant-round";
 import { questionAnswerType } from "../../types/technical-round";
 import { manageMCQAnswers } from "../../utils/technical-round";
 import { sendMail } from "../../helper/mail";
@@ -30,7 +30,7 @@ export const createInterviewRound = async (req: Request, res: Response) => {
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
         if (checkJobExist.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can create round right now interview is already started!", {}, "getDataNotFound");
 
-        const interviewRoundData = await InterviewRounds.create(value);
+        const interviewRoundData = await InterviewRound.create(value);
 
         await RoundQuestionAssign.insertMany(value.questions.map((i: string) => ({
             questionId: i,
@@ -53,13 +53,13 @@ export const updateInterviewRound = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkRoundExist = await InterviewRounds.findOne<IInterviewRounds<IJob>>({ _id: value.roundId, deletedAt: null }).populate("jobId", "status");
+        const checkRoundExist = await InterviewRound.findOne<IInterviewRound<IJob>>({ _id: value.roundId, deletedAt: null }).populate("jobId", "status");
 
         if (!checkRoundExist) return res.badRequest("interview round", {}, "getDataNotFound");
 
         if (checkRoundExist.jobId.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can edit round right now interview is already started!", {}, "getDataNotFound");
 
-        const interviewRoundData = await InterviewRounds.findByIdAndUpdate(value.roundId, { $set: value }, { new: true });
+        const interviewRoundData = await InterviewRound.findByIdAndUpdate(value.roundId, { $set: value }, { new: true });
 
         let questions = await RoundQuestionAssign.distinct("questionId", { roundId: value.roundId, jobId: checkRoundExist.jobId._id });
         questions = questions.map(i => i.toString());
@@ -104,7 +104,7 @@ export const deleteInterviewRound = async (req: Request, res: Response) => {
 
         const roundIdQuery = { _id: Query };
 
-        const checkRoundsExist = await InterviewRounds.find<IInterviewRounds<IJob>>({ ...roundIdQuery, deletedAt: null }).populate("jobId", "status");
+        const checkRoundsExist = await InterviewRound.find<IInterviewRound<IJob>>({ ...roundIdQuery, deletedAt: null }).populate("jobId", "status");
 
         if (checkRoundsExist.length !== value.roundIds.length) return res.badRequest("interview rounds", {}, "getDataNotFound");
 
@@ -112,7 +112,7 @@ export const deleteInterviewRound = async (req: Request, res: Response) => {
 
         if (jobData?.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can delete round right now interview is already started!", {}, "getDataNotFound");
 
-        const interviewRoundData = await InterviewRounds.updateMany(roundIdQuery, { $set: { deletedAt: new Date() } }, { new: true });
+        const interviewRoundData = await InterviewRound.updateMany(roundIdQuery, { $set: { deletedAt: new Date() } }, { new: true });
 
         await RoundQuestionAssign.deleteMany({ roundId: Query, jobId: jobData._id });
 
@@ -131,10 +131,10 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const jobWiseQuery: RootFilterQuery<IApplicantRounds> = { roundIds: { $elemMatch: { $eq: value.roundId } }, jobId: value.jobId, deletedAt: null };
-        const Query: RootFilterQuery<IApplicantRounds> = { applicantId: value.applicantId, ...jobWiseQuery };
+        const jobWiseQuery: RootFilterQuery<IApplicantRound> = { roundIds: { $elemMatch: { $eq: value.roundId } }, jobId: value.jobId, deletedAt: null };
+        const Query: RootFilterQuery<IApplicantRound> = { applicantId: value.applicantId, ...jobWiseQuery };
 
-        const applicantRoundData = await ApplicantRounds.findOne<IApplicantRounds<IApplicant>>(Query).populate("applicantId", "contactInfo");
+        const applicantRoundData = await ApplicantRound.findOne<IApplicantRound<IApplicant>>(Query).populate("applicantId", "contactInfo");
 
         if (!applicantRoundData) return res.badRequest("applicant round", {}, "getDataNotFound");
 
@@ -144,12 +144,12 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
             value.status = InterviewRoundStatus.COMPLETED;
         }
 
-        await ApplicantRounds.updateOne(Query, { $set: value });
+        await ApplicantRound.updateOne(Query, { $set: value });
 
         const selectedApplicants = await getSelectedApplicantDetails(value.jobId);
-        const applicantIds = await ApplicantRounds.distinct("applicantId", jobWiseQuery);
+        const applicantIds = await ApplicantRound.distinct("applicantId", jobWiseQuery);
         if (selectedApplicants.length <= applicantIds.length) {
-            await InterviewRounds.updateOne({ _id: value.roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
+            await InterviewRound.updateOne({ _id: value.roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
         }
 
         await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
@@ -174,15 +174,15 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const match: FilterQuery<IInterviewRounds> = { deletedAt: null, _id: value.roundId }
+        const match: FilterQuery<IInterviewRound> = { deletedAt: null, _id: value.roundId }
 
-        const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds<IInterviewQuestionAnswer>>(match, "type subType endDate startDate status qualificationCriteria mcqCriteria name");
+        const interviewRoundData = await InterviewRound.findOne<IInterviewRound<IInterviewQuestionAnswer>>(match, "type subType endDate startDate status qualificationCriteria mcqCriteria name");
 
-        const matchApplicantRoundQuery: FilterQuery<IApplicantRounds> = { deletedAt: null, roundIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.roundId) } } };
+        const matchApplicantRoundQuery: FilterQuery<IApplicantRound> = { deletedAt: null, roundIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.roundId) } } };
 
         const checkNotCurrentRound = { $ne: [{ $arrayElemAt: ["$roundIds", -1] }, new mongoose.Types.ObjectId(value.roundId)] };
 
-        const applicants = await ApplicantRounds.find<IApplicantRounds<IApplicant>>(matchApplicantRoundQuery, {
+        const applicants = await ApplicantRound.find<IApplicantRound<IApplicant>>(matchApplicantRoundQuery, {
             "status": {
                 $cond: [checkNotCurrentRound, InterviewRoundStatus.SELECTED, { $cond: [{ $eq: ["$status", InterviewRoundStatus.ONGOING] }, "$status", { $cond: ["$isSelected", InterviewRoundStatus.SELECTED, InterviewRoundStatus.REJECTED] }] }]
             },
@@ -207,9 +207,9 @@ export const getInterviewRoundByJobId = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const match: FilterQuery<IInterviewRounds> = { deletedAt: null, jobId: value.jobId }
+        const match: FilterQuery<IInterviewRound> = { deletedAt: null, jobId: value.jobId }
 
-        const interviewRounds = await InterviewRounds.find(match, "type subType endDate startDate status qualificationCriteria mcqCriteria name").sort({ _id: 1 });
+        const interviewRounds = await InterviewRound.find(match, "type subType endDate startDate status qualificationCriteria mcqCriteria name").sort({ _id: 1 });
 
         return res.ok("interview round", interviewRounds, "getDataSuccess")
     } catch (error) {
@@ -232,7 +232,7 @@ export const updateRoundOrder = async (req: Request, res: Response) => {
             }
         }));
 
-        await InterviewRounds.bulkWrite(bulkOps);
+        await InterviewRound.bulkWrite(bulkOps);
 
         return res.ok("interview round", {}, "getDataSuccess")
     } catch (error) {
@@ -249,9 +249,9 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const Query: RootFilterQuery<IInterviewRounds> = { jobId: value.jobId, deletedAt: null };
+        const Query: RootFilterQuery<IInterviewRound> = { jobId: value.jobId, deletedAt: null };
 
-        const interviewRounds = await InterviewRounds.find<IInterviewRounds<IJob>>(Query).sort({ roundNumber: 1 }).populate("jobId", "status");
+        const interviewRounds = await InterviewRound.find<IInterviewRound<IJob>>(Query).sort({ roundNumber: 1 }).populate("jobId", "status");
 
         const interviewRoundData = interviewRounds.find(i => i._id.toString() === value.roundId);
         const previousInterviewRoundData = interviewRounds.slice(0, interviewRounds.findIndex(i => i._id.toString() === value.roundId)).pop();
@@ -356,7 +356,7 @@ export const submitExam = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds>({ _id: value.roundId, deletedAt: null });
+        const interviewRoundData = await InterviewRound.findOne<IInterviewRound>({ _id: value.roundId, deletedAt: null });
 
         if (!interviewRoundData) {
             return res.badRequest("interview round", {}, "getDataNotFound")
@@ -366,7 +366,7 @@ export const submitExam = async (req: Request, res: Response) => {
             return res.badRequest("round already completed", { status: ExamStatus.EXAM_COMPLETED }, "customMessage");
         }
 
-        const Query: RootFilterQuery<QuerySelector<IApplicantRounds>> = {
+        const Query: RootFilterQuery<QuerySelector<IApplicantRound>> = {
             applicantId: user._id,
             jobId: interviewRoundData.jobId,
             roundIds: { $elemMatch: { $eq: interviewRoundData._id } },
@@ -374,7 +374,7 @@ export const submitExam = async (req: Request, res: Response) => {
             status: InterviewRoundStatus.ONGOING
         };
 
-        const applicantRoundData = await ApplicantRounds.findOne<IApplicantRounds<IApplicant>>(Query).populate("applicantId", "contactInfo");
+        const applicantRoundData = await ApplicantRound.findOne<IApplicantRound<IApplicant>>(Query).populate("applicantId", "contactInfo");
 
         if (!applicantRoundData) {
             return res.badRequest("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED }, "customMessage")
@@ -385,19 +385,19 @@ export const submitExam = async (req: Request, res: Response) => {
         let isSelected: boolean;
 
         switch (interviewRoundData.subType) {
-            case TechnicalRoundTypes.MCQ:
+            case TechnicalRoundType.MCQ:
                 isSelected = manageMCQAnswers(questions, value.questionAnswers, interviewRoundData.mcqCriteria);
                 break;
-            case TechnicalRoundTypes.DSA:
+            case TechnicalRoundType.DSA:
                 // in future, the logic will implement here using AI agent
                 break;
-            case TechnicalRoundTypes.CODING:
+            case TechnicalRoundType.CODING:
                 // in future, the logic will implement here using AI agent
                 break;
         }
 
         await Promise.all([
-            ApplicantRounds.updateOne(Query, {
+            ApplicantRound.updateOne(Query, {
                 $set: {
                     isSelected,
                     status: InterviewRoundStatus.COMPLETED
@@ -427,13 +427,13 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const interviewRoundData = await InterviewRounds.findOne<IInterviewRounds>({ _id: value.roundId, deletedAt: null });
+        const interviewRoundData = await InterviewRound.findOne<IInterviewRound>({ _id: value.roundId, deletedAt: null });
 
         if (!interviewRoundData) {
             return res.badRequest("interview round", {}, "getDataNotFound")
         }
 
-        const applicantRoundData = await ApplicantRounds.findOne<IApplicantRounds>({ roundIds: { $elemMatch: { $eq: value.roundId } }, deletedAt: null, applicantId: user._id, });
+        const applicantRoundData = await ApplicantRound.findOne<IApplicantRound>({ roundIds: { $elemMatch: { $eq: value.roundId } }, deletedAt: null, applicantId: user._id, });
 
         const currentDate = new Date();
 
@@ -453,7 +453,7 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
         };
 
         if (!applicantRoundData) {
-            await ApplicantRounds.updateOne(queryFilter, { $set: { ...queryFilter, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: interviewRoundData._id } }, { upsert: true });
+            await ApplicantRound.updateOne(queryFilter, { $set: { ...queryFilter, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: interviewRoundData._id } }, { upsert: true });
         }
 
         return res.ok("interview questions", { roundId: value.roundId, questions }, "getDataSuccess")
