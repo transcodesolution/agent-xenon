@@ -16,6 +16,7 @@ import Organization from "../../database/models/organization";
 import { google } from "googleapis";
 import { getSelectedApplicantDetails } from "../../utils/applicant";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
+import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
 
 export const createInterviewRound = async (req: Request, res: Response) => {
     try {
@@ -445,7 +446,9 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
             return res.ok("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED }, "customMessage")
         }
 
-        const questions = await RoundQuestionAssign.find({ deletedAt: null, roundId: value.roundId }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes inputFormat").sort({ _id: 1 });
+        const questionAssignId: string[] = await RoundQuestionAssign.distinct("questionId", { deletedAt: null, roundId: value.roundId }).sort({ _id: 1 });
+
+        const questions = await InterviewQuestionAnswer.find<IInterviewQuestionAnswer>({ _id: { $in: questionAssignId } }, "type question description options tags difficulty timeLimitInMinutes inputFormat");
 
         const queryFilter = {
             applicantId: user._id,
