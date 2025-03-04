@@ -6,7 +6,7 @@ import ApplicantRounds from "../database/models/applicant-round";
 import { InterviewRoundStatus } from "@agent-xenon/constants";
 import { sendMail } from "../helper/mail";
 import { RootFilterQuery } from "mongoose";
-import { IApplicantRounds } from "@agent-xenon/interfaces";
+import { IApplicantRound } from "@agent-xenon/interfaces";
 
 const client = createOpenAIClient();
 
@@ -78,7 +78,7 @@ const SYSTEM_PROMPT = `You have to use the tools provided to get applicant detai
         {type:'OUTPUT',message:'success'}`
 
 async function updateApplicantSelectedToDb(jobId: string, roundId: string, isSelected: boolean, applicantId: string, email: string) {
-    const queryFilter: RootFilterQuery<IApplicantRounds> = { jobId, applicantId, deletedAt: null };
+    const queryFilter: RootFilterQuery<IApplicantRound> = { jobId, applicantId, deletedAt: null };
     const applicantRoundData = await ApplicantRounds.findOne({ ...queryFilter, roundIds: { $elemMatch: { $eq: roundId } } });
     if (applicantRoundData) {
         return "already exist";

@@ -1,4 +1,4 @@
-export enum TechnicalRoundTypes {
+export enum TechnicalRoundType {
     MCQ = "mcq",
     DSA = "dsa",
     CODING = "coding",

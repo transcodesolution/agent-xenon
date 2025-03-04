@@ -1,10 +1,10 @@
-import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty, TechnicalRoundTypes } from '@agent-xenon/constants';
+import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty, TechnicalRoundType } from '@agent-xenon/constants';
 import { IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
 import mongoose, { Schema } from 'mongoose';
 
 const InterviewQuestionAnswerSchema: Schema = new Schema({
     description: { type: String },
-    type: { type: String, enum: TechnicalRoundTypes, default: TechnicalRoundTypes.MCQ },
+    type: { type: String, enum: TechnicalRoundType, default: TechnicalRoundType.MCQ },
     question: { type: String },
     promptText: { type: String },
     answerDetails: {
@@ -18,7 +18,7 @@ const InterviewQuestionAnswerSchema: Schema = new Schema({
     evaluationCriteria: { type: String },
     isAutomated: { type: Boolean, default: true },
     organizationId: { type: Schema.Types.ObjectId },
-    inputFormat: { type: String, enum: AnswerInputFormat, default: TechnicalRoundTypes.MCQ },
+    inputFormat: { type: String, enum: AnswerInputFormat, default: TechnicalRoundType.MCQ },
     deletedAt: { type: Date, default: null }
 }, { timestamps: true, versionKey: false });
 

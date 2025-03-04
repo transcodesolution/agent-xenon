@@ -1,11 +1,11 @@
 import { InterviewRoundStatus } from "@agent-xenon/constants";
 import filterCandidateAgent from "../agents/screening-candidate";
-import { IInterviewRounds, IJob } from "@agent-xenon/interfaces";
+import { IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import { getSelectedApplicantDetails } from "./applicant";
 import { createEncodedShortToken } from "./generate-token";
 import { config } from "../config";
 import { sendMail } from "../helper/mail";
-import InterviewRounds from "../database/models/interview-round";
+import InterviewRound from "../database/models/interview-round";
 import { RootFilterQuery } from "mongoose";
 import Organization from "../database/models/organization";
 import { oauth2Client } from "../helper/third-party-oauth";
@@ -13,23 +13,23 @@ import { Response } from "express";
 import { calendar_v3, google } from "googleapis";
 import { generatePossibleTimeSlots, getDaysInCurrentMonth } from "./manage-dates";
 import Job from "../database/models/job";
-import ApplicantRounds from "../database/models/applicant-round";
+import ApplicantRound from "../database/models/applicant-round";
 import { socketIo } from "../helper/socket";
 
-export const manageScreeningRound = async (roundData: IInterviewRounds<IJob>, organizationId: string) => {
-    const Query: RootFilterQuery<IInterviewRounds> = { _id: roundData._id };
+export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, organizationId: string) => {
+    const Query: RootFilterQuery<IInterviewRound> = { _id: roundData._id };
     try {
         const jobId = roundData.jobId._id.toString();
         await filterCandidateAgent(roundData.qualificationCriteria, jobId, roundData._id.toString());
-        await InterviewRounds.updateOne(Query, { $set: { status: InterviewRoundStatus.COMPLETED } });
+        await InterviewRound.updateOne(Query, { $set: { status: InterviewRoundStatus.COMPLETED } });
         socketIo.to(organizationId).emit("round-status", { status: InterviewRoundStatus.COMPLETED, message: "Screening round is completed! You can check the status!" });
     } catch (error) {
         console.log("manageScreeningRound: error: ", error);
-        await InterviewRounds.updateOne(Query, { $set: { status: InterviewRoundStatus.YET_TO_START } });
+        await InterviewRound.updateOne(Query, { $set: { status: InterviewRoundStatus.YET_TO_START } });
     }
 }
 
-export const manageTechnicalRound = async (roundData: IInterviewRounds<IJob>) => {
+export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => {
     const applicants = await getSelectedApplicantDetails(roundData.jobId._id);
     const domainUrl = config.FRONTEND_URL.replace(/\/\/([^.]*)/, `//${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
     const roundId = roundData._id.toString();
@@ -59,7 +59,7 @@ export const manageTechnicalRound = async (roundData: IInterviewRounds<IJob>) =>
     }));
 }
 
-export const manageMeetingRound = async (roundData: IInterviewRounds<IJob>, organizationId?: string, res?: Response) => {
+export const manageMeetingRound = async (roundData: IInterviewRound<IJob>, organizationId?: string, res?: Response) => {
     const checkTokenExist = await Organization.findOne({ _id: organizationId, deletedAt: null, serviceProviders: { $exists: true } });
     const jobId = roundData.jobId._id.toString();
     const roundId = roundData._id.toString();
@@ -164,14 +164,14 @@ export const manageMeetingScheduleWithCandidate = async (jobId: string, intervie
                 const end = startDateTime.toISOString();
                 const eventData = await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
                 // scheduledMeetings.push(eventData.data);
-                await ApplicantRounds.updateOne({ roundIds: { $elemMatch: { $eq: roundId } }, jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundId } }, { upsert: true })
+                await ApplicantRound.updateOne({ roundIds: { $elemMatch: { $eq: roundId } }, jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundId } }, { upsert: true })
             } else {
                 console.error(`No available slots for ${applicant.contactInfo.email}`);
                 break;
             }
         }
 
-        // await InterviewRounds.updateOne({ _id: roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
+        // await InterviewRound.updateOne({ _id: roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
 
         // return scheduledMeetings;
     } catch (error) {

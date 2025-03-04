@@ -2,11 +2,11 @@ import { Request, Response } from "express";
 import mongoose, { FilterQuery, RootFilterQuery, } from "mongoose";
 import { addResumeLinkSchema, createJobSchema, deleteJobSchema, deleteResumeLinkSchema, getJobByIdSchema, getJobSchema, getResumeLinkSchema, updateJobSchema } from "../../validation/job";
 import Job from "../../database/models/job";
-import InterviewRounds from "../../database/models/interview-round";
+import InterviewRound from "../../database/models/interview-round";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { IInterviewRounds, IJob } from "@agent-xenon/interfaces";
+import { IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import Applicant from "../../database/models/applicant";
-import ApplicantRounds from "../../database/models/applicant-round";
+import ApplicantRound from "../../database/models/applicant-round";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
 import { JobStatus } from "@agent-xenon/constants";
 import { JobQueryType } from "../../types/job";
@@ -27,15 +27,15 @@ export const createJob = async (req: Request, res: Response) => {
         value.qualificationCriteria = value.screeningCriteria;
         const data = await Job.create(value);
 
-        const rounds = await InterviewRounds.insertMany(value.rounds?.map((i: IInterviewRounds) => {
+        const rounds = await InterviewRound.insertMany(value.rounds?.map((i: IInterviewRound) => {
             i.jobId = data._id;
             return i;
         }) ?? []);
 
         const obj: Partial<IRoundQuestionAssign> = { jobId: data._id };
 
-        const questionAssigns = rounds.flatMap((i: IInterviewRounds) => {
-            const roundDetail = value.rounds.find((j: IInterviewRounds) => (j.roundNumber === i.roundNumber));
+        const questionAssigns = rounds.flatMap((i: IInterviewRound) => {
+            const roundDetail = value.rounds.find((j: IInterviewRound) => (j.roundNumber === i.roundNumber));
             obj.roundId = i._id;
             return roundDetail.questions.map((k: string) => ({ questionId: k, ...obj }));
         });
@@ -97,8 +97,8 @@ export const deleteJob = async (req: Request, res: Response) => {
 
         await Promise.all([
             Applicant.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
-            ApplicantRounds.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
-            InterviewRounds.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
+            ApplicantRound.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
+            InterviewRound.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
             RoundQuestionAssign.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
         ])
 

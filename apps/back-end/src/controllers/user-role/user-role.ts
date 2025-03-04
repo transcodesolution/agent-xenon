@@ -3,7 +3,7 @@ import { roleModel } from '../../database/models/role';
 import { createUserRoleSchema, deleteUserRoleSchema, getUserRoleSchema, updateUserRoleSchema } from "../../validation/user-role";
 import { IRole } from "@agent-xenon/interfaces";
 import { FilterQuery } from "mongoose";
-import { RoleTypes } from "@agent-xenon/constants";
+import { RoleType } from "@agent-xenon/constants";
 
 export const createRole = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -88,11 +88,11 @@ export const updateRole = async (req: Request, res: Response) => {
 
         const roleData = await roleModel.findOne(Query);
 
-        if (roleData?.type === RoleTypes.ADMINISTRATOR) {
+        if (roleData?.type === RoleType.ADMINISTRATOR) {
             return res.badRequest('You can not update the administrator role', {}, 'customMessage');
         }
 
-        // if (roleData?.type === RoleTypes.CANDIDATE) {
+        // if (roleData?.type === RoleType.CANDIDATE) {
         //     return res.badRequest('You can not update the candidate role', {}, 'customMessage');
         // }
 
@@ -120,11 +120,11 @@ export const deleteRole = async (req: Request, res: Response) => {
 
         const roleData = await roleModel.findOne(Query);
 
-        if (roleData?.type === RoleTypes.ADMINISTRATOR) {
+        if (roleData?.type === RoleType.ADMINISTRATOR) {
             return res.badRequest('You can not delete the administrator role', {}, 'customMessage');
         }
 
-        if (roleData?.type === RoleTypes.CANDIDATE) {
+        if (roleData?.type === RoleType.CANDIDATE) {
             return res.badRequest('You can not delete the candidate role', {}, 'customMessage');
         }
 
