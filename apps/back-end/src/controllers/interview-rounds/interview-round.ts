@@ -235,7 +235,7 @@ export const updateRoundOrder = async (req: Request, res: Response) => {
 
         await InterviewRound.bulkWrite(bulkOps);
 
-        return res.ok("interview round", {}, "getDataSuccess")
+        return res.ok("interview round order", {}, "updateDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -364,21 +364,20 @@ export const submitExam = async (req: Request, res: Response) => {
         }
 
         if (interviewRoundData.status === InterviewRoundStatus.COMPLETED) {
-            return res.badRequest("round already completed", { status: ExamStatus.EXAM_COMPLETED }, "customMessage");
+            return res.ok("round already completed", { status: ExamStatus.EXAM_COMPLETED }, "customMessage");
         }
 
         const Query: RootFilterQuery<QuerySelector<IApplicantRound>> = {
             applicantId: user._id,
             jobId: interviewRoundData.jobId,
             roundIds: { $elemMatch: { $eq: interviewRoundData._id } },
-            isSelected: { $exists: false },
             status: InterviewRoundStatus.ONGOING
         };
 
         const applicantRoundData = await ApplicantRound.findOne<IApplicantRound<IApplicant>>(Query).populate("applicantId", "contactInfo");
 
         if (!applicantRoundData) {
-            return res.badRequest("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED }, "customMessage")
+            return res.ok("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED }, "customMessage")
         }
 
         const questions = await RoundQuestionAssign.find<questionAnswerType>({ roundId: value.roundId, jobId: interviewRoundData.jobId, deletedAt: null }, "questionId").populate("questionId")
