@@ -23,7 +23,7 @@ export const axiosNextServerInstance = axios.create({
   },
 });
 
-export const setupAxiosInterceptors = (token: string) => {
+export const setupAxiosInterceptors = (token: string, navigateToLogin?: (url: string) => void) => {
   axiosInstance.interceptors.request.use(
     (request: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
       if (request.headers) {
@@ -31,16 +31,28 @@ export const setupAxiosInterceptors = (token: string) => {
       }
       return request;
     },
-    (error: AxiosError) => {
-      return Promise.reject(error);
-    }
+    (error: AxiosError) => Promise.reject(error)
   );
 
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse) => {
-      return response;
-    },
+    (response: AxiosResponse) => response,
     (error: AxiosError) => {
+      if (error.response?.status === 401) {
+        if (typeof window !== 'undefined') {
+          const currentUrl = new URL(window.location.href);
+          const tokenParam = currentUrl.searchParams.get('token');
+
+          let redirectUrl = '/signin';
+          if (tokenParam) {
+            redirectUrl += `?token=${tokenParam}`;
+          }
+          if (navigateToLogin) {
+            navigateToLogin(redirectUrl);
+          } else {
+            window.location.href = redirectUrl;
+          }
+        }
+      }
       return Promise.reject(error);
     }
   );

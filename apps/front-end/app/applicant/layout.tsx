@@ -4,9 +4,10 @@ import '@mantine/notifications/styles.layer.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { Notification } from '@/libs/components/custom/notification';
 import ApplicantMainLayout from './_components/ApplicantMainLayout';
+import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryClientProvider';
+import { AuthProvider } from '@/libs/components/providers/AuthProvider';
 
 export const metadata = {
   title: 'Agent Xenon',
@@ -21,10 +22,6 @@ export default async function ApplicantLayout({
   const cookieStore = await cookies();
   const bearerToken = cookieStore.get('agentXenonApplicantToken')?.value || '';
 
-  if (bearerToken) {
-    redirect('/interview')
-  }
-
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
@@ -35,12 +32,16 @@ export default async function ApplicantLayout({
         />
       </head>
       <body>
-        <MantineProvider>
-          <Notification position='bottom-right' />
-          <ApplicantMainLayout>
-            {children}
-          </ApplicantMainLayout>
-        </MantineProvider>
+        <AuthProvider token={bearerToken}>
+          <ReactQueryClientProvider>
+            <MantineProvider>
+              <Notification position='bottom-right' />
+              <ApplicantMainLayout>
+                {children}
+              </ApplicantMainLayout>
+            </MantineProvider>
+          </ReactQueryClientProvider>
+        </AuthProvider>
       </body>
     </html >
   );

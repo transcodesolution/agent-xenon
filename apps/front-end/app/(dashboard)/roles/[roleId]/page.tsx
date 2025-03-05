@@ -3,6 +3,7 @@ import { IRole } from '@agent-xenon/interfaces';
 import { TextInput } from '@mantine/core'
 import React, { useEffect, useState } from 'react'
 import { RolePermissionsList } from '../_components/RolePermissionsList';
+import { RoleType } from '@agent-xenon/constants';
 
 export default function Page() {
   const [role, setRole] = useState<IRole | null>(null);
@@ -20,8 +21,9 @@ export default function Page() {
     setRole({
       name: 'Admin',
       permissions: [],
-      isAdministratorRole: true,
+      type: RoleType.ADMINISTRATOR,
       _id: '1',
+      organizationId: ''
     })
   }, [])
 
