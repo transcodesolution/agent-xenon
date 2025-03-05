@@ -3,10 +3,10 @@ import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilter
 import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import { ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus, TechnicalRoundType } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, googleRedirectSchema, manageInterviewRoundSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
+import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, googleRedirectSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
 import InterviewRound from "../../database/models/interview-round";
 import Job from "../../database/models/job";
-import { manageMeetingRound, manageMeetingScheduleWithCandidate, manageScreeningRound, manageTechnicalRound } from "../../utils/interview-round";
+import { manageMeetingRound, manageMeetingScheduleWithCandidate, manageScreeningRound, manageTechnicalRound, updateApplicantStatusOnRoundComplete } from "../../utils/interview-round";
 import ApplicantRound from "../../database/models/applicant-round";
 import { questionAnswerType } from "../../types/technical-round";
 import { manageMCQAnswers } from "../../utils/technical-round";
@@ -132,28 +132,31 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const jobWiseQuery: RootFilterQuery<IApplicantRound> = { roundIds: { $elemMatch: { $eq: value.roundId } }, jobId: value.jobId, deletedAt: null };
-        const Query: RootFilterQuery<IApplicantRound> = { applicantId: value.applicantId, ...jobWiseQuery };
+        let message = "round status";
 
-        const applicantRoundData = await ApplicantRound.findOne<IApplicantRound<IApplicant>>(Query).populate("applicantId", "contactInfo");
+        if (value.roundStatus === InterviewRoundStatus.SELECTED || value.roundStatus === InterviewRoundStatus.REJECTED) {
+            const jobWiseQuery: RootFilterQuery<IApplicantRound> = { roundIds: { $elemMatch: { $eq: value.roundId } }, jobId: value.jobId, deletedAt: null };
+            const Query: RootFilterQuery<IApplicantRound> = { applicantId: value.applicantId, ...jobWiseQuery };
 
-        if (!applicantRoundData) return res.badRequest("applicant round", {}, "getDataNotFound");
+            const applicantRoundData = await ApplicantRound.findOne<IApplicantRound<IApplicant>>(Query).populate("applicantId", "contactInfo");
 
-        value.isSelected = value.roundStatus === InterviewRoundStatus.SELECTED;
+            if (!applicantRoundData) return res.badRequest("applicant round", {}, "getDataNotFound");
 
-        if (applicantRoundData.status !== InterviewRoundStatus.COMPLETED) {
-            value.status = InterviewRoundStatus.COMPLETED;
-        }
+            value.isSelected = value.roundStatus === InterviewRoundStatus.SELECTED;
 
-        await ApplicantRound.updateOne(Query, { $set: value });
+            if (applicantRoundData.status !== InterviewRoundStatus.COMPLETED) {
+                value.status = InterviewRoundStatus.COMPLETED;
+            }
 
-        const selectedApplicants = await getSelectedApplicantDetails(value.jobId);
-        const applicantIds = await ApplicantRound.distinct("applicantId", jobWiseQuery);
-        if (selectedApplicants.length <= applicantIds.length) {
-            await InterviewRound.updateOne({ _id: value.roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
-        }
+            await ApplicantRound.updateOne(Query, { $set: value });
 
-        await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
+            const selectedApplicants = await getSelectedApplicantDetails(value.jobId);
+            const applicantIds = await ApplicantRound.distinct("applicantId", jobWiseQuery);
+            if (selectedApplicants.length <= applicantIds.length) {
+                await InterviewRound.updateOne({ _id: value.roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
+            }
+
+            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
 
             We appreciate your time and effort in participating in the technical round for the applied position.  
             
@@ -161,7 +164,15 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
             
             Thank you for your interest in our company.`)
 
-        return res.ok("applicant round status", {}, "updateDataSuccess")
+            message = "applicant round status";
+        } else {
+            await InterviewRound.updateOne({ _id: value.roundId }, { $set: { status: value.roundStatus } });
+            if (value.status === InterviewRoundStatus.COMPLETED) {
+                await updateApplicantStatusOnRoundComplete<string>({ $eq: value.roundId });
+            }
+        }
+
+        return res.ok(message, {}, "updateDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -242,29 +253,8 @@ export const updateRoundOrder = async (req: Request, res: Response) => {
 }
 
 export const manageInterviewRound = async (req: Request, res: Response) => {
-    const { user } = req.headers;
+    const { user, interviewRoundData } = req.headers;
     try {
-        const { error, value } = manageInterviewRoundSchema.validate(req.body);
-
-        if (error) {
-            return res.badRequest(error.details[0].message, {}, "customMessage");
-        }
-
-        const Query: RootFilterQuery<IInterviewRound> = { jobId: value.jobId, deletedAt: null };
-
-        const interviewRounds = await InterviewRound.find<IInterviewRound<IJob>>(Query).sort({ roundNumber: 1 }).populate("jobId", "status");
-
-        const interviewRoundData = interviewRounds.find(i => i._id.toString() === value.roundId);
-        const previousInterviewRoundData = interviewRounds.slice(0, interviewRounds.findIndex(i => i._id.toString() === value.roundId)).pop();
-
-        if (interviewRoundData?.jobId._id.toString() !== value.jobId) return res.badRequest("job is invalid for this round", {}, "customMessage");
-
-        if (interviewRoundData.status === InterviewRoundStatus.ONGOING) return res.badRequest("round already in progress", {}, "customMessage");
-
-        if (interviewRoundData.status === InterviewRoundStatus.COMPLETED) return res.badRequest("round already completed", {}, "customMessage");
-
-        if (previousInterviewRoundData && previousInterviewRoundData.status !== InterviewRoundStatus.COMPLETED) return res.badRequest("previous round is not completed", {}, "customMessage");
-
         const currentDate = new Date();
 
         interviewRoundData.status = InterviewRoundStatus.ONGOING;
@@ -363,6 +353,12 @@ export const submitExam = async (req: Request, res: Response) => {
             return res.badRequest("interview round", {}, "getDataNotFound")
         }
 
+        const currentDate = new Date();
+
+        if (currentDate >= interviewRoundData.endDate || interviewRoundData.status === InterviewRoundStatus.PAUSED) {
+            return res.ok("link expired! you are late", { status: ExamStatus.LINK_EXPIRED }, "customMessage")
+        }
+
         if (interviewRoundData.status === InterviewRoundStatus.COMPLETED) {
             return res.ok("round already completed", { status: ExamStatus.EXAM_COMPLETED }, "customMessage");
         }
@@ -437,7 +433,7 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
 
         const currentDate = new Date();
 
-        if (currentDate >= interviewRoundData.endDate) {
+        if (currentDate >= interviewRoundData.endDate || interviewRoundData.status === InterviewRoundStatus.PAUSED) {
             return res.ok("link expired! you are late", { status: ExamStatus.LINK_EXPIRED }, "customMessage")
         }
 
