@@ -6,7 +6,7 @@ import { createEncodedShortToken } from "./generate-token";
 import { config } from "../config";
 import { sendMail } from "../helper/mail";
 import InterviewRound from "../database/models/interview-round";
-import { RootFilterQuery } from "mongoose";
+import { QuerySelector, RootFilterQuery } from "mongoose";
 import Organization from "../database/models/organization";
 import { oauth2Client } from "../helper/third-party-oauth";
 import { Response } from "express";
@@ -178,4 +178,8 @@ export const manageMeetingScheduleWithCandidate = async (jobId: string, intervie
         console.error("manageMeetingScheduleWithCandidate: ", error);
         console.error("dateTime: ", new Date());
     }
+}
+
+export const updateApplicantStatusOnRoundComplete = async <T>(interviewRoundIdQuery: QuerySelector<T>) => {
+    return ApplicantRound.updateMany({ roundIds: { $elemMatch: interviewRoundIdQuery }, status: InterviewRoundStatus.ONGOING }, { $set: { status: InterviewRoundStatus.COMPLETED, isSelected: false } });
 }

@@ -4,6 +4,7 @@ export enum InterviewRoundStatus {
     SELECTED = "selected",
     REJECTED = "rejected",
     ONGOING = "ongoing",
+    PAUSED = "paused",
 }
 
 export enum InterviewRoundTypes {

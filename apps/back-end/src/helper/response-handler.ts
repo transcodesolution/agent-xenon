@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { responseMessage } from "./response";
 import STATUS_CODES from "./status-codes";
-import { IApplicant, IOrganization, IRole, IUser } from "@agent-xenon/interfaces";
+import { IApplicant, IInterviewRound, IJob, IRole, IUser } from "@agent-xenon/interfaces";
 import { IncomingHttpHeaders } from "http";
 import { ResponseDataType } from "../types/response-data";
 
@@ -20,6 +20,7 @@ declare module "express" {
     interface Request {
         headers: IncomingHttpHeaders & {  // Preserve existing headers
             user?: IApplicant<string, IRole> | Partial<IUser<IRole, string>>;
+            interviewRoundData?: IInterviewRound<IJob>,
         };
     }
 }
