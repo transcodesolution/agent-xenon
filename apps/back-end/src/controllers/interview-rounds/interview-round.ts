@@ -355,12 +355,14 @@ export const submitExam = async (req: Request, res: Response) => {
 
         const currentDate = new Date();
 
+        const roundObj = { roundName: interviewRoundData.name };
+
         if (currentDate >= interviewRoundData.endDate || interviewRoundData.status === InterviewRoundStatus.PAUSED) {
-            return res.ok("link expired! you are late", { status: ExamStatus.LINK_EXPIRED }, "customMessage")
+            return res.ok("link expired! you are late", { status: ExamStatus.LINK_EXPIRED, ...roundObj }, "customMessage")
         }
 
         if (interviewRoundData.status === InterviewRoundStatus.COMPLETED) {
-            return res.ok("round already completed", { status: ExamStatus.EXAM_COMPLETED }, "customMessage");
+            return res.ok("round already completed", { status: ExamStatus.EXAM_COMPLETED, ...roundObj }, "customMessage");
         }
 
         const Query: RootFilterQuery<QuerySelector<IApplicantRound>> = {
@@ -373,7 +375,7 @@ export const submitExam = async (req: Request, res: Response) => {
         const applicantRoundData = await ApplicantRound.findOne<IApplicantRound<IApplicant>>(Query).populate("applicantId", "contactInfo");
 
         if (!applicantRoundData) {
-            return res.ok("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED }, "customMessage")
+            return res.ok("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED, ...roundObj }, "customMessage")
         }
 
         const questions = await RoundQuestionAssign.find<questionAnswerType>({ roundId: value.roundId, jobId: interviewRoundData.jobId, deletedAt: null }, "questionId").populate("questionId")
@@ -433,12 +435,14 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
 
         const currentDate = new Date();
 
+        const roundObj = { roundName: interviewRoundData.name };
+
         if (currentDate >= interviewRoundData.endDate || interviewRoundData.status === InterviewRoundStatus.PAUSED) {
-            return res.ok("link expired! you are late", { status: ExamStatus.LINK_EXPIRED }, "customMessage")
+            return res.ok("link expired! you are late", { status: ExamStatus.LINK_EXPIRED, ...roundObj, }, "customMessage")
         }
 
         if (applicantRoundData?.status === InterviewRoundStatus.COMPLETED) {
-            return res.ok("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED }, "customMessage")
+            return res.ok("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED, ...roundObj, }, "customMessage")
         }
 
         const questionAssignId: string[] = await RoundQuestionAssign.distinct("questionId", { deletedAt: null, roundId: value.roundId }).sort({ _id: 1 });
@@ -454,7 +458,7 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
             await ApplicantRound.updateOne(queryFilter, { $set: { ...queryFilter, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: interviewRoundData._id } }, { upsert: true });
         }
 
-        return res.ok("interview questions", { roundId: value.roundId, questions }, "getDataSuccess")
+        return res.ok("interview questions", { roundId: value.roundId, ...roundObj, questions }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
