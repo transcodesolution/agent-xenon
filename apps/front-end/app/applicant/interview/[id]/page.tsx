@@ -1,18 +1,36 @@
 'use client'
 
 import { Question } from "@/libs/components/custom/question";
-import { useGetInterviewMCQQuestions } from "@/libs/react-query-hooks/src/lib/interview/useGetInterviewMCQQuestions";
-import { AnswerMcqOptionFormat } from "@agent-xenon/constants";
+import { useGetInterviewMCQQuestions, useSubmitExamMCQQuestions } from "@agent-xenon/react-query-hooks";
+import { AnswerMcqOptionFormat, ExamStatus } from "@agent-xenon/constants";
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
-import { Button, Flex, Stack } from "@mantine/core";
+import { Button, Container, Flex, Stack, Text, Title } from "@mantine/core";
+import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { showNotification } from "@mantine/notifications";
+import { ExamCompletionStatus } from "../../_components/ExamCompletionStatus";
 
-export default function Page({ params: { id } }: { params: { id: string } }) {
+export default function Page() {
   const [currentQuestion, setCurrentQuestion] = useState<IInterviewQuestionAnswer | null>(null);
   const [answers, setAnswers] = useState<Record<string, AnswerMcqOptionFormat[]>>({});
+  const { id } = useParams<{ id: string }>();
 
   const { data, isLoading } = useGetInterviewMCQQuestions({ roundId: id });
-  const questions = data?.data
+  const { mutate: submitExamMCQQuestions, } = useSubmitExamMCQQuestions();
+  const [examProgress, setExamProgress] = useState<ExamStatus | "success" | null>(null);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const questions = data?.data?.questions || []
+  const examStatus = data?.data?.status;
+
+  useEffect(() => {
+    if (examStatus === ExamStatus.LINK_EXPIRED) {
+      showNotification({ message: 'This exam link has expired.', color: 'orange', title: 'Link Expired' });
+      setExamProgress(ExamStatus.LINK_EXPIRED);
+    } else if (examStatus === ExamStatus.EXAM_COMPLETED) {
+      showNotification({ message: 'You have already completed this exam.', color: 'blue', title: 'Exam Completed' });
+      setExamProgress(ExamStatus.EXAM_COMPLETED);
+    }
+  }, [data]);
 
   useEffect(() => {
     if (questions && questions?.length > 0) {
@@ -36,9 +54,6 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
     }
   };
 
-  const isPreviousButtonDisabled = !questions || !currentQuestion || questions.indexOf(currentQuestion) === 0;
-  const isNextButtonDisabled = !questions || !currentQuestion || questions.indexOf(currentQuestion) === questions.length - 1;
-
   const handleAnswer = (questionId: string, answer: AnswerMcqOptionFormat[]) => {
     setAnswers((prev) => ({
       ...prev,
@@ -47,24 +62,94 @@ export default function Page({ params: { id } }: { params: { id: string } }) {
   };
 
   if (isLoading) { return 'Loading...' }
+  const currentIndex = questions?.findIndex(q => q._id === currentQuestion?._id);
+  const isLastQuestion = currentIndex === questions?.length - 1;
+
+  const handleSubmit = () => {
+    const formattedAnswers = questions.map((question) => {
+      const answer = answers[question._id] || [];
+      return {
+        questionId: question._id || "",
+        answerDetails: {
+          text: answer.length > 0 ? answer[0] : ""
+        }
+      };
+    });
+
+    submitExamMCQQuestions(
+      { roundId: id, questionAnswers: formattedAnswers },
+      {
+        onSuccess: (response) => {
+          showNotification({ message: response.message, color: 'green', title: 'Success' });
+          if (response?.data?.status) {
+            setExamProgress(response?.data?.status);
+          } else {
+
+            setExamProgress("success");
+          }
+        },
+        onError: (error) => {
+          showNotification({ message: error.message, color: 'red' });
+        }
+      }
+    );
+  };
 
   return (
-    <Stack>
-      {currentQuestion && (
-        <Question
-          question={currentQuestion}
-          onAnswer={handleAnswer}
-          answers={answers[currentQuestion._id] || []}
+    <Container size="xl">
+      {
+        (examProgress !== null) &&
+        <ExamCompletionStatus
+          totalQuestions={questions.length}
+          answeredQuestions={Object.keys(answers).length}
+          status={examProgress}
+          roundName={data?.data?.roundName ?? "Technical Interview"}
         />
-      )}
-      <Flex justify="space-between" align="center">
-        <Button onClick={handlePreviousQuestion} disabled={isPreviousButtonDisabled}>
-          Previous
-        </Button>
-        <Button onClick={handleNextQuestion} disabled={isNextButtonDisabled}>
-          Next
-        </Button>
-      </Flex>
-    </Stack>
-  );
+      }
+      {
+        (questions?.length > 0) &&
+        <Stack>
+          <Stack align="center" mb='xl' gap='xs'>
+            <Title order={1} >{data?.data?.roundName ?? "Technical Interview"} </Title>
+            <Text c='gray' >Select the best answer for each question. You can navigate between questions using the buttons below.</Text>
+          </Stack >
+          <Stack mt='xl'>
+            {currentQuestion && (
+              <Question
+                question={currentQuestion}
+                onAnswer={handleAnswer}
+                answers={answers[currentQuestion._id] || []}
+                currentQuestionIndex={currentIndex}
+                totalQuestions={questions?.length}
+              />
+            )}
+            <Flex gap='lg' justify='center' align="center">
+              <Button
+                onClick={handlePreviousQuestion}
+                disabled={currentIndex === 0}
+                variant="outline"
+              >
+                Previous
+              </Button>
+              {isLastQuestion ? (
+                <Button
+                  onClick={handleSubmit}
+                >
+                  Submit
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleNextQuestion}
+                  variant="outline"
+                >
+                  Next
+                </Button>
+              )}
+            </Flex>
+          </Stack>
+        </Stack>
+      }
+    </Container >
+  )
+
 }

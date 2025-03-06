@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { cookies } from 'next/headers'
-import { signIn } from '@/libs/web-apis/src';
+import { signIn } from '@agent-xenon/web-apis';
+import { ISignInRequest } from '@agent-xenon/types-api';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password } = body;
+    const { name, email, password, candidateToken, redirectUrl } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -21,15 +22,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await signIn({ name, email, password });
+    const signInData: ISignInRequest = { name, email, password };
+    if (candidateToken) signInData.candidateToken = candidateToken;
+    const result = await signIn(signInData);
 
     if (result.status === 200) {
       const cookieStore = await cookies();
-      cookieStore.set('agentXenonToken', result.data.token, { path: '/' });
-
-      const redirectUrl = new URL('/', request.url);
-      console.log(redirectUrl, 'redirectUrl')
-      return NextResponse.redirect(redirectUrl);
+      if (!candidateToken) {
+        cookieStore.set('agentXenonToken', result.data.token, { path: '/', httpOnly: true });
+      } else {
+        cookieStore.set('agentXenonApplicantToken', result.data.token, { path: redirectUrl ?? '/', httpOnly: true });
+      }
+      const redirectTo = new URL(redirectUrl ?? '/', request.url);
+      return NextResponse.redirect(redirectTo);
 
     } else {
       return NextResponse.json(

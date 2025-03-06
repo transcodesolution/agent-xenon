@@ -19,8 +19,11 @@ import { PATH_AUTH } from '@/libs/routes';
 import classes from './signin.module.scss';
 import { nextServerSignIn } from '@/libs/web-apis/src';
 import { showNotification } from '@mantine/notifications';
+import { useSearchParams } from 'next/navigation';
 
 export default function Page() {
+  const searchParams = useSearchParams()
+  const token = searchParams.get('token');
   const form = useForm({
     initialValues: { email: '', password: '' },
 
@@ -35,7 +38,16 @@ export default function Page() {
 
   const handleSignInFormSubmit = form.onSubmit(async ({ email, password }) => {
     try {
-      await nextServerSignIn({ email, password, name: 'transcodezy' })
+      const previousURL = document.referrer;
+      const redirectUrl = token ? new URL(previousURL).pathname : "/";
+
+      await nextServerSignIn({
+        email,
+        password,
+        name: 'transcodezy',
+        candidateToken: token || '',
+        redirectUrl
+      });
     } catch (error: any) {
       showNotification({
         message: error.message
