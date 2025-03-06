@@ -23,7 +23,7 @@ export const axiosNextServerInstance = axios.create({
   },
 });
 
-export const setupAxiosInterceptors = (token: string, navigateToLogin?: (url: string) => void) => {
+export const setupAxiosInterceptors = ({ token }: { token: string }) => {
   axiosInstance.interceptors.request.use(
     (request: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
       if (request.headers) {
@@ -42,15 +42,11 @@ export const setupAxiosInterceptors = (token: string, navigateToLogin?: (url: st
           const currentUrl = new URL(window.location.href);
           const tokenParam = currentUrl.searchParams.get('token');
 
-          let redirectUrl = '/signin';
+          const newUrl = new URL(currentUrl);
           if (tokenParam) {
-            redirectUrl += `?token=${tokenParam}`;
+            newUrl.searchParams.set('token', tokenParam);
           }
-          if (navigateToLogin) {
-            navigateToLogin(redirectUrl);
-          } else {
-            window.location.href = redirectUrl;
-          }
+          window.location.href = newUrl.toString();
         }
       }
       return Promise.reject(error);

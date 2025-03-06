@@ -23,6 +23,7 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const permissions = await getPermissions();
   const bearerToken = cookieStore.get('agentXenonToken')?.value || '';
+  
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>

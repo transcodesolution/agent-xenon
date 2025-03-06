@@ -8,6 +8,7 @@ import { Notification } from '@/libs/components/custom/notification';
 import ApplicantMainLayout from './_components/ApplicantMainLayout';
 import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryClientProvider';
 import { AuthProvider } from '@/libs/components/providers/AuthProvider';
+import { getPermissions } from '@/libs/web-apis/src';
 
 export const metadata = {
   title: 'Agent Xenon',
@@ -20,7 +21,8 @@ export default async function ApplicantLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const bearerToken = cookieStore.get('agentXenonApplicantToken')?.value || '';
+  const permissions = await getPermissions();
+  const bearerToken = cookieStore.get('agentXenonToken')?.value || '';
 
   return (
     <html lang="en" {...mantineHtmlProps}>
@@ -32,7 +34,7 @@ export default async function ApplicantLayout({
         />
       </head>
       <body>
-        <AuthProvider token={bearerToken}>
+        <AuthProvider token={bearerToken} permissions={permissions.data.permissions}>
           <ReactQueryClientProvider>
             <MantineProvider>
               <Notification position='bottom-right' />

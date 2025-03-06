@@ -28,11 +28,8 @@ export async function POST(request: NextRequest) {
 
     if (result.status === 200) {
       const cookieStore = await cookies();
-      if (!candidateToken) {
-        cookieStore.set('agentXenonToken', result.data.token, { path: '/', httpOnly: true });
-      } else {
-        cookieStore.set('agentXenonApplicantToken', result.data.token, { path: redirectUrl ?? '/', httpOnly: true });
-      }
+      cookieStore.set('agentXenonToken', result.data.token, { httpOnly: true });
+
       const redirectTo = new URL(redirectUrl ?? '/', request.url);
       return NextResponse.redirect(redirectTo);
 

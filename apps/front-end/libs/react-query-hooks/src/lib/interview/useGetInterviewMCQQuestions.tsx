@@ -21,8 +21,8 @@ export const useGetInterviewMCQQuestions = ({
         roundId
       });
     },
-    enabled: enabled,
-    staleTime: staleTime,
-    refetchOnWindowFocus: refetchOnWindowFocus,
+    enabled,
+    staleTime,
+    refetchOnWindowFocus,
   });
 };
