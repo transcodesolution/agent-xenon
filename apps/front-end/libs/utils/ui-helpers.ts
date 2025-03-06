@@ -2,10 +2,18 @@ import { InterviewRoundStatus, InterviewRoundTypes } from "@agent-xenon/constant
 
 export const getStatusColor = (status: string): string => {
   switch (status) {
+    case InterviewRoundStatus.YET_TO_START:
+      return 'blue';
     case InterviewRoundStatus.ONGOING:
       return 'yellow';
     case InterviewRoundStatus.COMPLETED:
       return 'teal';
+    case InterviewRoundStatus.SELECTED:
+      return 'green';
+    case InterviewRoundStatus.REJECTED:
+      return 'red';
+    case InterviewRoundStatus.PAUSED:
+      return 'orange';
     default:
       return 'gray';
   }

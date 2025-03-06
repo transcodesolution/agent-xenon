@@ -18,3 +18,10 @@ export interface IGetJobRoleAndDesignation {
 export interface IDeleteInterviewRoundsRequest {
   roundIds: string[];
 }
+
+export interface IUpdateApplicantStatusRequest {
+  jobId: string
+  roundId: string
+  roundStatus: string
+  applicantId: string
+};

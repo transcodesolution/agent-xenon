@@ -1,6 +1,6 @@
-import { IApiResponse, IInterviewRounds, IJob, PaginationApiResponseType } from '@agent-xenon/interfaces';
+import { IApiResponse, IInterviewRound, IJob, PaginationApiResponseType } from '@agent-xenon/interfaces';
 import http from './http-common';
-import { IGetJobRoleAndDesignation, IGetJobsParams } from '@agent-xenon/types-api';
+import { IGetJobRoleAndDesignation, IGetJobsParams, IUpdateApplicantStatusRequest } from '@agent-xenon/types-api';
 
 export const getJobs = async (params: IGetJobsParams): Promise<IApiResponse<PaginationApiResponseType<IJob[]>>> => {
   try {
@@ -57,9 +57,9 @@ export const getJobRoleAndDesignation = async (): Promise<IApiResponse<IGetJobRo
   }
 };
 
-export const createInterviewRound = async (params: Partial<IInterviewRounds>): Promise<IApiResponse<IInterviewRounds>> => {
+export const createInterviewRound = async (params: Partial<IInterviewRound>): Promise<IApiResponse<IInterviewRound>> => {
   try {
-    const result = await http.post<IApiResponse<IInterviewRounds>>('/interview-round/create', params);
+    const result = await http.post<IApiResponse<IInterviewRound>>('/interview-round/create', params);
     return result.data;
   } catch (error) {
     throw new Error(`Error while creating interview round: ${error}`);
@@ -101,39 +101,50 @@ export const deleteResumeUrl = async (params: { resumeUrls: string, jobId: strin
   }
 };
 
-export const getInterviewRoundsById = async (roundId: string): Promise<IApiResponse<IInterviewRounds>> => {
+export const getInterviewRoundsById = async (roundId: string): Promise<IApiResponse<IInterviewRound>> => {
   try {
-    const result = await http.get<IApiResponse<IInterviewRounds>>(`/interview-round/${roundId}`);
+    const result = await http.get<IApiResponse<IInterviewRound>>(`/interview-round/${roundId}`);
     return result.data;
   } catch (error) {
     throw new Error(`Error while fetching round by ID: ${error}`);
   }
 };
 
-export const updateInterviewRound = async (params: Partial<IInterviewRounds>): Promise<IApiResponse<IInterviewRounds>> => {
+export const updateInterviewRound = async (params: Partial<IInterviewRound>): Promise<IApiResponse<IInterviewRound>> => {
   try {
     const { _id, ...otherParams } = params;
-    const result = await http.patch<IApiResponse<IInterviewRounds>>(`/interview-round/${_id}`, otherParams);
+    const result = await http.patch<IApiResponse<IInterviewRound>>(`/interview-round/${_id}`, otherParams);
     return result.data;
   } catch (error) {
     throw new Error(`Error while updating interviewRound: ${error}`);
   }
 };
 
-export const getInterviewRoundsByJobId = async (jobId: string): Promise<IApiResponse<IInterviewRounds[]>> => {
+export const getInterviewRoundsByJobId = async (jobId: string): Promise<IApiResponse<IInterviewRound[]>> => {
   try {
-    const result = await http.get<IApiResponse<IInterviewRounds[]>>(`/interview-round/by-job/${jobId}`);
+    const result = await http.get<IApiResponse<IInterviewRound[]>>(`/interview-round/by-job/${jobId}`);
     return result.data;
   } catch (error) {
     throw new Error(`Error while fetching round by Job ID: ${error}`);
   }
 };
 
-export const interviewRoundStart = async (params: { jobId: string, roundId: string }): Promise<IApiResponse<IInterviewRounds>> => {
+export const interviewRoundStart = async (params: { jobId: string, roundId: string }): Promise<IApiResponse<IInterviewRound>> => {
   try {
-    const result = await http.post<IApiResponse<IInterviewRounds>>(`/interview-round/start`, params);
+    const result = await http.post<IApiResponse<IInterviewRound>>(`/interview-round/start`, params);
     return result.data;
   } catch (error) {
     throw new Error(`Error while start round: ${error}`);
+  }
+};
+
+
+export const updateApplicantStatus = async (params: IUpdateApplicantStatusRequest): Promise<IApiResponse> => {
+  try {
+    const { roundId, ...otherParams } = params;
+    const result = await http.patch<IApiResponse>(`/interview-round/status/${roundId}`, otherParams);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while updating interviewRound: ${error}`);
   }
 };

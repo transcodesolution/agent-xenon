@@ -125,7 +125,7 @@ export function ApplicantUploadForm({ refetch, onClose }: { refetch: () => void,
           ))}
         </Stack>
       )}
-      <Button onClick={handleSubmit} disabled={resumeUrls?.length === 0}>
+      <Button onClick={handleSubmit} disabled={resumeUrls?.length === 0} w='fit-content' px='xl'>
         Submit
       </Button>
     </Stack>

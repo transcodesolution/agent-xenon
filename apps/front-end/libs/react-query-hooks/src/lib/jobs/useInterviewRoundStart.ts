@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { IApiResponse, IInterviewRounds } from '@agent-xenon/interfaces';
+import { IApiResponse, IInterviewRound } from '@agent-xenon/interfaces';
 import { interviewRoundStart } from '@agent-xenon/web-apis';
 import { AxiosError } from 'axios';
 
@@ -8,7 +8,7 @@ interface IUseInterviewRoundStart {
   roundId: string
 };
 export const useInterviewRoundStart = () => {
-  return useMutation<IApiResponse<IInterviewRounds>, AxiosError, Partial<IUseInterviewRoundStart>>({
+  return useMutation<IApiResponse<IInterviewRound>, AxiosError, Partial<IUseInterviewRoundStart>>({
     mutationKey: ['interviewRoundStart'],
     mutationFn: (params) => {
       return interviewRoundStart(params as IUseInterviewRoundStart);

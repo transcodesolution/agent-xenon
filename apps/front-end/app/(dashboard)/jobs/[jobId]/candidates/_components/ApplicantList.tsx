@@ -4,7 +4,7 @@ import { useSearchParams, useRouter, useParams } from "next/navigation";
 import React, { useState } from "react";
 import { IApplicant } from "@agent-xenon/interfaces";
 import { getApplicantColumns } from "./ApplicantColumns";
-import { ActionIcon, Button, Flex, Modal } from "@mantine/core";
+import { ActionIcon, Button, Flex, Modal, Paper } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { FilterParams, updateUrlParams } from "@/libs/utils/updateUrlParams";
 import { useGetApplicants, useDeleteApplicants } from "@agent-xenon/react-query-hooks";
@@ -98,26 +98,27 @@ export function ApplicantList() {
           </ActionIcon>
         )}
       </Flex>
-
-      <DataTable
-        idAccessor="_id"
-        highlightOnHover
-        records={data?.data?.applicantData || []}
-        fetching={isLoading}
-        selectedRecords={selectedApplicants}
-        onSelectedRecordsChange={setSelectedApplicants}
-        page={page}
-        onPageChange={handleChangePage}
-        recordsPerPage={pageSize}
-        recordsPerPageOptions={PAGE_SIZES}
-        onRecordsPerPageChange={handleChangePageSize}
-        noRecordsText="No Applicants Found"
-        recordsPerPageLabel=""
-        sortStatus={sortStatus}
-        onSortStatusChange={handleSortStatusChange}
-        columns={columns}
-        totalRecords={data?.data?.totalData}
-      />
+      <Paper withBorder shadow="md" p="md">
+        <DataTable
+          idAccessor="_id"
+          highlightOnHover
+          records={data?.data?.applicantData || []}
+          fetching={isLoading}
+          selectedRecords={selectedApplicants}
+          onSelectedRecordsChange={setSelectedApplicants}
+          page={page}
+          onPageChange={handleChangePage}
+          recordsPerPage={pageSize}
+          recordsPerPageOptions={PAGE_SIZES}
+          onRecordsPerPageChange={handleChangePageSize}
+          noRecordsText="No Applicants Found"
+          recordsPerPageLabel=""
+          sortStatus={sortStatus}
+          onSortStatusChange={handleSortStatusChange}
+          columns={columns}
+          totalRecords={data?.data?.totalData}
+        />
+      </Paper>
 
       <Modal opened={isModalOpen} size='100%' onClose={closeModal} title="Create Applicant">
         <ApplicantModal refetch={refetch} onClose={closeModal} applicantId={editingApplicantId} />

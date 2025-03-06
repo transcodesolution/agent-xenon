@@ -1,9 +1,9 @@
 'use client'
-import { useGetInterviewRoundsById, useGetInterviewRoundsByJobId, useInterviewRoundStart } from '@agent-xenon/react-query-hooks';
+import { useGetInterviewRoundsById, useGetInterviewRoundsByJobId, useInterviewRoundStart, useUpdateApplicantStatus } from '@agent-xenon/react-query-hooks';
 import { Stack } from '@mantine/core';
 import { useParams } from 'next/navigation';
 import React, { useState } from 'react'
-import { IInterviewRounds } from '@agent-xenon/interfaces';
+import { IInterviewRound } from '@agent-xenon/interfaces';
 import { InterviewRoundStatus } from '@agent-xenon/constants';
 import { RoundCard } from './RoundCard';
 import { JobApplicantListModal } from './JobApplicantListModal';
@@ -14,6 +14,7 @@ export const InterviewRounds = () => {
   const [selectedRoundId, setSelectedRoundId] = useState<string>('');
   const { data: roundData } = useGetInterviewRoundsById({ roundId: selectedRoundId });
   const { mutate: interviewRoundStart } = useInterviewRoundStart();
+  const { mutate: updateApplicantStatus } = useUpdateApplicantStatus()
 
   const handleStartRound = (roundId: string) => {
     interviewRoundStart({ roundId, jobId }, {
@@ -27,13 +28,13 @@ export const InterviewRounds = () => {
     setSelectedRoundId(roundId);
   };
 
-  const handleUpdateApplicantStatus = (roundId: string, ApplicantId: string) => {
-    // updateApplicantStatus({ roundId, jobId })
+  const handleUpdateApplicantStatus = (roundId: string, ApplicantId: string, value: string) => {
+    updateApplicantStatus({ roundId, jobId, applicantId: ApplicantId, roundStatus: value }, {})
   };
 
   return (
     <Stack gap="lg">
-      {rounds?.data?.map((round: IInterviewRounds, index: number) => {
+      {rounds?.data?.map((round: IInterviewRound, index: number) => {
         const isPreviousRoundsCompleted = rounds?.data?.slice(0, index)
           .every((prevRound) => prevRound.status === InterviewRoundStatus.COMPLETED);
 

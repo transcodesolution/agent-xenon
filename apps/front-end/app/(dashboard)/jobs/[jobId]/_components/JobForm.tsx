@@ -5,8 +5,9 @@ import { useDisclosure } from '@mantine/hooks';
 import { useParams } from 'next/navigation';
 import { InterviewRound } from './InterviewRound';
 import { useUpdateJob, useJobRoleAndDesignation, useCreateInterviewRound, useDeleteInterviewRounds, useGetJobById, useUpdateInterviewRound } from '@agent-xenon/react-query-hooks';
-import { IInterviewRounds } from '@agent-xenon/interfaces';
 import { JobInterviewRoundList } from './JobInterviewRoundList';
+import { IInterviewRound } from '@agent-xenon/interfaces';
+import { showNotification } from '@mantine/notifications';
 
 let timeOut: string | number | NodeJS.Timeout | undefined;
 
@@ -53,20 +54,40 @@ export const JobForm = () => {
     }, 600);
   };
 
-  const handleAddRound = (params: Partial<IInterviewRounds>) => {
+  const handleAddRound = (params: Partial<IInterviewRound>) => {
     if (selectedRoundId) {
       updateRound(params, {
-        onSuccess: () => {
+        onSuccess: (response) => {
+          showNotification({
+            message: response.message,
+            color: 'green'
+          });
           close();
           refetch()
         },
+        onError: (error) => {
+          showNotification({
+            message: error.message,
+            color: 'red',
+          });
+        }
       });
     } else {
       createRound(params, {
-        onSuccess: () => {
+        onSuccess: (response) => {
+          showNotification({
+            message: response.message,
+            color: 'green'
+          });
           close();
           refetch()
         },
+        onError: (error) => {
+          showNotification({
+            message: error.message,
+            color: 'red',
+          });
+        }
       });
     }
   };
@@ -119,7 +140,7 @@ export const JobForm = () => {
       </Paper>
 
       <Modal opened={opened} onClose={close} title={selectedRoundId ? "Update Interview Round" : "Add Interview Round"} size='lg' centered>
-        <InterviewRound onAddRound={handleAddRound} roundId={selectedRoundId ?? ''} />
+        <InterviewRound onAddRound={handleAddRound} roundId={selectedRoundId ?? ''} roundNumber={(jobData?.data?.rounds?.length ?? 0) + 1} />
       </Modal>
     </Stack>
   );

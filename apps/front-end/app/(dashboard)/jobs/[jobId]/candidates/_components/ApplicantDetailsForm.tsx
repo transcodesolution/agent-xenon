@@ -4,12 +4,11 @@ import classes from './ApplicantDetailsForm.module.css'
 import { IconPlus, IconTrash } from '@tabler/icons-react';
 import { DatePickerInput } from '@mantine/dates';
 import { IEducation, IExperienceDetail, IProject } from '@agent-xenon/interfaces';
-import dayjs from 'dayjs';
 import { useCreateJobApplicant, useGetApplicantById } from '@agent-xenon/react-query-hooks';
 import { useParams } from 'next/navigation';
-import { showNotification } from '@mantine/notifications';
 import { useEffect } from 'react';
 import { useUpdateJobApplicant } from '@/libs/react-query-hooks/src/lib/applicant/useUpdateJobApplicant';
+import { showNotification } from '@mantine/notifications';
 
 export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetch: () => void, onClose: () => void, applicantId: string }) {
   const { jobId } = useParams<{ jobId: string }>();
@@ -32,9 +31,9 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
       skills: [] as string[],
       hobbies: [] as string[],
       strengths: [] as string[],
-      experienceDetails: [{ duration: '', responsibilities: [] as string[], role: '', organization: '' }],
+      experienceDetails: [{ durationStart: new Date(), durationEnd: new Date(), responsibilities: '', role: '', organization: '' }],
+      projects: [{ title: '', durationStart: new Date(), durationEnd: new Date(), technologiesUsed: [] as string[], description: '' }],
       education: [{ degree: '', institution: '', yearOfGraduation: '', description: '' }],
-      projects: [{ title: '', duration: '', technologiesUsed: [] as string[], description: '' }],
       socialLinks: { name: '', link: '' }
     },
     validate: {
@@ -54,12 +53,10 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
   });
 
   useEffect(() => {
-    console.log('applicantData', applicantData?.data);
-
-    if (applicantData) {
+    if (applicantData?.data) {
       const socialLinksObj = applicantData?.data?.socialLinks as Record<string, string> || {};
-      const socialLinkName = socialLinksObj ? Object.keys(socialLinksObj)[0] : '';
-      const socialLinkValue = socialLinksObj ? socialLinksObj[socialLinkName] : '';
+      const socialLinkName = socialLinksObj ? Object.keys(socialLinksObj)[0] || '' : '';
+      const socialLinkValue = socialLinksObj ? socialLinksObj[socialLinkName] || '' : '';
 
       form.setValues({
         firstName: applicantData?.data?.firstName || '',
@@ -72,17 +69,30 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
           password: applicantData?.data?.contactInfo?.password || '',
           phoneNumber: applicantData?.data?.contactInfo?.phoneNumber || '',
         },
-        skills: (applicantData?.data?.skills || []) as string[],
-        hobbies: (applicantData?.data?.hobbies || []) as string[],
-        strengths: (applicantData?.data?.strengths || []) as string[],
-        experienceDetails: applicantData?.data?.experienceDetails || [{ duration: '', responsibilities: [] as string[], role: '', organization: '' }],
-        education: applicantData?.data?.education || [{ degree: '', institution: '', yearOfGraduation: '', description: '' }],
-        projects: applicantData?.data?.projects || [{ title: '', duration: '', technologiesUsed: [] as string[], description: '' }],
-        socialLinks: applicantData?.data?.socialLinks
+        skills: Array.isArray(applicantData?.data?.skills) ? applicantData.data.skills : [],
+        hobbies: Array.isArray(applicantData?.data?.hobbies) ? applicantData.data.hobbies : [],
+        strengths: Array.isArray(applicantData?.data?.strengths) ? applicantData.data.strengths : [],
+        experienceDetails: Array.isArray(applicantData?.data?.experienceDetails)
+          ? applicantData.data.experienceDetails.map(experience => ({
+            ...experience,
+            durationStart: experience.durationStart ? new Date(experience.durationStart) : new Date(),
+            durationEnd: experience.durationEnd ? new Date(experience.durationEnd) : new Date(),
+          }))
+          : [{ durationStart: new Date(), durationEnd: new Date(), responsibilities: '', role: '', organization: '' }],
+        education: Array.isArray(applicantData?.data?.education)
+          ? applicantData.data.education
+          : [{ degree: '', institution: '', yearOfGraduation: '', description: '' }],
+        projects: Array.isArray(applicantData?.data?.projects) && applicantData.data.projects.length > 0
+          ? applicantData.data.projects.map(project => ({
+            ...project,
+            durationStart: project.durationStart ? new Date(project.durationStart) : new Date(),
+            durationEnd: project.durationEnd ? new Date(project.durationEnd) : new Date(),
+            technologiesUsed: Array.isArray(project.technologiesUsed) ? project.technologiesUsed : [],
+          }))
+          : [{ title: '', durationStart: new Date(), durationEnd: new Date(), technologiesUsed: [], description: '' }],
+        socialLinks: Object.keys(socialLinksObj).length > 0
           ? { name: socialLinkName, link: socialLinkValue }
           : { name: '', link: '' },
-
-
       });
     }
   }, [applicantData]);
@@ -90,18 +100,18 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
   const handleAddProject = (index: number) => {
     const newProject = {
       title: form.values.projects[index].title,
-      duration: form.values.projects[index].duration,
+      durationStart: form.values.projects[index].durationStart,
+      durationEnd: form.values.projects[index].durationEnd,
       technologiesUsed: form.values.projects[index].technologiesUsed,
       description: form.values.projects[index].description,
     };
 
-    if (!newProject.title || !newProject.duration || !newProject.description) {
+    if (!newProject.title || !newProject.durationStart || !newProject.durationEnd || !newProject.description) {
       console.log("Please fill in all project fields.");
       return;
     }
-
     const updatedProjects = [...form.values.projects];
-    updatedProjects.splice(index + 1, 0, { title: '', duration: '', technologiesUsed: [], description: '' });
+    updatedProjects.splice(index + 1, 0, { title: '', durationStart: new Date(), durationEnd: new Date(), technologiesUsed: [], description: '' });
     form.setFieldValue('projects', updatedProjects);
   };
 
@@ -131,13 +141,12 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
   const handleAddExperience = (index: number) => {
     const newExperience = form.values.experienceDetails[index];
 
-    if (!newExperience.duration || !newExperience.role || !newExperience.organization) {
+    if (!newExperience.durationStart || !newExperience.durationEnd || !newExperience.role || !newExperience.organization) {
       console.log("Please fill in all experience fields.");
       return;
     }
-
     const updatedExperience = [...form.values.experienceDetails];
-    updatedExperience.splice(index + 1, 0, { duration: '', responsibilities: [], role: '', organization: '' });
+    updatedExperience.splice(index + 1, 0, { durationStart: new Date(), durationEnd: new Date(), responsibilities: '', role: '', organization: '' });
     form.setFieldValue('experienceDetails', updatedExperience);
   };
 
@@ -149,8 +158,8 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
   const isProjectComplete = (project: IProject) => {
     return (
       project.title &&
-      project.duration[0] &&
-      project.duration[1] &&
+      project.durationStart &&
+      project.durationEnd &&
       project.description
     );
   };
@@ -166,7 +175,8 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
 
   const isExperienceComplete = (experience: IExperienceDetail) => {
     return (
-      experience.duration &&
+      experience.durationStart &&
+      experience.durationEnd &&
       experience.role &&
       experience.organization
     );
@@ -183,9 +193,21 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
       skills: form.values.skills,
       hobbies: form.values.hobbies,
       strengths: form.values.strengths,
-      projects: form.values.projects,
+      projects: form.values.projects.map(project => ({
+        title: project.title,
+        durationStart: project.durationStart,
+        durationEnd: project.durationEnd,
+        technologiesUsed: project.technologiesUsed,
+        description: project.description,
+      })),
       education: form.values.education,
-      experienceDetails: form.values.experienceDetails,
+      experienceDetails: form.values.experienceDetails.map(experience => ({
+        durationStart: experience.durationStart,
+        durationEnd: experience.durationEnd,
+        responsibilities: experience.responsibilities,
+        role: experience.role,
+        organization: experience.organization,
+      })),
       jobId: jobId,
       socialLinks
     };
@@ -193,9 +215,8 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
     if (applicantId) {
       updateJobApplicant({ _id: applicantId, ...formData }, {
         onSuccess: (response) => {
-          console.log('Response:', response);
           showNotification({
-            message: 'Applicant created successfully!',
+            message: response.message,
             color: 'green'
           });
           onClose?.();
@@ -205,26 +226,24 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
           console.log('Error:', error);
           showNotification({
             message: error.message,
-            color: 'red'
+            color: 'red',
           });
         }
       });
     } else {
       createJobApplicant(formData, {
         onSuccess: (response) => {
-          console.log('Response:', response);
           showNotification({
-            message: 'Applicant created successfully!',
+            message: response.message,
             color: 'green'
           });
           onClose?.();
           refetch?.();
         },
         onError: (error) => {
-          console.log('Error:', error);
           showNotification({
             message: error.message,
-            color: 'red'
+            color: 'red',
           });
         }
       });
@@ -232,25 +251,18 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
 
   };
 
-  function parseDateRange(dateRangeStr: string): [Date | null, Date | null] {
-    if (!dateRangeStr) return [null, null];
-    const dates = dateRangeStr.split('_');
-    return [
-      dates[0] ? new Date(dates[0]) : null,
-      dates[1] ? new Date(dates[1]) : null
-    ];
-  }
-
   const handleDateChange = (field: string, index: number, dateRange: [Date | null, Date | null]) => {
     if (dateRange.every(date => date)) {
-      const formattedRange = `${dayjs(dateRange[0]).format('YYYY-MM-DD')}_${dayjs(dateRange[1]).format('YYYY-MM-DD')}`;
-      form.setFieldValue(`${field}.${index}.duration`, formattedRange);
+      form.setFieldValue(`${field}.${index}.durationStart`, dateRange[0]);
+      form.setFieldValue(`${field}.${index}.durationEnd`, dateRange[1]);
     }
   };
 
   const handleError = (errors: typeof form.errors) => {
     console.log({ errors });
   };
+
+  console.log("form", form.values)
 
   return (
     <form onSubmit={form.onSubmit(handleSubmit, handleError)}>
@@ -302,6 +314,11 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
               inputField: {
                 height: '2.2em'
               },
+              pillsList: {
+                textOverflow: 'ellipsis',
+                overflow: "hidden",
+                height: '2em'
+              }
             }}
           />
         </Grid.Col>
@@ -315,6 +332,11 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
               inputField: {
                 height: '2.2em'
               },
+              pillsList: {
+                textOverflow: 'ellipsis',
+                overflow: "hidden",
+                height: '2em'
+              }
             }}
           />
         </Grid.Col>
@@ -328,6 +350,11 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
               inputField: {
                 height: '2.2em'
               },
+              pillsList: {
+                textOverflow: 'ellipsis',
+                overflow: "hidden",
+                height: '2em'
+              }
             }}
           />
         </Grid.Col>
@@ -375,7 +402,7 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
                     type="range"
                     label="Duration"
                     placeholder="Select start and end date"
-                    value={parseDateRange(form.values.projects[index].duration)}
+                    value={[form.values.projects[index].durationStart, form.values.projects[index].durationEnd]}
                     onChange={(dateRange) => handleDateChange('projects', index, dateRange)}
                     numberOfColumns={2}
                     weekendDays={[]}
@@ -393,6 +420,11 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
                     inputField: {
                       height: '2.2em'
                     },
+                    pillsList: {
+                      textOverflow: 'ellipsis',
+                      overflow: "hidden",
+                      height: '2em'
+                    }
                   }}
                 />
               </Grid.Col>
@@ -409,7 +441,7 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
                   <Button
                     onClick={() => handleAddProject(index)}
                     type="button"
-                    disabled={!isProjectComplete(project) || index !== form.values.projects.length - 1}
+                    disabled={!isProjectComplete(project) || index !== form.values.projects.length - 1 || project.durationStart === null || project.durationEnd === null}
                   >
                     <IconPlus size={22} />
                   </Button>
@@ -518,7 +550,7 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
                   type="range"
                   label="Duration"
                   placeholder="Select start and end date"
-                  value={parseDateRange(form.values.experienceDetails[index].duration)}
+                  value={experience ? [experience.durationStart, experience.durationEnd] : [null, null]} // Ensure valid access
                   onChange={(dateRange) => handleDateChange('experienceDetails', index, dateRange)}
                   numberOfColumns={2}
                   weekendDays={[]}
@@ -526,16 +558,11 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
                 />
               </Grid.Col>
               <Grid.Col span={2}>
-                <TagsInput
+                <TextInput
                   classNames={classes}
                   label="Responsibilities"
                   placeholder="Enter responsibilities and press Enter"
                   {...form.getInputProps(`experienceDetails.${index}.responsibilities`)}
-                  styles={{
-                    inputField: {
-                      height: '2.2em'
-                    },
-                  }}
                 />
               </Grid.Col>
               <Grid.Col span={1} >
@@ -563,7 +590,7 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
         ))}
 
       </Grid>
-      <Button mt="md" type="submit">
+      <Button mt="md" type="submit" px='xl' mx='auto'>
         Submit
       </Button>
     </form>
