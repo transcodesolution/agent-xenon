@@ -2,7 +2,6 @@ import { ExamStatus } from '@agent-xenon/constants';
 import { Stack, Title, Text, Paper, Group, RingProgress, Center, ThemeIcon } from '@mantine/core';
 import { IconCheck, IconBulb, IconAlarmOff, IconClock } from '@tabler/icons-react';
 
-
 interface IExamCompletionStatus {
   totalQuestions: number;
   answeredQuestions?: number;
