@@ -34,6 +34,17 @@ export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => 
     const domainUrl = config.FRONTEND_URL.replace(/\/\/([^.]*)/, `//${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
     const roundId = roundData._id.toString();
     const token = createEncodedShortToken(roundData.jobId._id.toString(), applicants[0].organizationId.name);
+
+    const bulkOps = applicants.map(i => ({
+        updateOne: {
+            filter: { jobId: i.jobId, applicantId: i._id },
+            update: { $set: { jobId: i.jobId, applicantId: i._id, status: InterviewRoundStatus.ONGOING }, $push: { roundIds: roundId } },
+            upsert: true
+        }
+    }));
+
+    await ApplicantRound.bulkWrite(bulkOps);
+
     await Promise.all(applicants.map((i) => {
         return sendMail(i.contactInfo.email, `Technical Round Exam Link`, `
             Dear candidate,
@@ -164,7 +175,7 @@ export const manageMeetingScheduleWithCandidate = async (jobId: string, intervie
                 const end = startDateTime.toISOString();
                 const eventData = await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
                 // scheduledMeetings.push(eventData.data);
-                await ApplicantRound.updateOne({ roundIds: { $elemMatch: { $eq: roundId } }, jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundId } }, { upsert: true })
+                await ApplicantRound.updateOne({ jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundId } }, { upsert: true })
             } else {
                 console.error(`No available slots for ${applicant.contactInfo.email}`);
                 break;
@@ -181,5 +192,5 @@ export const manageMeetingScheduleWithCandidate = async (jobId: string, intervie
 }
 
 export const updateApplicantStatusOnRoundComplete = async <T>(interviewRoundIdQuery: QuerySelector<T>) => {
-    return ApplicantRound.updateMany({ roundIds: { $elemMatch: interviewRoundIdQuery }, status: InterviewRoundStatus.ONGOING }, { $set: { status: InterviewRoundStatus.COMPLETED, isSelected: false } });
+    return ApplicantRound.updateMany({ roundIds: { $elemMatch: interviewRoundIdQuery }, status: InterviewRoundStatus.ONGOING }, { $set: { status: InterviewRoundStatus.COMPLETED, isSelected: false, }, });
 }
