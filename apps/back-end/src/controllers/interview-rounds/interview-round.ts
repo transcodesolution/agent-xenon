@@ -378,7 +378,7 @@ export const submitExam = async (req: Request, res: Response) => {
             return res.ok("you have already given the exam", { status: ExamStatus.EXAM_COMPLETED, ...roundObj }, "customMessage")
         }
 
-        const questions = await RoundQuestionAssign.find<questionAnswerType>({ roundId: value.roundId, jobId: interviewRoundData.jobId, deletedAt: null }, "questionId").populate("questionId")
+        const questions = await RoundQuestionAssign.find<questionAnswerType>({ roundId: value.roundId, jobId: interviewRoundData.jobId, deletedAt: null }, "questionId").sort({ "questionId": 1 }).populate("questionId")
 
         let isSelected: boolean;
 
