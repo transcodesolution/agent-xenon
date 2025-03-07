@@ -1,16 +1,13 @@
 import { getRoundTypeColor, getStatusColor } from '@/libs/utils/ui-helpers';
 import { InterviewRoundStatus } from '@agent-xenon/constants';
-import { IInterviewRounds } from '@agent-xenon/interfaces';
+import { IInterviewRound } from '@agent-xenon/interfaces';
 import { ActionIcon, Badge, Card, Flex, Group, Stack, Text, Tooltip } from '@mantine/core';
 import { IconClock, IconPlayerPlay, IconPlayerStop, IconUsers } from '@tabler/icons-react';
+import dayjs from 'dayjs';
 
-const formatDuration = (seconds: number) => {
-  const days = Math.floor(seconds / (24 * 60 * 60));
-  return `${days} days`;
-};
 
 interface IRoundCardList {
-  round: IInterviewRounds;
+  round: IInterviewRound;
   isDisabled?: boolean;
   onStartRound?: (roundId: string) => void;
   onShowApplicants: (roundId: string) => void;
@@ -33,10 +30,10 @@ export const RoundCard = ({ round, isDisabled, onStartRound, onShowApplicants }:
           </Stack>
 
           <Group gap="xs">
-            <Tooltip label={`Duration: ${formatDuration(round.durationInSeconds)}`}>
+            <Tooltip label={`Duration: ${dayjs(round.endDate).format('DD-MM-YYYY | HH:mm')}`}>
               <Group gap="xs">
                 <IconClock size={16} />
-                <Text size="sm">{formatDuration(round.durationInSeconds)}</Text>
+                <Text size="sm">{dayjs(round.endDate).format('DD-MM-YYYY | HH:mm')}</Text>
               </Group>
             </Tooltip>
 

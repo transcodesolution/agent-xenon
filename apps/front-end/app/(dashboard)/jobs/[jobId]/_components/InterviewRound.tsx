@@ -1,18 +1,20 @@
-import { IInterviewRounds } from '@agent-xenon/interfaces';
 import { ActionIcon, Button, Combobox, Flex, Select, Stack, Text, Textarea, TextInput, useCombobox } from '@mantine/core';
 import { useState, useEffect } from 'react';
-import { TechnicalRoundTypes, InterviewRoundTypes } from '@agent-xenon/constants';
+import { TechnicalRoundType, InterviewRoundTypes } from '@agent-xenon/constants';
 import { useGetInterviewRoundsById, useGetMCQQuestions } from '@agent-xenon/react-query-hooks';
 import { useParams } from 'next/navigation';
 import { IconTrash } from '@tabler/icons-react';
 import { useDebouncedValue } from '@mantine/hooks';
+import { DateTimePicker } from '@mantine/dates';
+import { IInterviewRound } from '@agent-xenon/interfaces';
 
-interface IInterviewRoundProps {
-  onAddRound: (interviewRound: Partial<IInterviewRounds>) => void;
+interface IInterviewRoundForm {
+  onAddRound: (interviewRound: Partial<IInterviewRound>) => void;
   roundId: string;
+  roundNumber: number
 }
 
-export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) => {
+export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterviewRoundForm) => {
   const { jobId } = useParams<{ jobId: string }>();
 
   const [searchQuestion, setSearchQuestion] = useState('');
@@ -28,10 +30,11 @@ export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) =>
   const [formState, setFormState] = useState<{
     name: string;
     roundType?: InterviewRoundTypes;
-    technicalSubType?: TechnicalRoundTypes;
+    technicalSubType?: TechnicalRoundType;
     qualificationCriteria: string;
     mcqCriteria?: number;
     selectedQuestions: { _id: string; question: string }[];
+    endDate: Date | null;
   }>({
     name: '',
     roundType: undefined,
@@ -39,6 +42,7 @@ export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) =>
     qualificationCriteria: '',
     mcqCriteria: undefined,
     selectedQuestions: [],
+    endDate: null
   });
 
   useEffect(() => {
@@ -55,6 +59,7 @@ export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) =>
             typeof q === 'string' ? { _id: q, question: '' } : q
           )
           : [],
+        endDate: round.endDate ? new Date(round.endDate) : new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // Set endDate from roundData
       });
     }
   }, [roundData]);
@@ -64,7 +69,7 @@ export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) =>
   };
 
   const handleSaveRound = () => {
-    const interviewRound: Partial<IInterviewRounds> = {
+    const interviewRound: Partial<IInterviewRound> = {
       name: formState.name,
       type: formState.roundType,
       qualificationCriteria: formState.qualificationCriteria || '',
@@ -73,10 +78,12 @@ export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) =>
       }),
       questions: formState.selectedQuestions.map((q) => q._id),
       mcqCriteria: formState.mcqCriteria ?? undefined,
+      endDate: formState.endDate ? new Date(formState.endDate) : new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
     };
 
     if (!roundId) {
       interviewRound.jobId = jobId;
+      interviewRound.roundNumber = roundNumber
     } else {
       interviewRound._id = roundId;
     }
@@ -89,6 +96,7 @@ export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) =>
       qualificationCriteria: '',
       mcqCriteria: undefined,
       selectedQuestions: [],
+      endDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000)
     });
   };
 
@@ -114,14 +122,14 @@ export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) =>
           <Select
             w={286}
             label="Technical Sub Type"
-            data={Object.values(TechnicalRoundTypes).map((type) => ({ value: type, label: type }))}
+            data={Object.values(TechnicalRoundType).map((type) => ({ value: type, label: type }))}
             value={formState.technicalSubType}
-            onChange={(value) => handleChange('technicalSubType', value as TechnicalRoundTypes)}
+            onChange={(value) => handleChange('technicalSubType', value as TechnicalRoundType)}
           />
         )}
       </Flex>
 
-      {formState.technicalSubType === TechnicalRoundTypes.MCQ && (
+      {formState.technicalSubType === TechnicalRoundType.MCQ && (
         <>
           <Combobox
             store={combobox}
@@ -196,6 +204,14 @@ export const InterviewRound = ({ onAddRound, roundId }: IInterviewRoundProps) =>
           />
         </>
       )}
+
+      <DateTimePicker
+        label="Round Expiration Date and Time"
+        placeholder="Pick date and time"
+        value={formState.endDate}
+        onChange={(date) => setFormState((prev) => ({ ...prev, endDate: date }))}
+        minDate={new Date()}
+      />
 
       <Textarea
         label="Qualification Criteria"

@@ -2,6 +2,7 @@ import { DataTableColumn } from 'mantine-datatable';
 import { IJob } from '@agent-xenon/interfaces';
 import { Anchor, Badge } from '@mantine/core';
 import Link from 'next/link';
+import dayjs from 'dayjs';
 
 export const getColumns = (
   sortStatus: {
@@ -45,6 +46,8 @@ export const getColumns = (
       ellipsis: true,
       sortable: true,
       width: 180,
+      render: ({ createdAt }) =>
+        createdAt ? dayjs(createdAt).format('DD-MM-YYYY | HH:mm') : '-'
     },
     {
       accessor: 'updatedAt',
@@ -52,6 +55,8 @@ export const getColumns = (
       ellipsis: true,
       sortable: true,
       width: 180,
+      render: ({ updatedAt }) =>
+        updatedAt ? dayjs(updatedAt).format('DD-MM-YYYY | HH:mm') : '-'
     },
   ];
 };

@@ -4,7 +4,7 @@
 
 .input {
   height: rem(54) !important;
-  padding-top: rem(18) !important;
+  padding-top: rem(22) !important;
   box-shadow: none !important;
 
   @mixin light {

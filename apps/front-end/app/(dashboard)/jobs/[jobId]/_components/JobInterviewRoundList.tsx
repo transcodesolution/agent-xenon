@@ -3,6 +3,7 @@ import { DataTable } from 'mantine-datatable';
 import React from 'react';
 import { IJob } from '@agent-xenon/interfaces';
 import { IconEdit } from '@tabler/icons-react';
+import dayjs from 'dayjs';
 
 interface IJobInterviewRoundList {
   rounds?: IJob['rounds'];
@@ -11,13 +12,30 @@ interface IJobInterviewRoundList {
 }
 
 export const JobInterviewRoundList = ({ rounds, onDeleteRound, onEditRound }: IJobInterviewRoundList) => {
+
   const columns = [
-    { accessor: 'name', title: 'Name', render: (round: { name?: string }) => round.name || '-' },
-    { accessor: 'type', title: 'Type' },
-    { accessor: 'durationInSeconds', title: 'Duration (s)' },
+    {
+      accessor: 'name', title: 'Name', ellipsis: true,
+      width: 350,
+      render: (round: { name?: string }) => round.name || '-'
+    },
+    {
+      accessor: 'type', title: 'Type', ellipsis: true,
+      width: 250,
+    },
+    {
+      accessor: 'endDate',
+      title: 'Expire Date & Time',
+      ellipsis: true,
+      width: 250,
+      render: (round: { endDate?: Date }) =>
+        round.endDate ? dayjs(round.endDate).format('DD-MM-YYYY | HH:mm') : '-'
+    },
     {
       accessor: 'qualificationCriteria',
       title: 'Qualification Criteria',
+      ellipsis: true,
+      width: 500,
       render: (round: { qualificationCriteria?: string }) => round.qualificationCriteria || '-'
     },
     {
@@ -25,7 +43,7 @@ export const JobInterviewRoundList = ({ rounds, onDeleteRound, onEditRound }: IJ
       title: 'Actions',
       render: (round: { _id: string }) => (
         <>
-          <Button color="blue" size="xs" onClick={() => onEditRound(round._id)} style={{ marginRight: '5px' }}>
+          <Button color="var(--mantine-color-teal-filled-hover)" size="xs" onClick={() => onEditRound(round._id)} style={{ marginRight: '5px' }}>
             <IconEdit />
           </Button>
           <Button color="red" size="xs" onClick={() => onDeleteRound([round._id])}>

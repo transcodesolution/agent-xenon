@@ -2,6 +2,7 @@ import { DataTableColumn } from "mantine-datatable";
 import { IApplicant } from "@agent-xenon/interfaces";
 import { ActionIcon } from "@mantine/core";
 import { IconEdit } from "@tabler/icons-react";
+import dayjs from "dayjs";
 
 export const getApplicantColumns = (
   sortStatus: {
@@ -49,6 +50,9 @@ export const getApplicantColumns = (
       ellipsis: true,
       sortable: true,
       width: 180,
+      render: ({ createdAt }) =>
+        createdAt ? dayjs(createdAt).format('DD-MM-YYYY | HH:mm') : '-'
+
     },
     {
       accessor: "actions",
