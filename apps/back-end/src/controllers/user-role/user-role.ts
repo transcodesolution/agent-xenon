@@ -14,11 +14,6 @@ export const createRole = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const existingRole = await roleModel.findOne({ name: value.name });
-        if (existingRole) {
-            return res.badRequest('Role already exists', {}, 'dataAlreadyExist');
-        }
-
         value.organizationId = user.organizationId;
         const role = new roleModel(value);
         await role.save();

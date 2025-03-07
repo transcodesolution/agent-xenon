@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { paginationSchema } from "./pagination";
-import { Permission } from "@agent-xenon/constants";
+import { Permission, RoleType } from "@agent-xenon/constants";
 
 export const createUserRoleSchema = Joi.object().keys({
     name: Joi.string().optional(),
@@ -9,6 +9,7 @@ export const createUserRoleSchema = Joi.object().keys({
 
 export const updateUserRoleSchema = Joi.object().keys({
     name: Joi.string().optional(),
+    type: Joi.string().valid(...Object.values(RoleType)).optional(),
     permissions: Joi.array().items(Joi.string().valid(...Object.values(Permission))).optional(),
     roleId: Joi.string().required(),
 })
