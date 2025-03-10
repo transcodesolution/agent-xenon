@@ -30,41 +30,69 @@ export enum Permission {
   INTERVIEW_ROUND_DELETE = 'interview_round_delete',
 }
 
-export const permissionsListByModuleWise: Record<string, { label: string, value: Permission }[]> = {
-  job: [
-    {
-      label: 'Create',
-      value: Permission.JOB_CREATE
-    },
-    {
-      label: 'Read',
-      value: Permission.JOB_READ
-    },
-    {
-      label: 'Update',
-      value: Permission.JOB_UPDATE
-    },
-    {
-      label: 'Delete',
-      value: Permission.JOB_DELETE
-    }
-  ],
-  role: [
-    {
-      label: 'Create',
-      value: Permission.ROLE_CREATE
-    },
-    {
-      label: 'Read',
-      value: Permission.ROLE_READ
-    },
-    {
-      label: 'Update',
-      value: Permission.ROLE_UPDATE
-    },
-    {
-      label: 'Delete',
-      value: Permission.ROLE_DELETE
-    }
-  ],
-}
+export const permissionsListByModuleWise: Record<string, { label: string, permissions: { label: string, value: Permission }[] }> = {
+  jobs: {
+    label: "Jobs Management",
+    permissions: [
+      { label: "Create Jobs", value: Permission.JOB_CREATE },
+      { label: "View Jobs", value: Permission.JOB_READ },
+      { label: "Edit Jobs", value: Permission.JOB_UPDATE },
+      { label: "Delete Jobs", value: Permission.JOB_DELETE },
+    ]
+  },
+  roles: {
+    label: "Roles Management",
+    permissions: [
+      { label: "Create Roles", value: Permission.ROLE_CREATE },
+      { label: "View Roles", value: Permission.ROLE_READ },
+      { label: "Edit Roles", value: Permission.ROLE_UPDATE },
+      { label: "Delete Roles", value: Permission.ROLE_DELETE },
+    ]
+  },
+  jobRoles: {
+    label: "Job Roles",
+    permissions: [
+      { label: "Create Job Roles", value: Permission.JOB_ROLE_CREATE },
+      { label: "View Job Roles", value: Permission.JOB_ROLE_READ },
+      { label: "Edit Job Roles", value: Permission.JOB_ROLE_UPDATE },
+      { label: "Delete Job Roles", value: Permission.JOB_ROLE_DELETE },
+    ]
+  },
+  designations: {
+    label: "Designations",
+    permissions: [
+      { label: "Create Designations", value: Permission.DESIGNATION_CREATE },
+      { label: "View Designations", value: Permission.DESIGNATION_READ },
+      { label: "Edit Designations", value: Permission.DESIGNATION_UPDATE },
+      { label: "Delete Designations", value: Permission.DESIGNATION_DELETE },
+    ]
+  },
+  questionAnswers: {
+    label: "Questions & Answers",
+    permissions: [
+      { label: "Create Q&A", value: Permission.QUESTION_ANSWER_CREATE },
+      { label: "View Q&A", value: Permission.QUESTION_ANSWER_READ },
+      { label: "Edit Q&A", value: Permission.QUESTION_ANSWER_UPDATE },
+      { label: "Delete Q&A", value: Permission.QUESTION_ANSWER_DELETE },
+    ]
+  },
+  interviews: {
+    label: "Interview Rounds",
+    permissions: [
+      { label: "Create Rounds", value: Permission.INTERVIEW_ROUND_CREATE },
+      { label: "Edit Rounds", value: Permission.INTERVIEW_ROUND_UPDATE },
+      { label: "Delete Rounds", value: Permission.INTERVIEW_ROUND_DELETE },
+      { label: "Update Round Order", value: Permission.ROUND_ORDER_UPDATE },
+    ]
+  },
+  other: {
+    label: "Other Permissions",
+    permissions: [
+      { label: "View Applicants", value: Permission.APPLICANT_READ },
+      { label: "Access Exam Page", value: Permission.EXAM_PAGE },
+      { label: "Update Organization", value: Permission.ORGANIZATION_UPDATE },
+      { label: "View Job Candidates", value: Permission.JOB_CANDIDATES_TAB },
+      { label: "View Job Rounds", value: Permission.JOB_ROUNDS_TAB },
+    ]
+  }
+};
