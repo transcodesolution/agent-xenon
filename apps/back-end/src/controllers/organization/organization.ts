@@ -76,19 +76,12 @@ export const updateOrganization = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        value.organizationId = value.isEditOnBoardOrganization ? user.organizationId : value.organizationId;
 
-        if (!value.isEditOnBoardOrganization) {
-            const checkOrganizationExist = await Organization.findOne({ _id: value.organizationId, deletedAt: null });
-
-            if (!checkOrganizationExist) return res.badRequest("organization", {}, "getDataNotFound");
-        }
-
-        const checkOrganizationNameExist = await Organization.findOne({ _id: { $ne: value.organizationId }, name: value.name, deletedAt: null });
+        const checkOrganizationNameExist = await Organization.findOne({ _id: { $ne: user.organizationId }, name: value.name, deletedAt: null });
 
         if (checkOrganizationNameExist) return res.badRequest("organization", {}, "dataAlreadyExist");
 
-        const data = await Organization.findByIdAndUpdate(value.organizationId, { $set: value }, { new: true });
+        const data = await Organization.findByIdAndUpdate(user.organizationId, { $set: value }, { new: true });
 
         return res.ok("organization", data, "updateDataSuccess")
     } catch (error) {
