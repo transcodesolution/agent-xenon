@@ -19,11 +19,13 @@ import { PATH_AUTH } from '@/libs/routes';
 import classes from './signin.module.scss';
 import { nextServerSignIn } from '@/libs/web-apis/src';
 import { showNotification } from '@mantine/notifications';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function Page() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token');
+  const router = useRouter();
+
   const form = useForm({
     initialValues: { email: '', password: '' },
 
@@ -46,11 +48,11 @@ export default function Page() {
         password,
         name: 'transcodezy',
         candidateToken: token || '',
-        redirectUrl
       });
+      router.push(redirectUrl)
     } catch (error: any) {
       showNotification({
-        message: error.message
+        message: error?.message
       })
     }
   })
