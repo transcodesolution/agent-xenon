@@ -6,7 +6,7 @@ import { ISignInRequest } from '@agent-xenon/types-api';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password, candidateToken, redirectUrl } = body;
+    const { name, email, password, candidateToken } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -30,8 +30,7 @@ export async function POST(request: NextRequest) {
       const cookieStore = await cookies();
       cookieStore.set('agentXenonToken', result.data.token, { httpOnly: true });
 
-      const redirectTo = new URL(redirectUrl ?? '/', request.url);
-      return NextResponse.redirect(redirectTo);
+      return NextResponse.json({ status: result.status });
 
     } else {
       return NextResponse.json(

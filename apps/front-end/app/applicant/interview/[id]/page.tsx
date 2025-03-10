@@ -22,6 +22,9 @@ export default function Page() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const questions = data?.data?.questions || []
   const examStatus = data?.data?.status;
+  const currentIndex = questions?.findIndex(q => q._id === currentQuestion?._id);
+  const isLastQuestion = currentIndex === questions?.length - 1;
+  const progressPercentage = ((currentIndex + 1) / questions?.length) * 100;
 
   useEffect(() => {
     if (questions && questions?.length > 0) {
@@ -52,11 +55,6 @@ export default function Page() {
     }));
   };
 
-  if (isLoading) { return 'Loading...' }
-  const currentIndex = questions?.findIndex(q => q._id === currentQuestion?._id);
-  const isLastQuestion = currentIndex === questions?.length - 1;
-  const progressPercentage = ((currentIndex + 1) / questions?.length) * 100;
-
   const handleSubmit = () => {
     const formattedAnswers = questions.map((question) => {
       const answer = answers[question._id] || [];
@@ -85,6 +83,8 @@ export default function Page() {
       }
     );
   };
+
+  if (isLoading) { return 'Loading...' }
 
   return (
     <Container size="xl">
@@ -157,5 +157,4 @@ export default function Page() {
       }
     </Container >
   )
-
 }
