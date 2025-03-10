@@ -35,14 +35,14 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        <AuthProvider token={bearerToken} permissions={permissions.data.permissions}>
-          <ReactQueryClientProvider>
+        <ReactQueryClientProvider>
+          <AuthProvider token={bearerToken} permissions={permissions.data.permissions}>
             <MantineProvider>
               <Notification position='bottom-right' />
               <MainLayout>{children}</MainLayout>
             </MantineProvider>
-          </ReactQueryClientProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ReactQueryClientProvider>
       </body>
     </html >
   );

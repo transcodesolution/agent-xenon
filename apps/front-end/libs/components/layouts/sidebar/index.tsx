@@ -5,8 +5,6 @@ import {
 } from '@tabler/icons-react';
 import { Box, Flex } from '@mantine/core';
 import { LinksGroup } from './components/NavbarLinksGroup';
-import { UserButton } from './components/UserButton';
-import classes from './sidebar.module.scss';
 
 const mockData = [
   {
@@ -35,9 +33,6 @@ export const Sidebar = () => {
   return (
     <Flex direction='column' justify='space-between' h='100%'>
       <Box px='sm'>{links}</Box>
-      <Box p='sm' className={classes.footer}>
-        <UserButton />
-      </Box>
     </Flex>
   );
 }
