@@ -1,3 +1,4 @@
+import { IRole } from "./role";
 import { ITimestamp } from "./timestamp";
 
 export interface IUser<T = string, U = string> extends ITimestamp {
@@ -8,4 +9,5 @@ export interface IUser<T = string, U = string> extends ITimestamp {
     password: string;
     organizationId: U;
     roleId: T;
+    role: IRole;
 }

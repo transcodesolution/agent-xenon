@@ -39,7 +39,7 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
             if (checkToken) {
                 const Query = { _id: isVerifyToken?._id, deletedAt: null };
                 const model: Model<IApplicant<string, IRole> | IUser<IRole>> = isVerifyToken.type === RoleType.CANDIDATE ? Applicant : userModel;
-                const result = await model.findOne(Query).populate("roleId");
+                const result = await model.findOne(Query).populate<{ role: IRole }>("role");
                 // if (result?.isBlocked) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}));
                 if (isVerifyToken.organizationId !== result.organizationId.toString()) {
                     return res.forbidden("differentToken", {});
@@ -76,7 +76,7 @@ export const socketJWTAndRoomJoin = async (socket: Socket) => {
         }
         if (checkToken) {
             const Query = { _id: isVerifyToken?._id, deletedAt: null };
-            const result = await userModel.findOne(Query).populate<{ roleId: IRole }>("roleId");
+            const result = await userModel.findOne(Query).populate<{ role: IRole }>("role");
             if (isVerifyToken.organizationId !== result?.organizationId.toString()) {
                 return socket.emit("round-status", { status: "Error", message: "Do not try a different organization token!" });
             }

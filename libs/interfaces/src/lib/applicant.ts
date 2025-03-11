@@ -1,3 +1,4 @@
+import { IRole } from "./role";
 import { ITimestamp } from "./timestamp";
 
 export interface IProject {
@@ -43,6 +44,7 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     salaryExpectation: number;
     feedback: string;
     roleId: U;
+    role: IRole;
     jobId: string;
     organizationId: T;
     experienceDetails: IExperienceDetail[];
