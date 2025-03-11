@@ -4,12 +4,12 @@ import { create } from "zustand";
 import { immer } from "zustand/middleware/immer";
 
 interface IOrganizationStore {
-  organization: IOrganization | null;
+  organization: IOrganization;
 }
 
 export const useOrganizationStore = create<IOrganizationStore>()(
   immer((set) => ({
-    organization: null,
+    organization: {} as IOrganization,
   }))
 );
 

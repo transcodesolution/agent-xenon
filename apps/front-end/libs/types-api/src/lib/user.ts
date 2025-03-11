@@ -1,6 +1,6 @@
-import { IOrganization, IRole, IUser } from "@agent-xenon/interfaces";
+import { IOrganization, IUser } from "@agent-xenon/interfaces";
 
 export interface IGetUserResponse {
-  userData: IUser<IRole>;
+  userData: IUser;
   organizationData: IOrganization;
 }

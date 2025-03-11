@@ -2,7 +2,7 @@
 import { AppShell, Box, Burger, Flex, Text, ActionIcon } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Sidebar } from '@/libs/components/layouts/sidebar';
-import { Profile, } from '@/libs/components/layouts/sidebar/components/Profile';
+import { Profile } from '@/libs/components/layouts/sidebar/components/Profile';
 import { IconEdit } from '@tabler/icons-react';
 import { useRouter } from 'next/navigation';
 import { useOrganizationStore } from '../store/useOrganizationStore';
