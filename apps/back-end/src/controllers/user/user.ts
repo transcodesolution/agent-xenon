@@ -8,7 +8,7 @@ import { generateHash } from "../../utils/password-hashing";
 
 export const getUserPermissions = async (req: Request, res: Response) => {
     const { user } = req.headers;
-    return res.ok('permissions', { permissions: user.roleId.permissions }, 'getDataSuccess');
+    return res.ok('permissions', { permissions: user.role.permissions }, 'getDataSuccess');
 };
 
 export const getUserDetails = async (req: Request, res: Response) => {

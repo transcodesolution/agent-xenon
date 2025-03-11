@@ -9,12 +9,12 @@ import { manageInterviewRoundSchema } from "../validation/interview-round";
 export const validateRoleAndPermissions = (permissions: Permission[]) => async (req: Request, res: Response, next: NextFunction) => {
     const { user } = req.headers;
     try {
-        if (typeof user.roleId !== "string") {
-            if (user.roleId.type === RoleType.ADMINISTRATOR) {
+        if (typeof user.role !== "string") {
+            if (user.role.type === RoleType.ADMINISTRATOR) {
                 return next();
             }
 
-            if (permissions.find((permission) => user.roleId.permissions.includes(permission))) {
+            if (permissions.find((permission) => user.role.permissions.includes(permission))) {
                 return next();
             }
             return res.forbidden("invalidAction", {})

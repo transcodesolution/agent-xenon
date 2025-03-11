@@ -45,10 +45,26 @@ const ApplicantSchema: Schema = new Schema({
         _id: false,
     }],
     resumeLink: { type: String },
-    roleId: { type: mongoose.SchemaTypes.ObjectId, ref: "role" },
+    roleId: { type: mongoose.SchemaTypes.ObjectId },
     isSelectedByAgent: { type: Boolean, default: false },
     deletedAt: { type: Date, default: null },
-}, { timestamps: true, versionKey: false });
+}, {
+    timestamps: true,
+    versionKey: false,
+    toJSON: {
+        virtuals: true
+    },
+    virtuals: {
+        role: {
+            options: {
+                ref: 'role',
+                localField: 'roleId',
+                foreignField: '_id',
+                justOne: true
+            }
+        }
+    }
+});
 
 const Applicant = mongoose.model<IApplicant<string, IRole>>('Applicant', ApplicantSchema);
 

@@ -30,18 +30,18 @@ export const login = async (req: Request, res: Response) => { //email or passwor
 
         let response: IUser<IRole>;
         if (value.candidateToken) {
-            const applicantData = await Applicant.findOne<Pick<IApplicant<string, IRole>, "firstName" | "lastName" | "contactInfo" | "roleId">>({ "contactInfo.email": value.email, jobId: value.jobId }, "firstName lastName contactInfo roleId").populate<{ roleId: IRole }>("roleId").lean()
+            const applicantData = await Applicant.findOne<Pick<IApplicant<string, IRole>, "firstName" | "lastName" | "contactInfo" | "role">>({ "contactInfo.email": value.email, jobId: value.jobId }, "firstName lastName contactInfo role").populate<{ role: IRole }>("role").lean()
             response = {
                 ...applicantData,
                 email: applicantData?.contactInfo.email,
                 password: applicantData?.contactInfo.password,
             }
         } else {
-            response = await userModel.findOne({ email: value.email, organizationId: checkOrganizationExist._id }).populate<{ roleId: IRole }>("roleId").lean()
+            response = await userModel.findOne({ email: value.email, organizationId: checkOrganizationExist._id }).populate<{ role: IRole }>("role").lean()
         }
 
         if (!response) return res.badRequest("userNotFound", {})
-        if (!response.roleId) return res.badRequest("user have not valid permissions", {}, "customMessage")
+        if (!response.role) return res.badRequest("user have not valid permissions", {}, "customMessage")
         // if (response?.isBlock == true) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}))
 
         let passwordMatch: boolean;
@@ -54,17 +54,17 @@ export const login = async (req: Request, res: Response) => { //email or passwor
         if (!passwordMatch) return res.badRequest("invalidUserPasswordEmail", {})
 
         let result: ILoginResponse;
-        if (typeof response.roleId !== "string") {
+        if (typeof response.role !== "string") {
             const token = generateToken({
                 _id: response._id,
-                type: response.roleId.type,
+                type: response.role.type,
                 organizationId: checkOrganizationExist._id,
                 status: "Login",
                 generatedOn: (new Date().getTime())
             })
             result = {
                 // isEmailVerified: response?.isEmailVerified,
-                userType: response.roleId.type,
+                userType: response.role.type,
                 firstName: response?.firstName,
                 lastName: response?.lastName,
                 _id: response?._id,
