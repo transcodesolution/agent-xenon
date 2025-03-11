@@ -18,3 +18,11 @@ export const nextServerSignIn = async (params: ISignInRequest): Promise<ISignInR
     throw new Error(`Error while signin at next serverSide: ${error}`);
   }
 };
+
+export const logout = async (): Promise<void> => {
+  try {
+    await axiosNextServerInstance.post('/api/auth/signout');
+  } catch (error) {
+    throw new Error(`Error while logging out: ${error}`);
+  }
+};
