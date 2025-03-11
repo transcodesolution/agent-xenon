@@ -11,6 +11,7 @@ import { cookies } from 'next/headers';
 import { AuthProvider } from '@/libs/components/providers/AuthProvider';
 import { getPermissions } from '@/libs/web-apis/src/lib/permission';
 import { Notification } from '@/libs/components/custom/notification';
+import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'Agent Xenon',
@@ -25,6 +26,10 @@ export default async function RootLayout({
   const cookieStore = await cookies();
   const permissions = await getPermissions();
   const bearerToken = cookieStore.get('agentXenonToken')?.value || '';
+
+  if (!bearerToken) {
+    redirect('/signin')
+  }
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>

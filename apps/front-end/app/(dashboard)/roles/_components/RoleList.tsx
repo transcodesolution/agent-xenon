@@ -2,9 +2,9 @@
 import { useGetRoles } from '@/libs/react-query-hooks/src/lib/role'
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
 import { IRole } from '@agent-xenon/interfaces';
-import { ActionIcon, Text } from '@mantine/core';
-import { IconEdit } from '@tabler/icons-react';
+import { Anchor, Text } from '@mantine/core';
 import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatable'
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react'
 
@@ -50,28 +50,42 @@ export const RoleList = () => {
 
   const columns: DataTableColumn<IRole>[] = [
     {
-      accessor: 'title',
-      title: 'Title',
+      accessor: 'name',
+      title: 'Role Name',
       ellipsis: true,
       sortable: true,
-      render: ({ name }) => {
+      width: 220,
+      render: ({ name, _id }) => {
         return (
-          <Text c='primary'>{name || '-'}</Text>
+          <Anchor component={Link} href={`/roles/${_id}`} style={{ position: 'relative' }}>{name || '-'}</Anchor>
         );
       },
     },
     {
-      accessor: '_id',
-      title: 'Action',
-      width: 200,
-      render: () => {
+      accessor: 'type',
+      title: 'Type',
+      ellipsis: true,
+      sortable: true,
+      width: 220,
+      render: ({ type }) => {
         return (
-          <ActionIcon variant="outline" aria-label="Edit">
-            <IconEdit />
-          </ActionIcon>
+          <Text c='primary'>{type || '-'}</Text>
         );
       },
     },
+    {
+      accessor: 'permissions',
+      title: 'Permissions',
+      ellipsis: true,
+      sortable: true,
+      render: ({ permissions }) => {
+        return (
+          <Text>
+            {permissions?.length ? permissions.join(', ') : '-'}
+          </Text>
+        );
+      },
+    }
   ]
   return (
     <DataTable

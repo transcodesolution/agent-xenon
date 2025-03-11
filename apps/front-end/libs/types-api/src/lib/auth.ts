@@ -3,7 +3,6 @@ export interface ISignInRequest {
   email: string;
   password: string;
   candidateToken?: string;
-  redirectUrl?: string
 }
 
 export interface ISignInResponse {

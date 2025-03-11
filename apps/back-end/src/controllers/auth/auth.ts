@@ -37,10 +37,11 @@ export const login = async (req: Request, res: Response) => { //email or passwor
                 password: applicantData?.contactInfo.password,
             }
         } else {
-            response = await userModel.findOne({ email: value.email }).populate<{ roleId: IRole }>("roleId").lean()
+            response = await userModel.findOne({ email: value.email, organizationId: checkOrganizationExist._id }).populate<{ roleId: IRole }>("roleId").lean()
         }
 
         if (!response) return res.badRequest("userNotFound", {})
+        if (!response.roleId) return res.badRequest("user have not valid permissions", {}, "customMessage")
         // if (response?.isBlock == true) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}))
 
         let passwordMatch: boolean;

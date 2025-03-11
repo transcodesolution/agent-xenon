@@ -14,12 +14,8 @@ export const createOrganizationSchema = Joi.object().keys({
 export const updateOrganizationSchema = Joi.object().keys({
     name: Joi.string().optional(),
     email: Joi.string().email().optional(),
-    firstName: Joi.string().optional(),
-    lastName: Joi.string().optional(),
     description: Joi.string().allow("").optional(),
     address: Joi.string().allow("").optional(),
-    organizationId: Joi.string().optional(),
-    isEditOnBoardOrganization: Joi.boolean().required(),
 })
 
 export const deleteOrganizationSchema = Joi.object().keys({
