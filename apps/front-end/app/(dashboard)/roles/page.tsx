@@ -6,6 +6,8 @@ import { Button, Title } from '@mantine/core';
 import { useCreateRole } from '@agent-xenon/react-query-hooks';
 import { IApiResponse, IRole } from '@agent-xenon/interfaces';
 import { useRouter } from 'next/navigation';
+import { showNotification } from '@mantine/notifications';
+import { IconX } from '@tabler/icons-react';
 
 export default function Page() {
   const { mutate: createRole, isPending: isCreating } = useCreateRole();
@@ -22,6 +24,14 @@ export default function Page() {
           if (roleId) {
             router.push(`/roles/${roleId}`);
           }
+        },
+        onError: (error) => {
+          showNotification({
+            title: "Create Failed",
+            message: error.message,
+            color: "red",
+            icon: <IconX size={16} />,
+          });
         },
       }
     );

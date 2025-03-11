@@ -78,14 +78,8 @@ export const RoleList = () => {
       title: 'Permissions',
       ellipsis: true,
       sortable: true,
-      render: ({ permissions }) => {
-        return (
-          <Text>
-            {permissions?.length ? permissions.join(', ') : '-'}
-          </Text>
-        );
-      },
-    }
+      render: ({ permissions }) => <Text>{permissions?.length || 0}</Text>,
+    },
   ]
   return (
     <DataTable
