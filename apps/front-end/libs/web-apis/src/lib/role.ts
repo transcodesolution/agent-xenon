@@ -1,6 +1,7 @@
 import http from "./http-common";
 import { IApiResponse, IRole, PaginationApiResponseType } from "@agent-xenon/interfaces";
 import { IGetRolesRequest } from "@/libs/types-api/src/lib/role";
+import axios from "axios";
 
 export const getRoles = async (params: IGetRolesRequest): Promise<IApiResponse<PaginationApiResponseType<IRole[]>>> => {
   try {
@@ -25,7 +26,11 @@ export const createRole = async (params: Partial<IRole>): Promise<IApiResponse<I
     const result = await http.post<IApiResponse<IRole>>('/role/add', params);
     return result.data;
   } catch (error) {
-    throw new Error(`Error while creating role: ${error}`);
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error while creating role: ${error.response?.data?.message || error.message}`);
+    } else {
+      throw new Error(`Error while creating role: ${error}`);
+    }
   }
 };
 
@@ -35,6 +40,10 @@ export const updateRole = async (params: Partial<IRole>): Promise<IApiResponse<I
     const result = await http.patch<IApiResponse<IRole>>(`/role/${_id}`, otherParams);
     return result.data;
   } catch (error) {
-    throw new Error(`Error while updating role: ${error}`);
+    if (axios.isAxiosError(error)) {
+      throw new Error(`Error while updating role: ${error.response?.data?.message || error.message}`);
+    } else {
+      throw new Error("An unexpected error occurred while updating role.");
+    }
   }
 };

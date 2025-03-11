@@ -7,11 +7,12 @@ import {
   Flex,
 } from "@mantine/core";
 import { Permission } from "@agent-xenon/constants";
-import { IconUsers } from "@tabler/icons-react";
-import { IRolePermissionsList } from "./RolePermissionsList";
+import { IconUsers, IconX } from "@tabler/icons-react";
+import { RolePermissionsList } from "./RolePermissionsList";
 import { useParams } from 'next/navigation';
 import { useGetRoleById, useUpdateRole } from '@agent-xenon/react-query-hooks';
 import { useEffect, useState } from "react";
+import { showNotification } from "@mantine/notifications";
 
 let timeOut: string | number | NodeJS.Timeout | undefined;
 
@@ -33,6 +34,15 @@ export const RoleDetails = () => {
       updateRole({
         _id: roleId,
         [field]: value,
+      }, {
+        onError: (error) => {
+          showNotification({
+            title: "Update Failed",
+            message: error.message,
+            color: "red",
+            icon: <IconX size={16} />,
+          });
+        },
       });
     }, 600);
   };
@@ -56,12 +66,13 @@ export const RoleDetails = () => {
               leftSection={<IconUsers size='18' />}
               defaultValue={roleData?.data?.name ?? ""}
               onChange={(e) => handleChange("name", e.target.value)}
+              required
             />
           </Group>
         </Stack>
       </Paper>
 
-      <IRolePermissionsList
+      <RolePermissionsList
         selectedPermissions={selectedPermissions}
         onPermissionsChange={handlePermissionsChange}
       />
