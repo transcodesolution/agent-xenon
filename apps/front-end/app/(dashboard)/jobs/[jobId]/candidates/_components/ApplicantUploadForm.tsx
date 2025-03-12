@@ -119,7 +119,7 @@ export function ApplicantUploadForm({ refetch, onClose }: { refetch: () => void,
               </Flex>
 
               <ActionIcon color="red" variant="light" onClick={() => handleRemoveFile(index)}>
-                <IconTrash size={18} />
+                <IconTrash size={16} />
               </ActionIcon>
             </Flex>
           ))}

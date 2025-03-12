@@ -72,6 +72,11 @@ export default function Page() {
           <Surface component={Paper} className={classes.card}>
             <form
               onSubmit={handleSignInFormSubmit}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSignInFormSubmit();
+                }
+              }}
             >
               <TextInput
                 label="Email"
@@ -102,7 +107,7 @@ export default function Page() {
                   Forgot password?
                 </Text>
               </Group>
-              <Button fullWidth mt="xl" type="submit">
+              <Button fullWidth mt="xl" type="submit" loading={form.submitting} disabled={form.submitting}>
                 Sign in
               </Button>
             </form>

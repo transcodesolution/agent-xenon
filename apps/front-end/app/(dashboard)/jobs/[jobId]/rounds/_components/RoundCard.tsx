@@ -44,7 +44,7 @@ export const RoundCard = ({ round, isDisabled, onStartRound, onShowApplicants }:
                   onShowApplicants(round._id);
                 }}
               >
-                <IconUsers size={18} />
+                <IconUsers size={16} />
               </ActionIcon>
             </Tooltip>
 

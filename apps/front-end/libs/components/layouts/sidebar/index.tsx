@@ -2,8 +2,9 @@
 import {
   IconNotes,
   IconUser,
+  IconUserCircle,
 } from '@tabler/icons-react';
-import { Box, Flex } from '@mantine/core';
+import { Flex } from '@mantine/core';
 import { LinksGroup } from './components/NavbarLinksGroup';
 
 const mockData = [
@@ -19,10 +20,18 @@ const mockData = [
   },
   {
     label: 'Roles',
-    icon: IconUser,
+    icon: IconUserCircle,
     initiallyOpened: false,
     links: [
       { label: 'Roles', link: '/roles' },
+    ],
+  },
+  {
+    label: 'Users',
+    icon: IconUser,
+    initiallyOpened: false,
+    links: [
+      { label: 'Users', link: '/users' },
     ],
   },
 ];
@@ -31,8 +40,8 @@ export const Sidebar = () => {
   const links = mockData.map((item) => <LinksGroup {...item} key={item.label} />);
 
   return (
-    <Flex direction='column' justify='space-between' h='100%'>
-      <Box px='sm'>{links}</Box>
+    <Flex direction='column' h='100%' p='sm'>
+      {links}
     </Flex>
   );
 }

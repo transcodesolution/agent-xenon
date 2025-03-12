@@ -1,7 +1,7 @@
 'use client'
-import { useGetRoles } from '@/libs/react-query-hooks/src/lib/role'
+import { useGetUsers } from '@/libs/react-query-hooks/src/lib/user/useGetUsers';
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
-import { IRole } from '@agent-xenon/interfaces';
+import { IUser } from '@agent-xenon/interfaces';
 import { Anchor, Text } from '@mantine/core';
 import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatable'
 import Link from 'next/link';
@@ -11,7 +11,7 @@ import React, { useState } from 'react'
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
 
-export const RoleList = () => {
+export const UserList = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -21,12 +21,12 @@ export const RoleList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading } = useGetRoles({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data, isLoading } = useGetUsers({ page: Number(page), limit: Number(pageSize), search: search });
 
 
-  const [selectedRoles, setSelectedRoles] = useState<IRole[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<IUser[]>([]);
 
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IRole>>({
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IUser>>({
     columnAccessor: sortColumn,
     direction: sortOrder as 'asc' | 'desc',
   });
@@ -43,47 +43,50 @@ export const RoleList = () => {
     handleApplyFilter({ 'pageSize': pageNumber.toString() })
   };
 
-  const handleSortStatusChange = (status: DataTableSortStatus<IRole>) => {
+  const handleSortStatusChange = (status: DataTableSortStatus<IUser>) => {
     handleChangePage(1);
     setSortStatus?.(status);
   };
 
-  const columns: DataTableColumn<IRole>[] = [
+  const columns: DataTableColumn<IUser>[] = [
     {
-      accessor: 'name',
-      title: 'Role Name',
+      accessor: 'firstName',
+      title: 'Name',
       ellipsis: true,
       sortable: true,
-      render: ({ name, _id }) => {
+      width: 'auto',
+      render: ({ firstName, lastName, _id }) => {
         return (
-          <Anchor component={Link} href={`/roles/${_id}`} style={{ position: 'relative' }}>{name || '-'}</Anchor>
+          <Anchor component={Link} href={`/users/${_id}`} style={{ position: 'relative' }}>{`${firstName} ${lastName}`}</Anchor>
         );
       },
     },
     {
-      accessor: 'type',
-      title: 'Type',
+      accessor: 'email',
+      title: 'Email',
       ellipsis: true,
       sortable: true,
-      render: ({ type }) => {
+      width: 'auto',
+      render: ({ email }) => {
         return (
-          <Text c='primary'>{type || 'custom'}</Text>
+          <Text c='primary'>{email || '-'}</Text>
         );
       },
     },
     {
-      accessor: 'permissions',
-      title: 'Permissions',
+      accessor: 'role',
+      title: 'Role',
       ellipsis: true,
       sortable: true,
-      render: ({ permissions }) => <Text>{permissions?.length || 0}</Text>,
+      width: 'auto',
+      render: ({ role }) => <Text>{role?.name}</Text>,
     },
   ]
   return (
     <DataTable
       idAccessor='_id'
       highlightOnHover
-      records={data?.data?.roleData}
+      records={data?.data?.userData}
       fetching={isLoading}
       selectedRecords={selectedRoles}
       onSelectedRecordsChange={setSelectedRoles}

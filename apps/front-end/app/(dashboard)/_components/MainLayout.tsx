@@ -1,12 +1,11 @@
 'use client'
-import { AppShell, Box, Burger, Flex, Text, ActionIcon } from '@mantine/core';
+import { AppShell, Box, Burger, Flex } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Sidebar } from '@/libs/components/layouts/sidebar';
-import { Profile } from '@/libs/components/layouts/sidebar/components/Profile';
-import { IconEdit } from '@tabler/icons-react';
-import { useRouter } from 'next/navigation';
+import { UserProfile } from '@/libs/components/layouts/header/UserProfile';
 import { useOrganizationStore } from '../store/useOrganizationStore';
 import { useUserStore } from '../store/useUserStore';
+import { OrganizationProfile } from '@/libs/components/layouts/header/OrganizationProfile';
 
 interface IMainLayout {
   children: React.ReactNode
@@ -14,7 +13,6 @@ interface IMainLayout {
 
 export default function MainLayout({ children }: IMainLayout) {
   const [opened, { toggle }] = useDisclosure();
-  const router = useRouter();
   const { organization } = useOrganizationStore();
   const { user } = useUserStore();
 
@@ -35,24 +33,15 @@ export default function MainLayout({ children }: IMainLayout) {
           hiddenFrom="sm"
           size="sm"
         />
-        <Flex justify="space-between" align="center" p="sm">
-          <Flex align="center" gap="sm">
-            <Text size="lg" fw={600} w={245} lineClamp={1}>{organization?.name}</Text>
-            <ActionIcon
-              variant="subtle"
-              onClick={() => router.push('/organization')}
-              aria-label="Edit Organization"
-            >
-              <IconEdit size={18} />
-            </ActionIcon>
-          </Flex>
-          <Box>
-            <Profile userData={user} />
+        <Flex justify="space-between" align="center" h='100%' p='sm'>
+          <Box w={272}> 
+            <OrganizationProfile organization={organization} />
           </Box>
+          <UserProfile userData={user} />
         </Flex>
       </AppShell.Header>
 
-      <AppShell.Navbar py='sm'><Sidebar /></AppShell.Navbar>
+      <AppShell.Navbar><Sidebar /></AppShell.Navbar>
 
       <AppShell.Main>{children}</AppShell.Main>
     </AppShell>

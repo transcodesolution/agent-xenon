@@ -3,8 +3,6 @@ import 'mantine-datatable/styles.layer.css';
 import '@mantine/notifications/styles.layer.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
-import { cookies } from 'next/headers';
-import { redirect } from 'next/navigation';
 import { Notification } from '@/libs/components/custom/notification';
 
 export const metadata = {
@@ -17,13 +15,7 @@ export default async function AuthLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
-  const bearerToken = cookieStore.get('agentXenonToken')?.value || '';
-
-  if (bearerToken) {
-    redirect('/')
-  }
-
+  // implement logic to check does token is already present and is valid , then navigate from here.
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
