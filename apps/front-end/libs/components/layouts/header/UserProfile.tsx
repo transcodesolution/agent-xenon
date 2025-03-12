@@ -1,15 +1,14 @@
-import { IconChevronDown, IconLogout, IconUser } from '@tabler/icons-react';
-import { Avatar, Group, Menu, UnstyledButton } from '@mantine/core';
+import { IconLogout, IconUser } from '@tabler/icons-react';
+import { Avatar, Menu } from '@mantine/core';
 import { useRouter } from 'next/navigation';
-import classes from '../sidebar.module.scss';
-import { IRole, IUser } from '@agent-xenon/interfaces';
+import { IUser } from '@agent-xenon/interfaces';
 import { logout } from '@/libs/web-apis/src';
 
-interface IProfileData {
+interface IUserProfile {
   userData?: IUser;
 }
 
-export const Profile = ({ userData }: IProfileData) => {
+export const UserProfile = ({ userData }: IUserProfile) => {
   const router = useRouter();
 
   const userBadge = userData?.firstName && userData?.lastName
@@ -26,26 +25,20 @@ export const Profile = ({ userData }: IProfileData) => {
   };
 
   return (
-    <Menu position="bottom-end" withArrow width={200}>
+    <Menu position='bottom' offset={2}>
       <Menu.Target>
-        <UnstyledButton className={classes.user}>
-          <Group>
-            <Avatar color="blue" radius="xl"> {userBadge}</Avatar>
-            <IconChevronDown size={14} stroke={1.5} />
-          </Group>
-        </UnstyledButton>
+        <Avatar color="blue" radius="xl" styles={{ root: { cursor: 'pointer' } }}> {userBadge}</Avatar>
       </Menu.Target>
 
       <Menu.Dropdown>
         <Menu.Item
-          leftSection={<IconUser size={14} />}
+          leftSection={<IconUser size={16} />}
           onClick={() => router.push('/profile')}
         >
           Profile
         </Menu.Item>
-
         <Menu.Item
-          leftSection={<IconLogout size={14} />}
+          leftSection={<IconLogout size={16} />}
           onClick={handleLogout}
           color="red"
         >

@@ -9,9 +9,7 @@ import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQuery
 import MainLayout from './_components/MainLayout';
 import { cookies } from 'next/headers';
 import { AuthProvider } from '@/libs/components/providers/AuthProvider';
-import { getPermissions } from '@/libs/web-apis/src/lib/permission';
 import { Notification } from '@/libs/components/custom/notification';
-import { redirect } from 'next/navigation';
 
 export const metadata = {
   title: 'Agent Xenon',
@@ -24,12 +22,8 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const cookieStore = await cookies();
-  const permissions = await getPermissions();
   const bearerToken = cookieStore.get('agentXenonToken')?.value || '';
 
-  if (!bearerToken) {
-    redirect('/signin')
-  }
   return (
     <html lang="en" {...mantineHtmlProps}>
       <head>
@@ -41,7 +35,7 @@ export default async function RootLayout({
       </head>
       <body>
         <ReactQueryClientProvider>
-          <AuthProvider token={bearerToken} permissions={permissions.data.permissions}>
+          <AuthProvider token={bearerToken}>
             <MantineProvider>
               <Notification position='bottom-right' />
               <MainLayout>{children}</MainLayout>
