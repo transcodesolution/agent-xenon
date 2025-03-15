@@ -1,4 +1,4 @@
-import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundType } from "@agent-xenon/constants";
+import { InterviewRoundStatus, InterviewRoundTypes } from "@agent-xenon/constants";
 import { ITimestamp } from "./timestamp";
 import { IApplicant } from "./applicant";
 import { Document } from "mongoose";
@@ -13,10 +13,9 @@ export interface IApplicantRoundList {
 export interface IInterviewRound<T = string> extends Partial<Document>, ITimestamp {
     _id: string;
     type: InterviewRoundTypes;
-    subType: TechnicalRoundType;
     name: string;
     qualificationCriteria: string;
-    mcqCriteria: number;
+    selectionMarginInPercentage: number;
     jobId: T;
     startDate: Date;
     endDate: Date;

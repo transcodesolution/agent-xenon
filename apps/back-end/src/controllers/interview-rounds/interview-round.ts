@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
-import { ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus, TechnicalRoundType } from "@agent-xenon/constants";
+import { AnswerQuestionFormat, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, googleRedirectSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
 import InterviewRound from "../../database/models/interview-round";
@@ -188,7 +188,7 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewRound> = { deletedAt: null, _id: value.roundId }
 
-        const interviewRoundData = await InterviewRound.findOne<IInterviewRound<IInterviewQuestionAnswer>>(match, "type subType endDate startDate status qualificationCriteria mcqCriteria name");
+        const interviewRoundData = await InterviewRound.findOne<IInterviewRound<IInterviewQuestionAnswer>>(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name");
 
         const matchApplicantRoundQuery: FilterQuery<IApplicantRound> = { deletedAt: null, roundIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.roundId) } } };
 
@@ -200,7 +200,7 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
             },
         }).populate("applicantId");
 
-        const questions = await RoundQuestionAssign.find<IRoundQuestionAssign<IInterviewQuestionAnswer>>({ roundId: value.roundId, deletedAt: null }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes inputFormat").sort({ _id: 1 });
+        const questions = await RoundQuestionAssign.find<IRoundQuestionAssign<IInterviewQuestionAnswer>>({ roundId: value.roundId, deletedAt: null }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes questionFormat").sort({ _id: 1 });
 
         interviewRoundData._doc.applicants = applicants;
         interviewRoundData._doc.questions = questions.map(i => i.questionId);
@@ -221,7 +221,7 @@ export const getInterviewRoundByJobId = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewRound> = { deletedAt: null, jobId: value.jobId }
 
-        const interviewRounds = await InterviewRound.find(match, "type subType endDate startDate status qualificationCriteria mcqCriteria name").sort({ _id: 1 });
+        const interviewRounds = await InterviewRound.find(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name").sort({ _id: 1 });
 
         return res.ok("interview round", interviewRounds, "getDataSuccess")
     } catch (error) {
@@ -266,7 +266,7 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
                 res.ok("interview round is in progress. You will notify once it will complete", {}, "customMessage")
                 await manageScreeningRound(interviewRoundData, user.organizationId.toString());
                 break;
-            case InterviewRoundTypes.TECHNICAL:
+            case InterviewRoundTypes.ASSESSMENT:
                 // if (interviewRoundData?.startDate && interviewRoundData?.endDate && (interviewRoundData.startDate <= currentDate && currentDate < interviewRoundData.endDate)) {
                 //     return res.badRequest("technical round already in progress", {}, "customMessage");
                 // }
@@ -380,19 +380,26 @@ export const submitExam = async (req: Request, res: Response) => {
 
         const questions = await RoundQuestionAssign.find<questionAnswerType>({ roundId: value.roundId, jobId: interviewRoundData.jobId, deletedAt: null }, "questionId").sort({ "questionId": 1 }).populate("questionId")
 
-        let isSelected: boolean;
+        let correctAnswerCount = 0;
 
-        switch (interviewRoundData.subType) {
-            case TechnicalRoundType.MCQ:
-                isSelected = manageMCQAnswers(questions, value.questionAnswers, interviewRoundData.mcqCriteria);
-                break;
-            case TechnicalRoundType.DSA:
-                // in future, the logic will implement here using AI agent
-                break;
-            case TechnicalRoundType.CODING:
-                // in future, the logic will implement here using AI agent
-                break;
+        for (const question of questions) {
+            const answer = value.questionAnswers.find((i: IRoundQuestionAssign) => question.questionId._id.toString() === i.questionId);
+            switch (question.questionId.questionFormat) {
+                case AnswerQuestionFormat.MCQ:
+                    correctAnswerCount += manageMCQAnswers(question, answer);
+                    break;
+                case AnswerQuestionFormat.TEXT:
+                    break;
+                case AnswerQuestionFormat.CODE:
+                    break;
+                case AnswerQuestionFormat.FILE:
+                    break;
+            }
         }
+
+        const applicantPercentage = Math.floor((correctAnswerCount / questions.length) * 100);
+
+        const isSelected = applicantPercentage >= interviewRoundData.selectionMarginInPercentage;
 
         await Promise.all([
             ApplicantRound.updateOne(Query, {
@@ -404,9 +411,9 @@ export const submitExam = async (req: Request, res: Response) => {
             sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
 
                 We appreciate your time and effort in participating in the technical round for the applied position.  
-                
+
                 ${isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
-                
+
                 Thank you for your interest in our company.`)
         ]);
 
@@ -447,7 +454,10 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
 
         const questionAssignId: string[] = await RoundQuestionAssign.distinct("questionId", { deletedAt: null, roundId: value.roundId }).sort({ _id: 1 });
 
-        const questions = await InterviewQuestionAnswer.find<IInterviewQuestionAnswer>({ _id: { $in: questionAssignId } }, "type question description options tags difficulty timeLimitInMinutes inputFormat");
+        const questions = await InterviewQuestionAnswer.find<IInterviewQuestionAnswer>(
+            { _id: { $in: questionAssignId } },
+            "type question description options.text options.index tags difficulty timeLimitInMinutes questionFormat"
+        );
 
         const queryFilter = {
             applicantId: user._id,

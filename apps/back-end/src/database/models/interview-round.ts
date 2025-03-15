@@ -1,13 +1,12 @@
-import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundType } from "@agent-xenon/constants";
+import { InterviewRoundStatus, InterviewRoundTypes } from "@agent-xenon/constants";
 import { IInterviewRound } from "@agent-xenon/interfaces";
 import mongoose, { Schema } from "mongoose";
 
 const InterviewRoundSchema: Schema = new Schema({
     type: { type: String, enum: InterviewRoundTypes },
-    subType: { type: String, enum: TechnicalRoundType },
     name: { type: String },
     qualificationCriteria: { type: String },
-    mcqCriteria: { type: Number },
+    selectionMarginInPercentage: { type: Number },
     jobId: { type: Schema.Types.ObjectId, ref: "Job" },
     startDate: { type: Date },
     endDate: { type: Date, default: Date.now() + 172800 * 1000 },

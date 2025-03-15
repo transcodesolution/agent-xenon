@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { IApplicant, IRole } from '@agent-xenon/interfaces';
+import { IApplicant } from '@agent-xenon/interfaces';
 
 const ApplicantSchema: Schema = new Schema({
     lastName: { type: String },
@@ -66,6 +66,6 @@ const ApplicantSchema: Schema = new Schema({
     }
 });
 
-const Applicant = mongoose.model<IApplicant<string, IRole>>('Applicant', ApplicantSchema);
+const Applicant = mongoose.model<IApplicant>('Applicant', ApplicantSchema);
 
 export default Applicant;

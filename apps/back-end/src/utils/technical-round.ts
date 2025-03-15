@@ -1,9 +1,13 @@
-import { questionAnswerType, submitExamAnswerPayloadType, submitExamType } from "../types/technical-round";
+import { submitExamAnswerPayloadType, submitExamType } from "../types/technical-round";
 
-export const manageMCQAnswers = (questions: submitExamType, questionAnswers: submitExamAnswerPayloadType, mcqCriteria: number) => {
-    const correctAnswerCount = questions.filter((i: questionAnswerType, j) => (i.questionId.answerDetails.text === questionAnswers[j].answerDetails.text)).length;
+export const manageMCQAnswers = (question: submitExamType, answerObj: submitExamAnswerPayloadType) => {
+    const answer = answerObj.answer.split("_");
 
-    const applicantPercentage = Math.floor((correctAnswerCount / questions.length) * 100);
+    const correctAnswerCount = question.questionId.options.filter((i, j) => (i.isRightAnswer && answer.includes(i.index))).length;
 
-    return applicantPercentage >= mcqCriteria;
+    const softwareCorrectAnswerCount = question.questionId.options.filter((i) => i.isRightAnswer).length;
+
+    const isCorrectAnswer = correctAnswerCount === softwareCorrectAnswerCount;
+
+    return (isCorrectAnswer ? 1 : 0);
 }

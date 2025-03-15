@@ -52,4 +52,5 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     projects: IProject[];
     resumeLink: string;
     isSelectedByAgent: boolean;
+    _doc?: IApplicant;
 }
