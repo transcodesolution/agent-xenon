@@ -6,7 +6,7 @@ export * from "./lib/module";
 export * from "./lib/permission";
 export * from "./lib/role";
 export * from "./lib/user";
-export * from "./lib/interview-question-answer";
+export * from "./lib/interview-question";
 export * from "./lib/job-role";
 export * from "./lib/designation";
 export * from "./lib/job";

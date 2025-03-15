@@ -19,7 +19,7 @@ declare module "express" {
 
     interface Request {
         headers: IncomingHttpHeaders & {  // Preserve existing headers
-            user?: IApplicant<string, IRole> | Partial<IUser<IRole, string>>;
+            user?: IApplicant | Partial<IUser>;
             interviewRoundData?: IInterviewRound<IJob>,
         };
     }

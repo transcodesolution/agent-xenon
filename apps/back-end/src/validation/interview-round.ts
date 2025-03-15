@@ -1,16 +1,14 @@
 import Joi from "joi";
-import { InterviewRoundStatus, InterviewRoundTypes, TechnicalRoundType } from "@agent-xenon/constants";
+import { InterviewRoundStatus, InterviewRoundTypes } from "@agent-xenon/constants";
 
 const roundTypeSchema = Joi.string().valid(...Object.values(InterviewRoundTypes))
-const roundSubTypeSchema = Joi.string().valid(...Object.values(TechnicalRoundType))
 
 export const createInterviewRoundSchema = Joi.object().keys({
     type: roundTypeSchema.required(),
-    subType: roundSubTypeSchema.optional(),
     name: Joi.string().allow("").optional(),
     endDate: Joi.date().iso().optional(),
     qualificationCriteria: Joi.string().allow("").optional(),
-    mcqCriteria: Joi.number().optional(),
+    selectionMarginInPercentage: Joi.number().required(),
     questions: Joi.array().items(Joi.string()).required(),
     jobId: Joi.string().required(),
     roundNumber: Joi.number().required(),
@@ -18,11 +16,10 @@ export const createInterviewRoundSchema = Joi.object().keys({
 
 export const updateInterviewRoundSchema = Joi.object().keys({
     type: roundTypeSchema.optional(),
-    subType: roundSubTypeSchema.optional(),
     name: Joi.string().allow("").optional(),
     endDate: Joi.date().iso().optional(),
     qualificationCriteria: Joi.string().allow("").optional(),
-    mcqCriteria: Joi.number().optional(),
+    selectionMarginInPercentage: Joi.number().optional(),
     questions: Joi.array().items(Joi.string()).optional(),
     roundId: Joi.string().required(),
     roundNumber: Joi.number().optional(),
@@ -60,7 +57,7 @@ export const submitExamSchema = Joi.object().keys({
     roundId: Joi.string().required(),
     questionAnswers: Joi.array().items(Joi.object().keys({
         questionId: Joi.string().required(),
-        answerDetails: Joi.object().keys({ codeText: Joi.string().allow("").optional(), text: Joi.string().allow("").optional() }).optional()
+        answer: Joi.string().allow("").required(),
     })),
 })
 

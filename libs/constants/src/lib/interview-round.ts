@@ -9,6 +9,6 @@ export enum InterviewRoundStatus {
 
 export enum InterviewRoundTypes {
     SCREENING = "screening",
-    TECHNICAL = "technical",
+    ASSESSMENT = "assessment",
     MEETING = "meeting",
 }

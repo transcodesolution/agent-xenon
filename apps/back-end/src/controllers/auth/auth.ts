@@ -28,16 +28,17 @@ export const login = async (req: Request, res: Response) => { //email or passwor
 
         if (!checkOrganizationExist) return res.badRequest("invalid_organization", {})
 
-        let response: IUser<IRole>;
+        let response;
         if (value.candidateToken) {
-            const applicantData = await Applicant.findOne<Pick<IApplicant<string, IRole>, "firstName" | "lastName" | "contactInfo" | "role">>({ "contactInfo.email": value.email, jobId: value.jobId }, "firstName lastName contactInfo role").populate<{ role: IRole }>("role").lean()
+            const applicantData = await Applicant.findOne({ "contactInfo.email": value.email, jobId: value.jobId }, "firstName lastName contactInfo role roleId").populate<{ role: IRole }>("role")
             response = {
-                ...applicantData,
+                ...applicantData._doc,
                 email: applicantData?.contactInfo.email,
                 password: applicantData?.contactInfo.password,
-            }
+                role: applicantData.role,
+            } as Pick<IApplicant, "firstName" | "lastName" | "contactInfo" | "role">;
         } else {
-            response = await userModel.findOne({ email: value.email, organizationId: checkOrganizationExist._id }).populate<{ role: IRole }>("role").lean()
+            response = await userModel.findOne({ email: value.email, organizationId: checkOrganizationExist._id }).populate<{ role: IRole }>("role")
         }
 
         if (!response) return res.badRequest("userNotFound", {})

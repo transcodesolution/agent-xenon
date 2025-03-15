@@ -1,20 +1,15 @@
 import { ITimestamp } from "./timestamp";
-import { AnswerInputFormat, AnswerMcqOptionFormat, Difficulty, InterviewRoundTypes, TechnicalRoundType } from "@agent-xenon/constants"
+import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty, InterviewRoundTypes } from "@agent-xenon/constants"
 
 export interface IInterviewQuestionAnswer extends ITimestamp {
     _id: string;
     description: string;
     type: InterviewRoundTypes;
-    subType: TechnicalRoundType;
     question: string;
-    promptText: string;
-    answerDetails: {
-        codeText: string;
-        text: string;
-    };
     options: {
         index: AnswerMcqOptionFormat;
         text: string;
+        isRightAnswer: boolean;
     }[];
     tags: string[];
     difficulty: Difficulty;
@@ -22,5 +17,5 @@ export interface IInterviewQuestionAnswer extends ITimestamp {
     evaluationCriteria: string;
     isAutomated: boolean;
     organizationId: string;
-    inputFormat: AnswerInputFormat;
+    questionFormat: AnswerQuestionFormat;
 }
