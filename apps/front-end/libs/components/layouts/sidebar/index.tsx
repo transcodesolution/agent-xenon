@@ -15,7 +15,7 @@ const mockData = [
     links: [
       { label: 'Jobs', link: '/jobs' },
       { label: 'Candidates', link: '/candidates' },
-      { label: 'Q&A', link: '/qa' },
+      { label: 'Q&A', link: '/questions' },
     ],
   },
   {

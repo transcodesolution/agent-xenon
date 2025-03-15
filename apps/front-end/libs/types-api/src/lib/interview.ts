@@ -26,3 +26,9 @@ export interface IExamQuestionAnswer {
 export interface ISubmitExamMCQQuestionsResponse {
   status: ExamStatus
 }
+
+export interface IGetQuestionsRequest {
+  page: number;
+  limit: number;
+  search: string;
+}
