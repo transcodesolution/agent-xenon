@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { FilterQuery } from "mongoose";
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
-import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getAllQuestionSchema, getQuestionAnswerSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
+import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getAllQuestionSchema, getQuestionAnswerSchema, getQuestionByIdSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
 import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { AnswerQuestionFormat, InterviewRoundTypes } from "@agent-xenon/constants";
@@ -145,6 +145,24 @@ export const getAllQuestionList = async (req: Request, res: Response) => {
         const questionAnswerData = await InterviewQuestionAnswer.find(match, "question").sort({ _id: -1 });
 
         return res.ok("questions", questionAnswerData, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getQuestionById = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = getQuestionByIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, _id: value.questionId }
+
+        const questions = await InterviewQuestionAnswer.findOne(match);
+
+        return res.ok("interview question", questions, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

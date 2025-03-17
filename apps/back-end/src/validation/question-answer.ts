@@ -36,3 +36,7 @@ export const getAllQuestionSchema = Joi.object().keys({
     questionFormat: Joi.string().valid(...Object.values(AnswerQuestionFormat)).optional(),
     search: Joi.string().allow("").optional(),
 })
+
+export const getQuestionByIdSchema = Joi.object().keys({
+    questionId: Joi.string().required(),
+})
