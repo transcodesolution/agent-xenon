@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import { IUser } from "@agent-xenon/interfaces";
+import { IRole, IUser } from "@agent-xenon/interfaces";
+import { HydratedDocument } from "mongoose";
 
 const userSchema = new mongoose.Schema({
     firstName: { type: String, },
@@ -27,5 +28,14 @@ const userSchema = new mongoose.Schema({
         }
     }
 });
+
+userSchema.post("find", (users: HydratedDocument<IUser>[]) => {
+    for (const obj of users) {
+        obj.set('createdBy', undefined);
+        obj.set('updatedAt', undefined, { strict: false });
+        obj.set('deletedAt', undefined, { strict: false });
+        obj.set('organizationId', undefined, { strict: false });
+    }
+})
 
 export const userModel = mongoose.model<IUser>('user', userSchema);
