@@ -14,11 +14,11 @@ export const useGetAllMCQQuestions = ({
   searchString
 }: IUseGetMCQQuestions) => {
   return useQuery({
-    queryKey: ['getMCQQuestions'],
+    queryKey: ['getAllMCQQuestions', searchString],
     queryFn: async () => {
       return getAllMCQQuestions(searchString);
     },
-    enabled: enabled,
+    enabled: enabled && !!searchString,
     staleTime: staleTime,
     refetchOnWindowFocus: refetchOnWindowFocus,
   });
