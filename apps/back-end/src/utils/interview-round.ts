@@ -31,7 +31,7 @@ export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, org
 
 export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => {
     const applicants = await getSelectedApplicantDetails(roundData.jobId._id);
-    const domainUrl = config.FRONTEND_URL.replace(/\/\/([^.]*)/, `//${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
+    const domainUrl = config.FRONTEND_URL.replace(/(?<=\/\/)([^.]+)(?=\.)/, `${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
     const roundId = roundData._id.toString();
     const token = createEncodedShortToken(roundData.jobId._id.toString(), applicants[0].organizationId.name);
 
