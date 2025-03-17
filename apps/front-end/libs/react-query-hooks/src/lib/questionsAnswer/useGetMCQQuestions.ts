@@ -1,22 +1,29 @@
-import { getAllMCQQuestions } from "@agent-xenon/web-apis";
-import { useQuery } from "@tanstack/react-query";
+import { IGetQuestionsRequest } from '@/libs/types-api/src';
+import { getMCQQuestions } from '@/libs/web-apis/src';
+import { useQuery } from '@tanstack/react-query';
 
-interface IUseGetMCQQuestions {
+interface IUseGetMCQQuestions extends IGetQuestionsRequest {
   staleTime?: number;
   enabled?: boolean;
   refetchOnWindowFocus?: boolean;
-  searchString: string;
 };
+
 export const useGetMCQQuestions = ({
+  page,
+  limit,
+  search = '',
   staleTime = 1000 * 60 * 0.2,
   enabled = true,
   refetchOnWindowFocus = false,
-  searchString  
 }: IUseGetMCQQuestions) => {
   return useQuery({
-    queryKey: ['getMCQQuestions'],
+    queryKey: ['getMCQQuestions', page, limit, search],
     queryFn: async () => {
-      return getAllMCQQuestions(searchString);
+      return getMCQQuestions({
+        page,
+        limit,
+        search,
+      });
     },
     enabled: enabled,
     staleTime: staleTime,
