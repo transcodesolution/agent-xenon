@@ -137,7 +137,7 @@ export const getUser = async (req: Request, res: Response) => {
 
         const [totalData, users] = await Promise.all([
             userModel.countDocuments(match),
-            userModel.find(match).sort({ _id: 1 }).skip((value.page - 1) * value.limit).limit(value.limit)
+            userModel.find(match).sort({ _id: 1 }).populate("role", "name type").skip((value.page - 1) * value.limit).limit(value.limit)
         ]);
 
         return res.ok('user', { userData: users, totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, 'getDataSuccess');

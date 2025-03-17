@@ -16,6 +16,7 @@ export const createRole = async (req: Request, res: Response) => {
 
         value.organizationId = user.organizationId;
         const role = new roleModel(value);
+        role.type = RoleType.CUSTOM;
         await role.save();
 
         return res.ok('role', role, 'addDataSuccess');
@@ -87,9 +88,9 @@ export const updateRole = async (req: Request, res: Response) => {
             return res.badRequest('You can not update the administrator role', {}, 'customMessage');
         }
 
-        // if (roleData?.type === RoleType.CANDIDATE) {
-        //     return res.badRequest('You can not update the candidate role', {}, 'customMessage');
-        // }
+        if (roleData?.type === RoleType.CANDIDATE) {
+            return res.badRequest('You can not update the candidate role', {}, 'customMessage');
+        }
 
         const role = await roleModel.findOneAndUpdate(Query, { $set: value }, { new: true });
 
