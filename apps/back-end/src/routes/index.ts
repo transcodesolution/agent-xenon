@@ -15,6 +15,7 @@ import { thirdPartyRedirectRouter } from './third-party-redirect'
 import { documentRouter } from './document'
 import { roleRouter } from './user-role'
 import { userRouter } from './user'
+import { codeExecuteRouter } from './code-execution'
 
 const router = Router()
 // const accessControl = (req: Request, res: Response, next: any) => {
@@ -32,6 +33,7 @@ router.use('/designation', designationRouter)
 router.use('/questionAnswer', interviewQuestionAnswerRouter)
 router.use('/organization', organizationRouter)
 router.use('/job', jobRouter)
+router.use('/code', codeExecuteRouter)
 router.use('/applicant/exam', technicalRoundRouter)
 router.use('/applicant', applicantRouter)
 router.use('/interview-round', interviewRoundRouter)
