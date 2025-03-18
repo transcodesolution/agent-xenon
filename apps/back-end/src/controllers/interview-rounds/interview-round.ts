@@ -8,8 +8,8 @@ import InterviewRound from "../../database/models/interview-round";
 import Job from "../../database/models/job";
 import { manageMeetingRound, manageMeetingScheduleWithCandidate, manageScreeningRound, manageTechnicalRound, updateApplicantStatusOnRoundComplete } from "../../utils/interview-round";
 import ApplicantRound from "../../database/models/applicant-round";
-import { questionAnswerType } from "../../types/technical-round";
-import { manageMCQAnswers } from "../../utils/technical-round";
+import { questionAnswerType, submitExamAnswerPayloadType } from "../../types/technical-round";
+import { manageMCQAnswers, manageTextAndCodeAnswers } from "../../utils/technical-round";
 import { sendMail } from "../../helper/mail";
 import { oauth2Client } from "../../helper/third-party-oauth";
 import Organization from "../../database/models/organization";
@@ -380,44 +380,10 @@ export const submitExam = async (req: Request, res: Response) => {
 
         const questions = await RoundQuestionAssign.find<questionAnswerType>({ roundId: value.roundId, jobId: interviewRoundData.jobId, deletedAt: null }, "questionId").sort({ "questionId": 1 }).populate("questionId")
 
-        let correctAnswerCount = 0;
+        res.ok("exam submitted successfully", {}, "customMessage");
 
-        for (const question of questions) {
-            const answer = value.questionAnswers.find((i: IRoundQuestionAssign) => question.questionId._id.toString() === i.questionId);
-            switch (question.questionId.questionFormat) {
-                case AnswerQuestionFormat.MCQ:
-                    correctAnswerCount += manageMCQAnswers(question, answer);
-                    break;
-                case AnswerQuestionFormat.TEXT:
-                    break;
-                case AnswerQuestionFormat.CODE:
-                    break;
-                case AnswerQuestionFormat.FILE:
-                    break;
-            }
-        }
+        await handleCandidateExamSubmission(questions, value.questionAnswers, interviewRoundData.selectionMarginInPercentage, Query, applicantRoundData.applicantId.contactInfo.email);
 
-        const applicantPercentage = Math.floor((correctAnswerCount / questions.length) * 100);
-
-        const isSelected = applicantPercentage >= interviewRoundData.selectionMarginInPercentage;
-
-        await Promise.all([
-            ApplicantRound.updateOne(Query, {
-                $set: {
-                    isSelected,
-                    status: InterviewRoundStatus.COMPLETED
-                }
-            }),
-            sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
-
-                We appreciate your time and effort in participating in the technical round for the applied position.  
-
-                ${isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
-
-                Thank you for your interest in our company.`)
-        ]);
-
-        return res.ok("exam submitted successfully", {}, "customMessage")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -471,5 +437,50 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
         return res.ok("interview questions", { roundId: value.roundId, ...roundObj, questions }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const handleCandidateExamSubmission = async (questions: questionAnswerType[], questionAnswers: submitExamAnswerPayloadType[], selectionMarginInPercentage: number, applicantRoundQuery: RootFilterQuery<IApplicantRound>, applicantEmail: string) => {
+    try {
+        let correctAnswerCount = 0;
+
+        for (const question of questions) {
+            const answer = questionAnswers.find((i: submitExamAnswerPayloadType) => question.questionId._id.toString() === i.questionId);
+            switch (question.questionId.questionFormat) {
+                case AnswerQuestionFormat.MCQ:
+                    correctAnswerCount += manageMCQAnswers(question, answer);
+                    break;
+                case AnswerQuestionFormat.TEXT:
+                    correctAnswerCount += await manageTextAndCodeAnswers(question.questionId, answer);
+                    break;
+                case AnswerQuestionFormat.CODE:
+                    correctAnswerCount += await manageTextAndCodeAnswers(question.questionId, answer);
+                    break;
+                case AnswerQuestionFormat.FILE:
+                    break;
+            }
+        }
+
+        const applicantPercentage = Math.floor((correctAnswerCount / questions.length) * 100);
+
+        const isSelected = applicantPercentage >= selectionMarginInPercentage;
+
+        await Promise.all([
+            ApplicantRound.updateOne(applicantRoundQuery, {
+                $set: {
+                    isSelected,
+                    status: InterviewRoundStatus.COMPLETED
+                }
+            }),
+            sendMail(applicantEmail, "Candidate Interview Status Mail", `Dear Candidate,  
+
+                We appreciate your time and effort in participating in the technical round for the applied position.  
+
+                ${isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
+
+                Thank you for your interest in our company.`)
+        ]);
+    } catch (error) {
+        console.error("submitExam: ", error.message);
     }
 }
