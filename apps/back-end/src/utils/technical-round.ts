@@ -1,13 +1,20 @@
+import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { submitExamAnswerPayloadType, submitExamType } from "../types/technical-round";
+import candidateAnswerAnalysisAgent from "../agents/candidate-answer-analysis";
+import { OverallResult } from "./enum";
 
 export const manageMCQAnswers = (question: submitExamType, answerObj: submitExamAnswerPayloadType) => {
     const answer = answerObj.answer.split("_");
 
-    const correctAnswerCount = question.questionId.options.filter((i, j) => (i.isRightAnswer && answer.includes(i.index))).length;
+    const candidateCorrectAnswerCount = question.questionId.options.filter((i) => (i.isRightAnswer && answer.includes(i.index))).length;
 
-    const softwareCorrectAnswerCount = question.questionId.options.filter((i) => i.isRightAnswer).length;
+    const platformCorrectAnswerCount = question.questionId.options.filter((i) => i.isRightAnswer).length;
 
-    const isCorrectAnswer = correctAnswerCount === softwareCorrectAnswerCount;
+    return Number(candidateCorrectAnswerCount === platformCorrectAnswerCount);
+}
 
-    return (isCorrectAnswer ? 1 : 0);
+export const manageTextAndCodeAnswers = async (question: Pick<IInterviewQuestionAnswer, "question" | "evaluationCriteria" | "questionFormat" | "description">, answerObj: submitExamAnswerPayloadType) => {
+    const agentResponse = await candidateAnswerAnalysisAgent(question, answerObj.answer);
+
+    return Number(agentResponse.overallStatus === OverallResult.Pass);
 }
