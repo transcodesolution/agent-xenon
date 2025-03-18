@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { codeExecuteSchema } from "../../validation/code-execution";
 import apiRequestHandler from "../../utils/third-party-service-handler";
 import { PINSTON_API } from "../../utils/constants";
+import { IExecuteCodeResponse } from "../../types/response-data";
 
 export const executeCode = async (req: Request, res: Response) => {
     try {
@@ -11,7 +12,7 @@ export const executeCode = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const outputDetails = await apiRequestHandler("post", PINSTON_API.runCode, {
+        const outputDetails: { data: IExecuteCodeResponse, status: number } = await apiRequestHandler("post", PINSTON_API.execute, {
             requestBody: {
                 language: value.language,
                 version: value.version,
@@ -19,7 +20,7 @@ export const executeCode = async (req: Request, res: Response) => {
             },
         });
 
-        return res.ok("interview round", outputDetails.data?.run ?? {}, "addDataSuccess")
+        return res.ok("code execution completed successfully", outputDetails.data?.run ?? {}, "customMessage")
     } catch (error) {
         return res.internalServerError(error?.message ?? error?.error?.message, error?.stack ?? {}, "customMessage")
     }
