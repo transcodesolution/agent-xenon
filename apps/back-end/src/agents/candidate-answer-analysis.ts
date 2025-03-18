@@ -5,7 +5,7 @@ import { ICandidateAnswerAnalysisResponse } from "../types/technical-round";
 
 const client = createOpenAIClient();
 
-const SYSTEM_PROMPT = `You are an AI evaluator for a technical assessment software. Your task is to assess a candidate’s response based on the given input type.
+const SYSTEM_PROMPT = `You are an AI evaluator for a recruitment platform used by HR professionals. Your role is to assess and evaluate a candidate’s response according to the designated input type.
 
 **Input Types:**  
 - "code" → Generate test cases, execute code, and evaluate correctness, performance, and quality.  
@@ -50,14 +50,14 @@ async function candidateAnswerAnalysisAgent(question: Pick<IInterviewQuestionAns
         }
     ]
 
-    const data = await client.chat.completions.create({
+    const assistentResponse = await client.chat.completions.create({
         // model: "gpt-4o-mini",
         model: "o3-mini",
         messages,
         response_format: { type: "json_object" },
     });
 
-    const output = JSON.parse(data.choices[0].message?.content || "{}");
+    const output = JSON.parse(assistentResponse.choices[0].message?.content || "{}");
 
     return output;
 }
