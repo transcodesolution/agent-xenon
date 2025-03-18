@@ -22,7 +22,10 @@ export const createApplicantByUser = async (req: Request, res: Response) => {
 
         if (checkApplicantExist) return res.badRequest("alreadyEmail", {});
 
+        const roleData = await roleModel.findOne({ type: RoleType.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
+
         value.organizationId = user.organizationId;
+        value.roleId = roleData._id.toString();
         const data = await Applicant.create(value);
 
         return res.ok("applicant", data, "addDataSuccess")
