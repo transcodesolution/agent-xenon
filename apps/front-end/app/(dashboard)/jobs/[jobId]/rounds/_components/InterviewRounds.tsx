@@ -1,35 +1,50 @@
-'use client'
-import { useGetInterviewRoundsById, useGetInterviewRoundsByJobId, useInterviewRoundStart, useUpdateApplicantStatus } from '@agent-xenon/react-query-hooks';
+'use client';
+import {
+  useGetInterviewRoundsById,
+  useGetInterviewRoundsByJobId,
+  useInterviewRoundStart,
+  useInterviewRoundUpdateStatus
+} from '@agent-xenon/react-query-hooks';
 import { Stack } from '@mantine/core';
 import { useParams } from 'next/navigation';
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { IInterviewRound } from '@agent-xenon/interfaces';
 import { InterviewRoundStatus } from '@agent-xenon/constants';
 import { RoundCard } from './RoundCard';
 import { JobApplicantListModal } from './JobApplicantListModal';
+import { IUpdateInterviewRoundStatusRequest } from '@/libs/types-api/src';
 
 export const InterviewRounds = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const { data: rounds, refetch } = useGetInterviewRoundsByJobId({ jobId });
   const [selectedRoundId, setSelectedRoundId] = useState<string>('');
   const { data: roundData } = useGetInterviewRoundsById({ roundId: selectedRoundId });
-  const { mutate: interviewRoundStart } = useInterviewRoundStart();
-  const { mutate: updateApplicantStatus } = useUpdateApplicantStatus()
+
+  const { mutate: startInterviewRound } = useInterviewRoundStart();
+  const { mutate: updateRoundStatus } = useInterviewRoundUpdateStatus();
 
   const handleStartRound = (roundId: string) => {
-    interviewRoundStart({ roundId, jobId }, {
+    startInterviewRound({ roundId, jobId }, {
       onSuccess: () => {
         refetch();
       }
-    })
-  }
+    });
+  };
+
+  const handleUpdateRoundStatus = (roundId: string, newStatus: string, applicantId?: string) => {
+    const roundUpdateData: IUpdateInterviewRoundStatusRequest = { roundId, jobId, roundStatus: newStatus };
+    if (applicantId) {
+      roundUpdateData.applicantId = applicantId;
+    }
+    updateRoundStatus(roundUpdateData, {
+      onSuccess: () => {
+        refetch();
+      }
+    });
+  };
 
   const handleShowApplicants = (roundId: string) => {
     setSelectedRoundId(roundId);
-  };
-
-  const handleUpdateApplicantStatus = (roundId: string, ApplicantId: string, value: string) => {
-    updateApplicantStatus({ roundId, jobId, applicantId: ApplicantId, roundStatus: value }, {})
   };
 
   return (
@@ -41,8 +56,9 @@ export const InterviewRounds = () => {
         return (
           <RoundCard
             round={round}
-            isDisabled={!isPreviousRoundsCompleted || round?.status === InterviewRoundStatus.COMPLETED}
+            isDisabled={!isPreviousRoundsCompleted || round.status === InterviewRoundStatus.COMPLETED}
             onStartRound={handleStartRound}
+            onUpdateRoundStatus={handleUpdateRoundStatus}
             onShowApplicants={handleShowApplicants}
             key={round._id}
           />
@@ -54,8 +70,8 @@ export const InterviewRounds = () => {
         onClose={() => setSelectedRoundId("")}
         Applicants={roundData?.data?.applicants || []}
         roundId={selectedRoundId || ''}
-        onUpdateStatus={handleUpdateApplicantStatus}
+        onUpdateStatus={handleUpdateRoundStatus}
       />
     </Stack>
-  )
-}
+  );
+};

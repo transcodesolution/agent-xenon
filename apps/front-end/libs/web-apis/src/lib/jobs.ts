@@ -1,6 +1,6 @@
 import { IApiResponse, IInterviewRound, IJob, PaginationApiResponseType } from '@agent-xenon/interfaces';
 import http from './http-common';
-import { IGetJobRoleAndDesignation, IGetJobsParams, IUpdateApplicantStatusRequest } from '@agent-xenon/types-api';
+import { IGetJobRoleAndDesignation, IGetJobsParams, IUpdateInterviewRoundStatusRequest } from '@agent-xenon/types-api';
 
 export const getJobs = async (params: IGetJobsParams): Promise<IApiResponse<PaginationApiResponseType<IJob[]>>> => {
   try {
@@ -139,7 +139,7 @@ export const interviewRoundStart = async (params: { jobId: string, roundId: stri
 };
 
 
-export const updateApplicantStatus = async (params: IUpdateApplicantStatusRequest): Promise<IApiResponse> => {
+export const updateRoundStatus = async (params: IUpdateInterviewRoundStatusRequest): Promise<IApiResponse> => {
   try {
     const { roundId, ...otherParams } = params;
     const result = await http.patch<IApiResponse>(`/interview-round/status/${roundId}`, otherParams);

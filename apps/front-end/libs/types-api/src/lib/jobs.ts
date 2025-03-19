@@ -19,9 +19,9 @@ export interface IDeleteInterviewRoundsRequest {
   roundIds: string[];
 }
 
-export interface IUpdateApplicantStatusRequest {
+export interface IUpdateInterviewRoundStatusRequest {
   jobId: string
   roundId: string
   roundStatus: string
-  applicantId: string
+  applicantId?: string
 };
