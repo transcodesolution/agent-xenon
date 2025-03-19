@@ -15,7 +15,7 @@ export const AuthProvider = ({
   children: ReactNode;
 }) => {
   //the reason why i am not putting below function in useEffect is because of the order of execution of the function is necessary. it need to call out first somehow before any other http request has been made
-  token && setupAxiosInterceptors({ token })
+  setupAxiosInterceptors({ token })
 
   const { data } = useGetUser({ enabled: !!token });
 

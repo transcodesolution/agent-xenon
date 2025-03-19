@@ -1,6 +1,7 @@
 import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
 import '@mantine/notifications/styles.layer.css';
+import '@mantine/dropzone/styles.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import { cookies } from 'next/headers';
@@ -32,16 +33,16 @@ export default async function ApplicantLayout({
         />
       </head>
       <body>
-        <AuthProvider token={bearerToken} >
-          <ReactQueryClientProvider>
+        <ReactQueryClientProvider>
+          <AuthProvider token={bearerToken} >
             <MantineProvider>
               <Notification position='bottom-right' />
               <ApplicantMainLayout>
                 {children}
               </ApplicantMainLayout>
             </MantineProvider>
-          </ReactQueryClientProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ReactQueryClientProvider>
       </body>
     </html >
   );

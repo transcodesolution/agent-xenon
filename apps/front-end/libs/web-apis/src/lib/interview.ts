@@ -1,6 +1,7 @@
 import { IApiResponse } from '@agent-xenon/interfaces';
 import http from './http-common';
-import { IGetInterviewMCQQuestionsRequest, IGetInterviewMCQQuestionsResponse, ISubmitExamMCQQuestionsRequest, ISubmitExamMCQQuestionsResponse } from '@/libs/types-api/src';
+import { ICodeExecuteRequest, ICodeExecuteResponse, IGetInterviewMCQQuestionsRequest, IGetInterviewMCQQuestionsResponse, ISubmitExamMCQQuestionsRequest, ISubmitExamMCQQuestionsResponse } from '@agent-xenon/types-api';
+import { apiErrorHandler } from '@/libs/utils/apiErrorHandler';
 
 export const getInterviewMCQQuestions = async ({ roundId }: IGetInterviewMCQQuestionsRequest): Promise<IApiResponse<IGetInterviewMCQQuestionsResponse>> => {
   try {
@@ -17,5 +18,13 @@ export const submitExamMCQQuestions = async (params: ISubmitExamMCQQuestionsRequ
     return result.data;
   } catch (error) {
     throw new Error(`Error while submit MCQ Questions: ${error}`);
+  }
+};
+export const codeExecute = async (params: ICodeExecuteRequest): Promise<IApiResponse<ICodeExecuteResponse>> => {
+  try {
+    const result = await http.post<IApiResponse<ICodeExecuteResponse>>('/code/execute', params);
+    return result.data;
+  } catch (error) {
+    return apiErrorHandler(error, "Compilation Error");
   }
 };

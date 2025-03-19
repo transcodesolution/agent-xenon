@@ -23,7 +23,7 @@ export const getRoundTypeColor = (type: InterviewRoundTypes): string => {
   switch (type) {
     case InterviewRoundTypes.SCREENING:
       return 'blue';
-    case InterviewRoundTypes.TECHNICAL:
+    case InterviewRoundTypes.ASSESSMENT:
       return 'green';
     case InterviewRoundTypes.MEETING:
       return 'purple';
@@ -44,3 +44,24 @@ export const isEquals = <T>(obj1: T, obj2: T): boolean => {
   // rome-ignore lint/suspicious/noExplicitAny: <explanation>
   return keys1.every((key) => isEquals((obj1 as Record<string, unknown>)[key], (obj2 as Record<string, unknown>)[key]));
 };
+
+
+export const terminalStyles = `
+.terminal-line {
+  padding: 2px 0;
+  line-height: 1.4;
+}
+.terminal-prompt {
+  color: #0df5e3;
+  margin-right: 8px;
+}
+.terminal-error {
+  color: #f56565;
+}
+.terminal-success {
+  color: #48bb78;
+}
+.terminal-info {
+  color: #4299e1;
+}
+`;
