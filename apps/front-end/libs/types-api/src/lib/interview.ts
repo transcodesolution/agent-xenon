@@ -19,7 +19,7 @@ export interface ISubmitExamMCQQuestionsRequest {
 
 export interface IExamQuestionAnswer {
   questionId: string;
-  answer: string;
+  answer: string | string[];
 }
 export interface ISubmitExamMCQQuestionsResponse {
   status: ExamStatus

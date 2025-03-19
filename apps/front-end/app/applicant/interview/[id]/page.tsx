@@ -3,7 +3,7 @@
 import { Question } from "@/libs/components/custom/question";
 import { useGetInterviewMCQQuestions, useSubmitExamMCQQuestions } from "@agent-xenon/react-query-hooks";
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
-import { Button, Container, Flex, Group, Progress, Stack, Text } from "@mantine/core";
+import { Button, Container, Divider, Flex, Group, Stack, Title } from "@mantine/core";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { showNotification } from "@mantine/notifications";
@@ -12,7 +12,7 @@ import { ExamStatusAlert } from "../../_components/ExamStatusAlert";
 
 export default function Page() {
   const [currentQuestion, setCurrentQuestion] = useState<IInterviewQuestionAnswer | null>(null);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const { id } = useParams<{ id: string }>();
   const { data, isLoading, refetch } = useGetInterviewMCQQuestions({ roundId: id });
   const { mutate: submitExamMCQQuestions, } = useSubmitExamMCQQuestions();
@@ -22,7 +22,6 @@ export default function Page() {
   const examStatus = data?.data?.status;
   const currentIndex = questions?.findIndex(q => q._id === currentQuestion?._id);
   const isLastQuestion = currentIndex === questions?.length - 1;
-  const progressPercentage = ((currentIndex + 1) / questions?.length) * 100;
 
   useEffect(() => {
     if (questions && questions?.length > 0) {
@@ -45,11 +44,10 @@ export default function Page() {
       setCurrentQuestion(questions[currentIndex - 1]);
     }
   };
-
-  const handleAnswer = (questionId: string, answer: string) => {
+  const handleAnswer = (questionId: string, answer: string | string[]) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: answer,
+      [questionId]: Array.isArray(answer) ? answer.join(",") : answer,
     }));
   };
 
@@ -100,15 +98,9 @@ export default function Page() {
         <Stack>
           <Stack h="calc(100vh - 150px)">
             <Group justify="space-between" align="center" >
-              <Text size="sm" c="dimmed">
-                Question {currentIndex + 1} of {questions?.length}
-              </Text>
-              <Progress
-                value={progressPercentage}
-                size="sm"
-                w={120}
-              />
+              <Title order={3}>{currentIndex + 1}. {currentQuestion?.question}</Title>
             </Group>
+            <Divider />
             {currentQuestion && (
               <Question
                 question={currentQuestion}

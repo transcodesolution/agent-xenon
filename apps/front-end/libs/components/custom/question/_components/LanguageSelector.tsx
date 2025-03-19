@@ -37,14 +37,14 @@ export function LanguageSelector({
         data={allLanguages}
         value={selectedLanguage}
         onChange={(value) => onLanguageChange(value || 'javascript')}
-        label="Language"
+        label=""
         size="sm"
       />
       <Select
         data={themes}
         value={editorTheme}
         onChange={(value) => onThemeChange(value || 'vs-dark')}
-        label="Theme"
+        label=""
         size="sm"
       />
     </Group>

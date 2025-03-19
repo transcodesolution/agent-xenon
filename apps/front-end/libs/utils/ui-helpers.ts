@@ -46,22 +46,3 @@ export const isEquals = <T>(obj1: T, obj2: T): boolean => {
 };
 
 
-export const terminalStyles = `
-.terminal-line {
-  padding: 2px 0;
-  line-height: 1.4;
-}
-.terminal-prompt {
-  color: #0df5e3;
-  margin-right: 8px;
-}
-.terminal-error {
-  color: #f56565;
-}
-.terminal-success {
-  color: #48bb78;
-}
-.terminal-info {
-  color: #4299e1;
-}
-`;

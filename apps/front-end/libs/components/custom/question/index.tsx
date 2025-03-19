@@ -7,8 +7,8 @@ import { CodeQuestion } from "./_components/CodeQuestion";
 
 interface IQuestions {
   question: IInterviewQuestionAnswer;
-  answers: string;
-  onAnswer: (questionId: string, answer: string) => void;
+  answers: string | string[];
+  onAnswer: (questionId: string, answer: string | string[]) => void;
 }
 
 export const Question = ({ question, onAnswer, answers }: IQuestions) => {
@@ -33,7 +33,7 @@ export const Question = ({ question, onAnswer, answers }: IQuestions) => {
       return (
         <FileQuestion
           question={question}
-          answer={answers as string}
+          answer={answers as string[]}
           onAnswer={onAnswer}
         />
       );
