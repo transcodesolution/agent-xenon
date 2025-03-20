@@ -2,9 +2,8 @@
 
 import { Question } from "@/libs/components/custom/question";
 import { useGetInterviewMCQQuestions, useSubmitExamMCQQuestions } from "@agent-xenon/react-query-hooks";
-import { AnswerMcqOptionFormat } from "@agent-xenon/constants";
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
-import { Button, Card, Container, Flex, Group, Progress, Stack, Text, Title } from "@mantine/core";
+import { Button, Container, Divider, Flex, Group, Stack, Title } from "@mantine/core";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { showNotification } from "@mantine/notifications";
@@ -13,9 +12,8 @@ import { ExamStatusAlert } from "../../_components/ExamStatusAlert";
 
 export default function Page() {
   const [currentQuestion, setCurrentQuestion] = useState<IInterviewQuestionAnswer | null>(null);
-  const [answers, setAnswers] = useState<Record<string, AnswerMcqOptionFormat[]>>({});
+  const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const { id } = useParams<{ id: string }>();
-
   const { data, isLoading, refetch } = useGetInterviewMCQQuestions({ roundId: id });
   const { mutate: submitExamMCQQuestions, } = useSubmitExamMCQQuestions();
   const [isSubmitted, setIsSubmitted] = useState(false)
@@ -24,7 +22,6 @@ export default function Page() {
   const examStatus = data?.data?.status;
   const currentIndex = questions?.findIndex(q => q._id === currentQuestion?._id);
   const isLastQuestion = currentIndex === questions?.length - 1;
-  const progressPercentage = ((currentIndex + 1) / questions?.length) * 100;
 
   useEffect(() => {
     if (questions && questions?.length > 0) {
@@ -47,22 +44,19 @@ export default function Page() {
       setCurrentQuestion(questions[currentIndex - 1]);
     }
   };
-
-  const handleAnswer = (questionId: string, answer: AnswerMcqOptionFormat[]) => {
+  const handleAnswer = (questionId: string, answer: string | string[]) => {
     setAnswers((prev) => ({
       ...prev,
-      [questionId]: answer,
+      [questionId]: Array.isArray(answer) ? answer.join(",") : answer,
     }));
   };
 
   const handleSubmit = () => {
     const formattedAnswers = questions.map((question) => {
-      const answer = answers[question._id] || [];
+      const answer = answers[question._id] || "";
       return {
         questionId: question._id || "",
-        answerDetails: {
-          text: answer.length > 0 ? answer[0] : ""
-        }
+        answer: answer || ""
       };
     });
 
@@ -102,57 +96,43 @@ export default function Page() {
       {
         (questions?.length > 0 && !isSubmitted) &&
         <Stack>
-          <Stack align="center" mb='xl' gap='xs'>
-            <Title order={1} >{data?.data?.roundName ?? "Technical Interview"} </Title>
-            <Text c='gray'>Select the best answer for each question. You can navigate between questions using the buttons below.</Text>
-          </Stack >
-          <Stack mt='xl'>
-            <Card padding="xl" radius="md" withBorder>
-              <Stack>
-                <Group justify="space-between" align="center">
-                  <Text size="sm" c="dimmed">
-                    Question {currentIndex + 1} of {questions?.length}
-                  </Text>
-                  <Progress
-                    value={progressPercentage}
-                    size="sm"
-                    w={120}
-                  />
-                </Group>
-                {currentQuestion && (
-                  <Question
-                    question={currentQuestion}
-                    onAnswer={handleAnswer}
-                    answers={answers[currentQuestion._id] || []}
+          <Stack h="calc(100vh - 150px)">
+            <Group justify="space-between" align="center" >
+              <Title order={3}>{currentIndex + 1}. {currentQuestion?.question}</Title>
+            </Group>
+            <Divider />
+            {currentQuestion && (
+              <Question
+                question={currentQuestion}
+                onAnswer={handleAnswer}
+                answers={answers[currentQuestion._id] || ""}
 
-                  />
-                )}
-              </Stack>
-            </Card>
-            <Flex gap='lg' justify='center' align="center">
+              />
+            )}
+          </Stack>
+          <Flex gap='lg' justify='center' align="center">
+            <Button
+              onClick={handlePreviousQuestion}
+              disabled={currentIndex === 0}
+              variant="outline"
+            >
+              Previous
+            </Button>
+            {isLastQuestion ? (
               <Button
-                onClick={handlePreviousQuestion}
-                disabled={currentIndex === 0}
+                onClick={handleSubmit}
+              >
+                Submit
+              </Button>
+            ) : (
+              <Button
+                onClick={handleNextQuestion}
                 variant="outline"
               >
-                Previous
+                Next
               </Button>
-              {isLastQuestion ? (
-                <Button
-                  onClick={handleSubmit}
-                >
-                  Submit
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleNextQuestion}
-                  variant="outline"
-                >
-                  Next
-                </Button>
-              )}
-            </Flex>
-          </Stack>
+            )}
+          </Flex>
         </Stack>
       }
     </Container >

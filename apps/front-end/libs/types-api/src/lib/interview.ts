@@ -19,9 +19,7 @@ export interface ISubmitExamMCQQuestionsRequest {
 
 export interface IExamQuestionAnswer {
   questionId: string;
-  answerDetails: {
-    text: string;
-  };
+  answer: string | string[];
 }
 export interface ISubmitExamMCQQuestionsResponse {
   status: ExamStatus
@@ -31,4 +29,18 @@ export interface IGetQuestionsRequest {
   page: number;
   limit: number;
   search: string;
+}
+
+export interface ICodeExecuteRequest {
+  code: string;
+  language: string;
+  version: string
+}
+
+export interface ICodeExecuteResponse {
+  code: number;
+  output: string;
+  signal: string;
+  stderr: string;
+  stdout: string;
 }

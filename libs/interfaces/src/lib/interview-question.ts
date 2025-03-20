@@ -6,11 +6,7 @@ export interface IInterviewQuestionAnswer extends ITimestamp {
     description: string;
     type: InterviewRoundTypes;
     question: string;
-    options: {
-        index: AnswerMcqOptionFormat;
-        text: string;
-        isRightAnswer: boolean;
-    }[];
+    options: IMCQOptions[];
     tags: string[];
     difficulty: Difficulty;
     timeLimitInMinutes: number;
@@ -18,4 +14,10 @@ export interface IInterviewQuestionAnswer extends ITimestamp {
     isMultiSelectOption: boolean;
     organizationId: string;
     questionFormat: AnswerQuestionFormat;
+}
+
+export interface IMCQOptions {
+    index: AnswerMcqOptionFormat;
+    text: string;
+    isRightAnswer: boolean;
 }

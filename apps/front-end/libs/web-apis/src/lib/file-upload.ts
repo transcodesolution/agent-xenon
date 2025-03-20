@@ -1,6 +1,6 @@
-import axios, { AxiosProgressEvent } from 'axios';
+import { AxiosProgressEvent } from 'axios';
 import http from './http-common'
-import { IApiResponse, IJob } from '@agent-xenon/interfaces';
+import { IApiResponse } from '@agent-xenon/interfaces';
 
 
 export const uploadFileToServiceViaHandler = async ({
@@ -9,7 +9,7 @@ export const uploadFileToServiceViaHandler = async ({
 }: {
   formData: FormData;
   onUploadProgress?: (progressEvent: AxiosProgressEvent) => void;
-}): Promise<IApiResponse<Pick<IJob, 'resumeUrls'>>> => {
+}): Promise<IApiResponse<{ files: string[] }>> => {
   const url = 'http://localhost:7000/document/upload';
 
   const result = await http.post(url, formData, {
