@@ -4,8 +4,8 @@ import { setupAxiosInterceptors } from "@/libs/web-apis/src";
 import { ReactNode, useEffect } from "react";
 import { setPermissions } from "@/libs/store/src";
 import { useGetUser } from "@agent-xenon/react-query-hooks";
-import { setUser } from "@/app/(dashboard)/store/useUserStore";
-import { setOrganization } from "@/app/(dashboard)/store/useOrganizationStore";
+import { setUser } from "@/libs/store/src/lib/user";
+import { setOrganization } from "@/libs/store/src/lib/organization";
 
 export const AuthProvider = ({
   children,

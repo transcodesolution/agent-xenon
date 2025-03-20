@@ -3,8 +3,8 @@ import { AppShell, Box, Burger, Flex } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Sidebar } from '@/libs/components/layouts/sidebar';
 import { UserProfile } from '@/libs/components/layouts/header/UserProfile';
-import { useOrganizationStore } from '../store/useOrganizationStore';
-import { useUserStore } from '../store/useUserStore';
+import { useOrganizationStore } from '../../../libs/store/src/lib/organization';
+import { useUserStore } from '../../../libs/store/src/lib/user';
 import { OrganizationProfile } from '@/libs/components/layouts/header/OrganizationProfile';
 
 interface IMainLayout {

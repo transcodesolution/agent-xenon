@@ -2,7 +2,7 @@
 
 import { Box, Flex, Paper, Text, Textarea, TextInput, Title } from "@mantine/core";
 import { IconBuilding, IconX } from "@tabler/icons-react";
-import { setOrganization, useOrganizationStore } from "../../store/useOrganizationStore";
+import { setOrganization, useOrganizationStore } from "../../../../libs/store/src/lib/organization";
 import { useState, useEffect } from "react";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { IOrganization } from "@agent-xenon/interfaces";
