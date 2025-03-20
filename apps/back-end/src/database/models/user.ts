@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { IRole, IUser } from "@agent-xenon/interfaces";
+import { IUser } from "@agent-xenon/interfaces";
 import { HydratedDocument } from "mongoose";
 
 const userSchema = new mongoose.Schema({
