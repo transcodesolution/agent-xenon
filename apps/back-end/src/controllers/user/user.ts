@@ -14,7 +14,7 @@ export const getUserPermissions = async (req: Request, res: Response) => {
 export const getUserDetails = async (req: Request, res: Response) => {
     const { user: userData } = req.headers;
     try {
-        const organizationData = await Organization.findOne({ _id: userData.organizationId });
+        const organizationData = await Organization.findOne({ _id: userData.organizationId }, "name description address");
         return res.ok('user details', { userData, organizationData }, 'getDataSuccess');
     } catch (error) {
         return res.internalServerError(error.message, error.stack, 'customMessage');
