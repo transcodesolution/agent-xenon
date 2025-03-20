@@ -29,7 +29,7 @@ export const sendS3DocumentLinks = async (req: Request, res: Response) => {
     try {
         const fileObject = req.files as FileDataType[] ?? [];
 
-        return res.ok("resumes uploaded successfully", { resumeUrls: fileObject.map((i) => (i.location)) }, "customMessage")
+        return res.ok("documents uploaded successfully", { files: fileObject.map((i) => (i.location)) }, "customMessage")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

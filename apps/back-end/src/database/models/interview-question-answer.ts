@@ -11,7 +11,7 @@ const InterviewQuestionAnswerSchema: Schema = new Schema({
     difficulty: { type: String, enum: Difficulty },
     timeLimitInMinutes: { type: Number },
     evaluationCriteria: { type: String },
-    isAutomated: { type: Boolean, default: true },
+    isMultiSelectOption: { type: Boolean },
     organizationId: { type: Schema.Types.ObjectId },
     questionFormat: { type: String, enum: AnswerQuestionFormat, default: AnswerQuestionFormat.MCQ },
     deletedAt: { type: Date, default: null }

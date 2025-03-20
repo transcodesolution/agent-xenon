@@ -15,7 +15,7 @@ export interface IInterviewQuestionAnswer extends ITimestamp {
     difficulty: Difficulty;
     timeLimitInMinutes: number;
     evaluationCriteria: string;
-    isAutomated: boolean;
+    isMultiSelectOption: boolean;
     organizationId: string;
     questionFormat: AnswerQuestionFormat;
 }
