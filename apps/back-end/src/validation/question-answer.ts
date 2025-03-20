@@ -9,8 +9,8 @@ const questionAnswerSchema = {
     difficulty: Joi.string().valid(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD).optional(),
     timeLimitInMinutes: Joi.number().optional(),
     evaluationCriteria: Joi.string().allow("").optional(),
+    isMultiSelectOption: Joi.boolean().optional(),
     type: Joi.string().valid(...Object.values(InterviewRoundTypes)).optional(),
-    isAutomated: Joi.boolean().optional(),
     questionFormat: Joi.string().valid(AnswerQuestionFormat.MCQ, AnswerQuestionFormat.CODE, AnswerQuestionFormat.FILE, AnswerQuestionFormat.TEXT).optional(),
 }
 
