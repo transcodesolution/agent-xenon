@@ -41,8 +41,8 @@ export const createQuestion = async (params: Partial<IInterviewQuestionAnswer>):
 
 export const updateQuestion = async (params: Partial<IInterviewQuestionAnswer>): Promise<IApiResponse<IInterviewQuestionAnswer>> => {
   try {
-    const { _id, ...otherParams } = params;
-    const result = await http.patch<IApiResponse<IInterviewQuestionAnswer>>(`/questionAnswer/${_id}`, otherParams);
+    const { _id, createdAt, ...otherParams } = params;
+    const result = await http.put<IApiResponse<IInterviewQuestionAnswer>>(`/questionAnswer/${_id}`, otherParams);
     return result.data;
   } catch (error) {
     return apiErrorHandler(error, "updating Question");

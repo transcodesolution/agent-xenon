@@ -5,14 +5,22 @@ import {
   Select,
   NumberInput,
   Grid,
-  Radio,
   Flex,
   Paper,
+  Checkbox,
   TagsInput,
   Tooltip,
 } from "@mantine/core";
-import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty, InterviewRoundTypes } from "@agent-xenon/constants";
-import { useGetQuestionById, useUpdateQuestion } from "@agent-xenon/react-query-hooks";
+import {
+  AnswerQuestionFormat,
+  AnswerMcqOptionFormat,
+  Difficulty,
+  InterviewRoundTypes,
+} from "@agent-xenon/constants";
+import {
+  useGetQuestionById,
+  useUpdateQuestion,
+} from "@agent-xenon/react-query-hooks";
 import { useParams } from "next/navigation";
 import { IconAlertCircle } from "@tabler/icons-react";
 
@@ -36,7 +44,9 @@ export const QuestionDetails = () => {
     timeLimitInMinutes: 15,
     evaluationCriteria: "",
     questionFormat: AnswerQuestionFormat.MCQ,
+    isMultiSelectOption: false,
   });
+
   const { data } = useGetQuestionById({ questionId });
   const questionData = data?.data;
   const { mutate: updateQuestion } = useUpdateQuestion();
@@ -46,21 +56,34 @@ export const QuestionDetails = () => {
       setQuestionFormState((prev) => ({
         ...prev,
         ...questionData,
-        options: questionData.options || prev.options,
+        options: questionData.options && questionData.options.length > 0
+          ? questionData.options
+          : [
+            { index: AnswerMcqOptionFormat.A, text: "", isRightAnswer: false },
+            { index: AnswerMcqOptionFormat.B, text: "", isRightAnswer: false },
+            { index: AnswerMcqOptionFormat.C, text: "", isRightAnswer: false },
+            { index: AnswerMcqOptionFormat.D, text: "", isRightAnswer: false },
+          ],
         tags: questionData.tags || [],
       }));
     }
   }, [questionData]);
 
   const handleChange = (field: string, value: any) => {
-    setQuestionFormState((prev) => ({ ...prev, [field]: value }));
+    const updatedState = { ...questionFormState, [field]: value };
+    if (field === "isMultiSelectOption" && !value) {
+      updatedState.options = updatedState.options.map((opt) => ({
+        ...opt,
+        isRightAnswer: false,
+      }));
+    }
+    setQuestionFormState(updatedState);
     clearTimeout(timeOut);
     timeOut = setTimeout(() => {
       updateQuestion({
-        ...questionFormState,
+        ...updatedState,
         _id: questionId,
-        [field]: value,
-      });
+      }, {});
     }, 600);
   };
 
@@ -69,10 +92,14 @@ export const QuestionDetails = () => {
       ...prevState,
       options: prevState.options.map((opt, i) => ({
         ...opt,
-        isRightAnswer: i === index,
+        isRightAnswer: questionFormState.isMultiSelectOption
+          ? i === index
+            ? !opt.isRightAnswer
+            : opt.isRightAnswer
+          : i === index,
       })),
     }));
-  }
+  };
 
   return (
     <Paper shadow="sm" radius="md" withBorder p="lg">
@@ -101,7 +128,10 @@ export const QuestionDetails = () => {
         <Grid.Col span={6}>
           <Select
             label="Round Type"
-            data={Object.values(InterviewRoundTypes).map((type) => ({ value: type, label: type }))}
+            data={Object.values(InterviewRoundTypes).map((type) => ({
+              value: type,
+              label: type,
+            }))}
             value={questionFormState.type}
             onChange={(value) => handleChange("type", value)}
           />
@@ -112,49 +142,71 @@ export const QuestionDetails = () => {
             required
             label="Input Type"
             placeholder="Select input format"
-            data={Object.values(AnswerQuestionFormat).map((type) => ({ value: type, label: type }))}
+            data={Object.values(AnswerQuestionFormat).map((type) => ({
+              value: type,
+              label: type,
+            }))}
             value={questionFormState.questionFormat}
             onChange={(value) => handleChange("questionFormat", value)}
           />
         </Grid.Col>
 
         {questionFormState.questionFormat === AnswerQuestionFormat.MCQ && (
-          <Grid.Col span={12}>
-            {questionFormState.options.map((option, index) => (
-              <Flex key={option.index} gap="md" mb="md" align="center">
-                <Radio
-                  name="correctOption"
-                  value={option.index}
-                  checked={option.isRightAnswer}
-                  onChange={() => handleOptionChange(index)}
-                />
-                <TextInput
-                  required
-                  placeholder={`Option ${option.index}`}
-                  value={option.text}
-                  onChange={(e) => {
-                    const updatedOptions = [...questionFormState.options];
-                    updatedOptions[index] = { ...updatedOptions[index], text: e.target.value };
-                    handleChange("options", updatedOptions);
-                  }}
-                  w='100%'
-                />
-              </Flex>
-            ))}
-          </Grid.Col>
+          <React.Fragment>
+            <Grid.Col span={12}>
+              <Checkbox
+                label="Allow multiple correct answers"
+                checked={questionFormState.isMultiSelectOption}
+                onChange={(e) => handleChange("isMultiSelectOption", e.target.checked)}
+                size="md"
+                radius="sm"
+                className="border-2"
+              />
+            </Grid.Col>
+
+            <Grid.Col span={12}>
+              {questionFormState.options.map((option, index) => (
+                <Flex key={option.index} gap="md" mb="md" align="center">
+                  <Checkbox
+                    checked={option.isRightAnswer}
+                    onChange={() => handleOptionChange(index)}
+                    size="md"
+                    radius="sm"
+                    className="border-2"
+                  />
+                  <TextInput
+                    required
+                    placeholder={`Option ${option.index}`}
+                    value={option.text}
+                    onChange={(e) => {
+                      const updatedOptions = [...questionFormState.options];
+                      updatedOptions[index] = {
+                        ...updatedOptions[index],
+                        text: e.target.value,
+                      };
+                      handleChange("options", updatedOptions);
+                    }}
+                    w='100%'
+                  />
+                </Flex>
+              ))}
+            </Grid.Col>
+          </React.Fragment>
         )}
 
-        {questionFormState.questionFormat !== AnswerQuestionFormat.MCQ &&
+        {questionFormState.questionFormat !== AnswerQuestionFormat.MCQ && (
           <Grid.Col span={12}>
             <Textarea
               label="Evaluation Criteria"
               placeholder="Enter evaluation criteria or rubric"
               minRows={4}
               value={questionFormState.evaluationCriteria}
-              onChange={(e) => handleChange("evaluationCriteria", e.target.value)}
+              onChange={(e) =>
+                handleChange("evaluationCriteria", e.target.value)
+              }
             />
           </Grid.Col>
-        }
+        )}
 
         <Grid.Col span={6}>
           <NumberInput
@@ -180,9 +232,7 @@ export const QuestionDetails = () => {
             onChange={(value: string[]) => handleChange("tags", value)}
           />
         </Grid.Col>
-
-
       </Grid>
     </Paper>
   );
-}
+};
