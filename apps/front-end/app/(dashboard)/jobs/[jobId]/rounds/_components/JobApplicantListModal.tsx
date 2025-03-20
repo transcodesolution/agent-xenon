@@ -9,7 +9,7 @@ interface IJobApplicantModalData {
   onClose: () => void;
   Applicants: IApplicantRoundList[];
   roundId: string;
-  onUpdateStatus: (roundId: string, ApplicantId: string, value: string) => void;
+  onUpdateStatus: (roundId: string, value: string, ApplicantId: string,) => void;
 }
 
 export const JobApplicantListModal = ({ isOpen, onClose, Applicants, roundId, onUpdateStatus }: IJobApplicantModalData) => {
@@ -34,7 +34,7 @@ export const JobApplicantListModal = ({ isOpen, onClose, Applicants, roundId, on
               { value: InterviewRoundStatus.REJECTED, label: 'Rejected' },
             ]}
             value={Applicant.status}
-            onChange={(value) => value && onUpdateStatus(roundId, Applicant.applicantId._id, value)}
+            onChange={(value) => value && onUpdateStatus(roundId, value, Applicant.applicantId._id)}
           />
         );
       }
