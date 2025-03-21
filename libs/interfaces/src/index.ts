@@ -14,3 +14,4 @@ export * from "./lib/interview-round";
 export * from "./lib/auth-response";
 export * from "./lib/applicant-round";
 export * from "./lib/api-response";
+export * from "./lib/app";

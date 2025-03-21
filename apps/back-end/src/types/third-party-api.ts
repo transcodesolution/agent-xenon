@@ -5,3 +5,8 @@ export interface IHttpRequestParam {
     requestBody?: object;
     axiosConfig?: object;
 }
+
+export interface IConnectAppResponse {
+    redirectUrl: string;
+    isConnectGoogleApp?: boolean;
+}

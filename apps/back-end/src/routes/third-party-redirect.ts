@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { googleAuthRedirectLogic } from "../controllers/interview-rounds/interview-round";
+import { googleAuthRedirectLogic } from "../controllers/app/app";
 
 const router = Router();
 

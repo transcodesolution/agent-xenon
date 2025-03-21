@@ -15,6 +15,7 @@ declare module "express" {
         badGateway(errorMsg: string, error: ResponseDataType, methodName?: string): Response;
         forbidden(errorMsg: string, error: ResponseDataType, methodName?: string): Response;
         resourceUnavailable(errorMsg: string, error: ResponseDataType, methodName?: string): Response;
+        expectationFailed(errorMsg: string, error: ResponseDataType, methodName?: string): Response;
     }
 
     interface Request {
@@ -39,6 +40,16 @@ const responseHandler = (req: Request, res: Response, next: NextFunction) => {
     res.badRequest = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
         return res.status(STATUS_CODES.BAD_REQUEST).json({
             status: STATUS_CODES.BAD_REQUEST,
+            message: methodName
+                ? responseMessage[methodName](errorMsg)
+                : responseMessage[errorMsg],
+            error: error ?? null,
+        });
+    };
+
+    res.expectationFailed = function (errorMsg: string, error?: ResponseDataType, methodName?: string): Response {
+        return res.status(STATUS_CODES.EXPECTATION_FAILED).json({
+            status: STATUS_CODES.EXPECTATION_FAILED,
             message: methodName
                 ? responseMessage[methodName](errorMsg)
                 : responseMessage[errorMsg],

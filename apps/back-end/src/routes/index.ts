@@ -16,6 +16,8 @@ import { documentRouter } from './document'
 import { roleRouter } from './user-role'
 import { userRouter } from './user'
 import { codeExecuteRouter } from './code-execution'
+import { appRouter } from './app'
+import { onBoardApp } from '../controllers/app/app'
 
 const router = Router()
 // const accessControl = (req: Request, res: Response, next: any) => {
@@ -24,6 +26,7 @@ const router = Router()
 // }
 
 router.post("/onboard", onBoardOrganization);
+router.post('/app/onboard', onBoardApp);
 router.use("/google", thirdPartyRedirectRouter);
 
 router.use('/auth', authRouter)
@@ -40,5 +43,6 @@ router.use('/interview-round', interviewRoundRouter)
 router.use('/document', documentRouter)
 router.use('/role', roleRouter)
 router.use('/user', userRouter)
+router.use('/app', appRouter)
 
 export { router }

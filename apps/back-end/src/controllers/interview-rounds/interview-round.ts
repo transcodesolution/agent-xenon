@@ -1,19 +1,16 @@
 import { Request, Response } from "express";
 import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
-import { AnswerQuestionFormat, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus } from "@agent-xenon/constants";
+import { AnswerQuestionFormat, App, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, googleRedirectSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
+import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
 import InterviewRound from "../../database/models/interview-round";
 import Job from "../../database/models/job";
-import { manageMeetingRound, manageMeetingScheduleWithCandidate, manageScreeningRound, manageTechnicalRound, updateApplicantStatusOnRoundComplete } from "../../utils/interview-round";
+import { manageMeetingRound, manageScreeningRound, manageTechnicalRound, updateApplicantStatusOnRoundComplete } from "../../utils/interview-round";
 import ApplicantRound from "../../database/models/applicant-round";
 import { questionAnswerType, submitExamAnswerPayloadType } from "../../types/technical-round";
 import { manageMCQAnswers, manageTextAndCodeAnswers } from "../../utils/technical-round";
 import { sendMail } from "../../helper/mail";
-import { oauth2Client } from "../../helper/third-party-oauth";
-import Organization from "../../database/models/organization";
-import { google } from "googleapis";
 import { getSelectedApplicantDetails } from "../../utils/applicant";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
 import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
@@ -277,64 +274,7 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
         }
 
     } catch (error) {
-        if (error.response && error.response.data && error.response.data.error === "invalid_grant") {
-            console.error("Refresh token expired or revoked. User needs to re-authenticate.");
-
-            // Redirect user for authentication
-            const redirectUrl = oauth2Client.generateAuthUrl({
-                access_type: "offline",
-                scope: [
-                    "https://www.googleapis.com/auth/calendar",
-                    "https://www.googleapis.com/auth/userinfo.email",
-                ],
-                prompt: "consent",  // Ensures user grants a new refresh token
-            });
-
-            return res.ok("Google login required! Please redirect using the given URL", { redirectUrl }, "customMessage");
-        } else {
-            console.error("Error refreshing access token:", error);
-            return res.internalServerError(error.message, error.stack, "customMessage")
-        }
-    }
-}
-
-export const googleAuthRedirectLogic = async (req: Request, res: Response) => {
-    try {
-        const code = req.query.code as string;
-        const string = req.query.state as string;
-
-        const [organizationId, jobId, roundId] = string?.split("_") ?? [];
-
-        const { error, value } = googleRedirectSchema.validate({ organizationId, jobId, roundId });
-
-        if (error) {
-            return res.badRequest(error.details[0].message, {}, "customMessage");
-        }
-
-        const checkOrganizationId = await Organization.findOne({ _id: value.organizationId, deletedAt: null });
-
-        if (!checkOrganizationId) {
-            return res.badRequest("organization", {}, "getDataNotFound");
-        }
-
-        if (checkOrganizationId.serviceProviders.google.expiry > new Date()) {
-            return res.badRequest("You have already logged in with google. Can't perform multiple times", {}, "customMessage");
-        }
-
-        const { tokens } = await oauth2Client.getToken(code);
-
-        oauth2Client.setCredentials(tokens);
-
-        const oauth = google.oauth2({ version: "v2", auth: oauth2Client });
-
-        const obj = await oauth.userinfo.get();
-
-        await Organization.updateOne({ _id: organizationId }, { $set: { "serviceProviders.google": { accessToken: tokens.access_token, refreshToken: tokens.refresh_token, scope: tokens.scope, expiry: tokens.expiry_date, email: obj.data.email } } });
-
-        res.ok("successfully login and meeting round is started successfully", {}, "customMessage");
-        await manageMeetingScheduleWithCandidate(value.jobId, obj.data.email, value.roundId);
-    } catch (error) {
-        return res.internalServerError(error.message, error.stack, "customMessage");
+        return res.internalServerError(error.message, error.stack, "customMessage")
     }
 }
 
