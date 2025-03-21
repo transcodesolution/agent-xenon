@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { FilterQuery, QuerySelector } from "mongoose";
+import mongoose, { FilterQuery, QuerySelector } from "mongoose";
 import { IApplicant } from "@agent-xenon/interfaces";
-import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
+import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantDetailGlobalSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
 import Applicant from "../../database/models/applicant";
 import ApplicantRound from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
@@ -153,6 +153,124 @@ export const getApplicants = async (req: Request, res: Response) => {
         ])
 
         return res.ok("applicant", { applicantData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getApplicantDetailGlobally = async (req: Request, res: Response) => {
+    const { user } = req.headers;
+    try {
+        Object.assign(req.query, req.params);
+        const { error, value } = getApplicantDetailGlobalSchema.validate(req.query);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const [applicantDetailData] = await Applicant.aggregate([
+            {
+                $match: { deletedAt: null, organizationId: user.organizationId, _id: new mongoose.Types.ObjectId(value.applicantId) },
+            },
+            {
+                $lookup: {
+                    from: "jobs",
+                    localField: "jobId",
+                    foreignField: "_id",
+                    as: "jobs"
+                }
+            },
+            {
+                $unwind: "$jobs",
+            },
+            {
+                $lookup: {
+                    from: "applicantrounds",
+                    let: { jobId: "$jobs._id" },
+                    localField: "_id",
+                    foreignField: "applicantId",
+                    as: "applicantRoundData",
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ["$jobId", "$$jobId"]
+                                }
+                            }
+                        },
+                        {
+                            $project: {
+                                status: { $cond: [{ $eq: ["$status", InterviewRoundStatus.ONGOING] }, "$status", { $cond: ["$isSelected", InterviewRoundStatus.SELECTED, InterviewRoundStatus.REJECTED] }] },
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unwind: {
+                    path: "$applicantRoundData",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "interviewrounds",
+                    localField: "jobs._id",
+                    foreignField: "jobId",
+                    as: "lastRoundData",
+                    pipeline: [
+                        {
+                            $sort: {
+                                roundNumber: -1,
+                            }
+                        },
+                        {
+                            $limit: 1,
+                        },
+                        {
+                            $project: {
+                                name: 1,
+                                status: 1,
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unwind: "$lastRoundData",
+            },
+            {
+                $facet: {
+                    totalData: [{ $count: "count" }],
+                    data: [
+                        {
+                            $skip: (value.page - 1) * value.limit,
+                        },
+                        {
+                            $limit: value.limit,
+                        },
+                        {
+                            $project: {
+                                firstName: 1,
+                                lastName: 1,
+                                email: "$contactInfo.email",
+                                jobData: { title: "$jobs.title", description: "$jobs.description", status: "$jobs.status" },
+                                lastRoundData: 1,
+                                applicantRoundStatus: { $ifNull: ["$applicantRoundData.status", InterviewRoundStatus.YET_TO_START] }
+                            }
+                        },
+                    ]
+                }
+            },
+            {
+                $project: {
+                    totalData: { $ifNull: [{ $arrayElemAt: ["$totalData.count", 0] }, 0] },
+                    data: 1,
+                }
+            }
+        ]);
+
+        return res.ok("applicant", { applicantDetailData: applicantDetailData.data, totalData: applicantDetailData.totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(applicantDetailData.totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
