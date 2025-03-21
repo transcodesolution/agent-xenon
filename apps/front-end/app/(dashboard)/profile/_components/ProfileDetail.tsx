@@ -1,7 +1,7 @@
 "use client";
 
 import { Box, Flex, Paper, Text, TextInput, Title } from "@mantine/core";
-import { setUser, useUserStore } from "../../store/useUserStore";
+import { setUser, useUserStore } from "../../../../libs/store/src/lib/user";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { IUser } from "@agent-xenon/interfaces";
