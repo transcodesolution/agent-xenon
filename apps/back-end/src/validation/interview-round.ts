@@ -6,6 +6,7 @@ const roundTypeSchema = Joi.string().valid(...Object.values(InterviewRoundTypes)
 export const createInterviewRoundSchema = Joi.object().keys({
     type: roundTypeSchema.required(),
     name: Joi.string().allow("").optional(),
+    interviewerEmail: Joi.string().allow("").optional(),
     endDate: Joi.date().iso().optional(),
     qualificationCriteria: Joi.string().allow("").optional(),
     selectionMarginInPercentage: Joi.number().required(),
@@ -17,6 +18,7 @@ export const createInterviewRoundSchema = Joi.object().keys({
 export const updateInterviewRoundSchema = Joi.object().keys({
     type: roundTypeSchema.optional(),
     name: Joi.string().allow("").optional(),
+    interviewerEmail: Joi.string().allow("").optional(),
     endDate: Joi.date().iso().optional(),
     qualificationCriteria: Joi.string().allow("").optional(),
     selectionMarginInPercentage: Joi.number().optional(),
@@ -67,6 +69,4 @@ export const getExamQuestionSchema = Joi.object().keys({
 
 export const googleRedirectSchema = Joi.object().keys({
     organizationId: Joi.string().required(),
-    jobId: Joi.string().required(),
-    roundId: Joi.string().required(),
 })

@@ -1,4 +1,4 @@
-import { InterviewRoundStatus } from "@agent-xenon/constants";
+import { App, InterviewRoundStatus } from "@agent-xenon/constants";
 import filterCandidateAgent from "../agents/screening-candidate";
 import { IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import { getSelectedApplicantDetails } from "./applicant";
@@ -15,6 +15,8 @@ import { generatePossibleTimeSlots, getDaysInCurrentMonth } from "./manage-dates
 import Job from "../database/models/job";
 import ApplicantRound from "../database/models/applicant-round";
 import { socketIo } from "../helper/socket";
+import { checkGoogleTokenExpiry } from "./google-service";
+import AppModel from "../database/models/app";
 
 export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, organizationId: string) => {
     const Query: RootFilterQuery<IInterviewRound> = { _id: roundData._id };
@@ -71,30 +73,40 @@ export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => 
 }
 
 export const manageMeetingRound = async (roundData: IInterviewRound<IJob>, organizationId?: string, res?: Response) => {
-    const checkTokenExist = await Organization.findOne({ _id: organizationId, deletedAt: null, serviceProviders: { $exists: true } });
+    const [organizationData, appData] = await Promise.all([
+        Organization.findOne({ _id: organizationId, deletedAt: null }, { "serviceProviders": 1 }),
+        getAppDataByType(App.GOOGLE)
+    ]);
+
     const jobId = roundData.jobId._id.toString();
     const roundId = roundData._id.toString();
-    if (!checkTokenExist) {
-        const redirectUrl = oauth2Client.generateAuthUrl({
-            access_type: "offline",
-            prompt: "consent",
-            scope: [
-                "https://www.googleapis.com/auth/calendar",
-                "https://www.googleapis.com/auth/userinfo.email",
-            ],
-            state: `${organizationId.toString()}_${jobId}_${roundId}`,
-        })
-        return res.ok("google login required! please redirect using given url", { redirectUrl }, "customMessage");
-    } else if (checkTokenExist.serviceProviders.google.expiry <= new Date()) {
-        const { accessToken, expiry, refreshToken, scope } = checkTokenExist.serviceProviders.google;
-        oauth2Client.setCredentials({ access_token: accessToken, expiry_date: expiry.getTime(), refresh_token: refreshToken, scope });
-    } else {
-        const { accessToken, expiry, scope } = checkTokenExist.serviceProviders.google;
-        oauth2Client.setCredentials({ access_token: accessToken, expiry_date: expiry.getTime(), scope });
+
+    const expiryResponse = await checkGoogleTokenExpiry(organizationData.serviceProviders, appData._id.toString(), organizationId);
+
+    if (!expiryResponse.isExpired) {
+        return res.expectationFailed(expiryResponse.message, {}, "customMessage");
     }
 
     res.ok("meeting round is started successfully", {}, "customMessage");
-    await manageMeetingScheduleWithCandidate(jobId, checkTokenExist.serviceProviders.google.email, roundId);
+    await manageMeetingScheduleWithCandidate(jobId, roundData.interviewerEmail, roundId);
+}
+
+export const generateGoogleAuthUrl = (organizationId: string) => {
+    const redirectUrl = oauth2Client.generateAuthUrl({
+        access_type: "offline",
+        prompt: "consent",
+        scope: [
+            "https://www.googleapis.com/auth/calendar",
+            "https://www.googleapis.com/auth/userinfo.email",
+        ],
+        state: organizationId,
+    });
+    return redirectUrl;
+}
+
+export const getAppDataByType = async (App: App) => {
+    const appData = await AppModel.findOne({ name: App });
+    return appData;
 }
 
 export const getCalenderEvents = async (startDateTime: string, endDateTime: string) => {
@@ -115,6 +127,16 @@ export const getCalenderEvents = async (startDateTime: string, endDateTime: stri
 export const createEventInCalender = async (title: string, interviewerEmail: string, candidateEmail: string, startDateTime: string, endDateTime: string) => {
     const calendar = google.calendar({ version: "v3", auth: oauth2Client });
 
+    const attendees = [];
+
+    if (interviewerEmail) {
+        attendees.push({ email: interviewerEmail });
+    }
+
+    if (candidateEmail) {
+        attendees.push({ email: candidateEmail });
+    }
+
     const event: calendar_v3.Schema$Event = {
         description: `Interview Schedule For ${title}`,
         start: { dateTime: startDateTime, timeZone: 'Asia/Kolkata' },
@@ -124,7 +146,6 @@ export const createEventInCalender = async (title: string, interviewerEmail: str
         },
         summary: `Your interview for ${title} is scheduled on following date. please join before the 5 minutes on given date & time.`,
         location: 'Online',
-        attendees: [{ email: interviewerEmail }, { email: candidateEmail }],
         reminders: {
             useDefault: false,
             overrides: [
@@ -141,6 +162,8 @@ export const createEventInCalender = async (title: string, interviewerEmail: str
             },
         },
     }
+
+    event.attendees = attendees;
 
     const eventData = await calendar.events.insert({
         calendarId: "primary",

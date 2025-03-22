@@ -6,23 +6,18 @@ const OrganizationSchema: Schema = new Schema({
     description: { type: String },
     address: { type: String },
     serviceProviders: {
-        type: {
-            google: {
-                accessToken: { type: String },
-                expiry: { type: Date },
-                refreshToken: { type: String },
-                scope: { type: String, },
-                email: { type: String },
-            },
-            // Slack: {
-
-            // },
-            // Whatsapp: {
-            // },
-        }
+        type: [{
+            accessToken: { type: String },
+            expiry: { type: Date },
+            refreshToken: { type: String },
+            scope: { type: String, },
+            appId: { type: Schema.Types.ObjectId, },
+        }]
     },
     deletedAt: { type: Date, default: null },
-}, { timestamps: true, versionKey: false });
+}, {
+    timestamps: true, versionKey: false
+});
 
 const Organization = mongoose.model<IOrganization>('Organization', OrganizationSchema);
 

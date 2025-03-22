@@ -5,6 +5,7 @@ import mongoose, { Schema } from "mongoose";
 const InterviewRoundSchema: Schema = new Schema({
     type: { type: String, enum: InterviewRoundTypes },
     name: { type: String },
+    interviewerEmail: { type: String },
     qualificationCriteria: { type: String },
     selectionMarginInPercentage: { type: Number },
     jobId: { type: Schema.Types.ObjectId, ref: "Job" },

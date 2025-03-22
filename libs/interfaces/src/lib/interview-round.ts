@@ -14,6 +14,7 @@ export interface IInterviewRound<T = string> extends Partial<Document>, ITimesta
     _id: string;
     type: InterviewRoundTypes;
     name: string;
+    interviewerEmail: string;
     qualificationCriteria: string;
     selectionMarginInPercentage: number;
     jobId: T;
