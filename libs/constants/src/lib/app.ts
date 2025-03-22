@@ -1,3 +1,4 @@
 export enum App {
-    GOOGLE = "google"
+    GOOGLE = "google",
+    SLACK = "slack"
 }

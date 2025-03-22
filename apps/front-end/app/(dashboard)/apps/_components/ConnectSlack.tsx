@@ -1,17 +1,21 @@
 'use client'
+import { IApp } from '@agent-xenon/interfaces'
 import { Button, Card, Flex, Group, Stack, Text } from '@mantine/core'
 import { IconBrandSlack } from '@tabler/icons-react'
 import React, { useState } from 'react'
 
-export const ConnectSlack = () => {
-  const [connectionStatus, setConnectionStatus] = useState<'isConnecting' | 'connected' | 'disconnect'>('disconnect');
+interface IConnectSlack {
+  app: IApp
+}
 
-  const handleConnect = () => {
-    setConnectionStatus('isConnecting');
-    //write the logic to connect
-    setConnectionStatus('connected');
+export const ConnectSlack = ({ app }: IConnectSlack) => {
+  const [connectionStatus] = useState<'isConnecting' | 'isDisconnecting' | 'connected' | 'disconnected'>(app.isAppConnect ? 'connected' : 'disconnected');
 
+  const handleConnection = () => {
+    console.log('connecting')
   }
+
+  const isLoading = connectionStatus === 'isConnecting' || connectionStatus === 'isDisconnecting'
   return (
     <Card shadow="sm" padding="lg" radius="md" withBorder>
       <Flex gap='sm' align='center'>
@@ -20,9 +24,9 @@ export const ConnectSlack = () => {
             <IconBrandSlack color='green' />
             <Text fw='bold'>Slack</Text>
           </Group>
-          <Text size='xs'>Connect Your Organization&apos;s Slack APP to Allow Slack Notifications</Text>
+          <Text size='xs'>Connect Your Organization&apos;s Slack APP For Notifications</Text>
         </Stack>
-        <Button onClick={handleConnect} disabled={connectionStatus === 'isConnecting'} loading={connectionStatus === 'isConnecting'} style={{ width: '30%' }}>Connect</Button>
+        <Button onClick={handleConnection} disabled={isLoading} loading={isLoading} style={{ width: '30%' }}>{connectionStatus === 'connected' ? 'Disconnect' : 'Connect'}</Button>
       </Flex>
     </Card>
   )

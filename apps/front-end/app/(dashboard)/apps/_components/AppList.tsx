@@ -1,31 +1,40 @@
 'use client'
-import { Grid } from '@mantine/core';
+import { Grid, Loader, Text } from '@mantine/core';
 import React from 'react';
 import { ConnectGoogle } from './ConnectGoogle';
+import { useGetApps } from '@/libs/react-query-hooks/src/lib/app';
+import { IApp } from '@agent-xenon/interfaces';
 import { ConnectSlack } from './ConnectSlack';
 
-const apps = [
-  { name: 'google' },
-  { name: 'slack' },
-];
-
 export const AppList = () => {
-  const handleRenderApp = (appName: string) => {
-    switch (appName) {
+
+  const { data, isLoading } = useGetApps({ refetchOnWindowFocus: false });
+  const handleRenderApp = (app: IApp) => {
+    switch (app.name) {
       case 'google':
-        return <ConnectGoogle />;
+        return <ConnectGoogle app={app} />;
       case 'slack':
-        return <ConnectSlack />;
+        return <ConnectSlack app={app} />;
       default:
         return null;
     }
   };
 
+  const appData = data?.data?.appData || [];
+
+  if (isLoading) {
+    return <Loader />
+  }
+
+  if (!isLoading && appData.length === 0) {
+    return <Text>No Apps Found</Text>
+  }
+
   return (
     <Grid>
-      {apps.map((app, index) => (
+      {appData.map((app, index) => (
         <Grid.Col key={index} span={4}>
-          {handleRenderApp(app.name)}
+          {handleRenderApp(app)}
         </Grid.Col>
       ))}
     </Grid>

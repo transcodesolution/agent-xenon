@@ -1,22 +1,27 @@
 'use client'
-import { useGetConnectApp } from '@/libs/react-query-hooks/src/lib/app/useGetConnectApp'
-import { useGetDisconnectApp } from '@/libs/react-query-hooks/src/lib/app/useGetDisconnectApp'
+import { useConnectApp } from '@/libs/react-query-hooks/src/lib/app/useConnectApp'
+import { useDisconnectApp } from '@/libs/react-query-hooks/src/lib/app/useDisconnectApp'
+import { IApp } from '@agent-xenon/interfaces'
 import { Button, Card, Flex, Group, Stack, Text } from '@mantine/core'
 import { showNotification } from '@mantine/notifications'
 import { IconBrandGoogleFilled } from '@tabler/icons-react'
 import React, { useState } from 'react'
 
-export const ConnectGoogle = () => {
-  const [connectionStatus, setConnectionStatus] = useState<'isConnecting' | 'isDisconnecting' | 'connected' | 'disconnected'>('disconnected');
-  const { mutate: connectApp } = useGetConnectApp();
-  const { mutate: disconnectApp } = useGetDisconnectApp();
+interface IConnectGoogle {
+  app: IApp
+}
+
+export const ConnectGoogle = ({ app }: IConnectGoogle) => {
+  const [connectionStatus, setConnectionStatus] = useState<'isConnecting' | 'isDisconnecting' | 'connected' | 'disconnected'>(app.isAppConnect ? 'connected' : 'disconnected');
+  const { mutate: connectApp } = useConnectApp();
+  const { mutate: disconnectApp } = useDisconnectApp();
 
   const handleConnection = () => {
     if (connectionStatus === 'disconnected') {
       setConnectionStatus('isConnecting');
-      connectApp('_id', {
+      connectApp({ appId: app._id }, {
         onSuccess: (response) => {
-          window.open(response.data, '_blank');
+          window.open(response.data?.redirectUrl, '_blank');
         },
         onError: (error) => {
           showNotification({ title: 'Error', message: error?.message || 'Failed to connect' });
@@ -25,9 +30,9 @@ export const ConnectGoogle = () => {
       })
     } else if (connectionStatus === 'connected') {
       setConnectionStatus('isDisconnecting');
-      disconnectApp('_id', {
+      disconnectApp({ appId: app._id }, {
         onSuccess: (response) => {
-          window.open(response.data, '_blank');
+          showNotification({ message: response.message })
         },
         onError: (error) => {
           showNotification({ title: 'Error', message: error?.message || 'Failed to disconnect' });

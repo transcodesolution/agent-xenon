@@ -1,2 +1,3 @@
-export * from './useGetConnectApp'
-export * from './useGetDisconnectApp'
+export * from './useGetApps'
+export * from './useConnectApp'
+export * from './useDisconnectApp'
