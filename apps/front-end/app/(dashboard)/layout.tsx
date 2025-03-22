@@ -3,6 +3,7 @@ import 'mantine-datatable/styles.layer.css';
 import '@mantine/dates/styles.css';
 import '@mantine/dropzone/styles.css';
 import '@mantine/notifications/styles.layer.css';
+import '@mantine/tiptap/styles.css';
 
 import { ColorSchemeScript, MantineProvider, mantineHtmlProps } from '@mantine/core';
 import { ReactQueryClientProvider } from '@/libs/components/providers/ReactQueryClientProvider';

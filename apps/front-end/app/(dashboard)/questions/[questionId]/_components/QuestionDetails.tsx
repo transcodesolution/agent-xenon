@@ -10,6 +10,7 @@ import {
   Checkbox,
   TagsInput,
   Tooltip,
+  Text,
 } from "@mantine/core";
 import {
   AnswerQuestionFormat,
@@ -23,6 +24,10 @@ import {
 } from "@agent-xenon/react-query-hooks";
 import { useParams } from "next/navigation";
 import { IconAlertCircle } from "@tabler/icons-react";
+import { RichTextEditor } from "@mantine/tiptap";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Link from "@tiptap/extension-link";
 
 let timeOut: string | number | NodeJS.Timeout | undefined;
 
@@ -50,6 +55,13 @@ export const QuestionDetails = () => {
   const { data } = useGetQuestionById({ questionId });
   const questionData = data?.data;
   const { mutate: updateQuestion } = useUpdateQuestion();
+  const editor = useEditor({
+    extensions: [StarterKit, Link],
+    content: questionFormState.description,
+    onUpdate: ({ editor }) => {
+      handleChange("description", editor.getHTML());
+    },
+  });
 
   useEffect(() => {
     if (questionData) {
@@ -80,10 +92,12 @@ export const QuestionDetails = () => {
     setQuestionFormState(updatedState);
     clearTimeout(timeOut);
     timeOut = setTimeout(() => {
-      updateQuestion({
-        ...updatedState,
-        _id: questionId,
-      }, {});
+      const { options, isMultiSelectOption, ...remainingData } = updatedState;
+      const updatedPayload = updatedState.questionFormat === AnswerQuestionFormat.MCQ
+        ? { ...updatedState, _id: questionId }
+        : { ...remainingData, _id: questionId };
+
+      updateQuestion(updatedPayload, {});
     }, 600);
   };
 
@@ -114,14 +128,28 @@ export const QuestionDetails = () => {
           />
         </Grid.Col>
 
-        <Grid.Col span={12}>
-          <Textarea
+        <Grid.Col span={6}>
+          <NumberInput
             required
-            label="Question Description"
-            placeholder="Enter detailed question"
-            minRows={4}
-            value={questionFormState.description}
-            onChange={(e) => handleChange("description", e.target.value)}
+            label="Time Limit (minutes)"
+            placeholder="Enter time limit"
+            min={1}
+            value={questionFormState.timeLimitInMinutes}
+            onChange={(value) => handleChange("timeLimitInMinutes", value)}
+            leftSection={
+              <Tooltip label="Time in minutes" withArrow>
+                <IconAlertCircle size={16} />
+              </Tooltip>
+            }
+          />
+        </Grid.Col>
+
+        <Grid.Col span={6}>
+          <TagsInput
+            label="Tags"
+            placeholder="Add tags"
+            value={questionFormState.tags}
+            onChange={(value: string[]) => handleChange("tags", value)}
           />
         </Grid.Col>
 
@@ -207,31 +235,27 @@ export const QuestionDetails = () => {
             />
           </Grid.Col>
         )}
-
-        <Grid.Col span={6}>
-          <NumberInput
-            required
-            label="Time Limit (minutes)"
-            placeholder="Enter time limit"
-            min={1}
-            value={questionFormState.timeLimitInMinutes}
-            onChange={(value) => handleChange("timeLimitInMinutes", value)}
-            leftSection={
-              <Tooltip label="Time in minutes" withArrow>
-                <IconAlertCircle size={16} />
-              </Tooltip>
-            }
-          />
-        </Grid.Col>
-
-        <Grid.Col span={6}>
-          <TagsInput
-            label="Tags"
-            placeholder="Add tags"
-            value={questionFormState.tags}
-            onChange={(value: string[]) => handleChange("tags", value)}
-          />
-        </Grid.Col>
+        {questionFormState.questionFormat !== AnswerQuestionFormat.MCQ && (
+          <Grid.Col span={12}>
+            <Text size="sm" fw='500'>Question Description</Text>
+            <RichTextEditor editor={editor}>
+              <RichTextEditor.Toolbar>
+                <RichTextEditor.ControlsGroup>
+                  <RichTextEditor.Bold />
+                  <RichTextEditor.Italic />
+                  <RichTextEditor.Underline />
+                  <RichTextEditor.Strikethrough />
+                </RichTextEditor.ControlsGroup>
+                <RichTextEditor.ControlsGroup>
+                  <RichTextEditor.Link />
+                  <RichTextEditor.Unlink />
+                </RichTextEditor.ControlsGroup>
+              </RichTextEditor.Toolbar>
+              <RichTextEditor.Content />
+            </RichTextEditor>
+          </Grid.Col>
+        )
+        }
       </Grid>
     </Paper>
   );
