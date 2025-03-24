@@ -2,10 +2,10 @@ import { useMutation } from '@tanstack/react-query';
 import { IApiResponse } from '@agent-xenon/interfaces';
 import { submitExamMCQQuestions } from '@agent-xenon/web-apis';
 import { AxiosError } from 'axios';
-import { ISubmitExamMCQQuestionsRequest, ISubmitExamMCQQuestionsResponse } from '@/libs/types-api/src';
+import { ISubmitInterviewQuestionsRequest, ISubmitInterviewQuestionsResponse } from '@/libs/types-api/src';
 
-export const useSubmitExamMCQQuestions = () => {
-  return useMutation<IApiResponse<ISubmitExamMCQQuestionsResponse>, AxiosError, ISubmitExamMCQQuestionsRequest>({
+export const useSubmitInterviewQuestions = () => {
+  return useMutation<IApiResponse<ISubmitInterviewQuestionsResponse>, AxiosError, ISubmitInterviewQuestionsRequest>({
     mutationKey: ['submitExamMCQQuestions'],
     mutationFn: (params) => {
       return submitExamMCQQuestions(params);

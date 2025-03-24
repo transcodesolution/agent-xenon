@@ -1,6 +1,6 @@
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 import { useState } from 'react';
-import { Stack, Text, Group, Flex, Avatar, Anchor, ActionIcon, Title } from '@mantine/core';
+import { Stack, Text, Group, Flex, Avatar, Anchor, ActionIcon } from '@mantine/core';
 import { IconUpload, IconPhoto, IconX, IconTrash } from '@tabler/icons-react';
 import { uploadFileToServiceViaHandler } from '@agent-xenon/web-apis';
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";

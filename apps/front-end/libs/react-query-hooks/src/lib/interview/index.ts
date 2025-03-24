@@ -1,3 +1,3 @@
-export * from './useGetInterviewMCQQuestions';
-export * from './useSubmitExamMCQQuestions'
+export * from './useGetInterviewQuestions';
+export * from './useSubmitInterviewQuestions'
 export * from './useCodeExecute'

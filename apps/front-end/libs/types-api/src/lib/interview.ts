@@ -12,7 +12,7 @@ export interface IGetInterviewMCQQuestionsResponse {
   roundName?: string
 }
 
-export interface ISubmitExamMCQQuestionsRequest {
+export interface ISubmitInterviewQuestionsRequest {
   roundId: string;
   questionAnswers: IExamQuestionAnswer[]
 }
@@ -21,7 +21,7 @@ export interface IExamQuestionAnswer {
   questionId: string;
   answer: string | string[];
 }
-export interface ISubmitExamMCQQuestionsResponse {
+export interface ISubmitInterviewQuestionsResponse {
   status: ExamStatus
 }
 

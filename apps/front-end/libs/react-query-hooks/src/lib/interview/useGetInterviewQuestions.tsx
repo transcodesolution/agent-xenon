@@ -8,7 +8,7 @@ interface IUseGetInterviewMCQQuestions extends IGetInterviewMCQQuestionsRequest 
   refetchOnWindowFocus?: boolean;
 };
 
-export const useGetInterviewMCQQuestions = ({
+export const useGetInterviewQuestions = ({
   roundId,
   staleTime = 1000 * 60 * 0.2,
   enabled = true,
