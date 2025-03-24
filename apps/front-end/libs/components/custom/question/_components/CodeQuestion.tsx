@@ -87,16 +87,14 @@ export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
 
   return (
     <Grid >
-      <Grid.Col span={4} >
-        <Stack align="center" h="calc(100vh - 185px)" gap="md" styles={{
-          root: {
-            overflow: "auto"
-          }
-        }}>
-          <Text c='gray' dangerouslySetInnerHTML={{ __html: question.description }} />
-        </Stack>
-      </Grid.Col>
-      <Grid.Col span={8}>
+      {question.description?.trim() && (
+        <Grid.Col span={4}>
+          <Stack align="center" h="calc(100vh - 185px)" gap="md" styles={{ root: { overflow: "auto" } }}>
+            <Text c="gray" dangerouslySetInnerHTML={{ __html: question.description }} />
+          </Stack>
+        </Grid.Col>
+      )}
+      <Grid.Col span={question.description?.trim() ? 8 : 12}>
         <Stack gap="sm">
           <Flex justify="space-between" align='end' gap="md">
             <LanguageSelector
