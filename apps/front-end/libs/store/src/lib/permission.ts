@@ -5,7 +5,7 @@ interface IUsePermissionStore {
   permissions: Permission[]
 }
 
-const usePermissionStore = create<IUsePermissionStore>(() => ({
+export const usePermissionStore = create<IUsePermissionStore>(() => ({
   permissions: []
 }))
 

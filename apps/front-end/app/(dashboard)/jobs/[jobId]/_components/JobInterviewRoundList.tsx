@@ -4,6 +4,7 @@ import React from 'react';
 import { IJob } from '@agent-xenon/interfaces';
 import { IconEdit } from '@tabler/icons-react';
 import dayjs from 'dayjs';
+import { usePermissions } from '@/libs/hooks/usePermissions';
 
 interface IJobInterviewRoundList {
   rounds?: IJob['rounds'];
@@ -12,6 +13,7 @@ interface IJobInterviewRoundList {
 }
 
 export const JobInterviewRoundList = ({ rounds, onDeleteRound, onEditRound }: IJobInterviewRoundList) => {
+  const permission = usePermissions()
 
   const columns = [
     {
@@ -43,12 +45,14 @@ export const JobInterviewRoundList = ({ rounds, onDeleteRound, onEditRound }: IJ
       title: 'Actions',
       render: (round: { _id: string }) => (
         <>
-          <Button color="var(--mantine-color-teal-filled-hover)" size="xs" onClick={() => onEditRound(round._id)} style={{ marginRight: '5px' }}>
+          {permission?.hasInterviewRoundUpdate && <Button color="var(--mantine-color-teal-filled-hover)" size="xs" onClick={() => onEditRound(round._id)} style={{ marginRight: '5px' }}>
             <IconEdit />
           </Button>
-          <Button color="red" size="xs" onClick={() => onDeleteRound([round._id])}>
+          }
+          {permission?.hasInterviewRoundDelete && <Button color="red" size="xs" onClick={() => onDeleteRound([round._id])}>
             Delete
           </Button>
+          }
         </>
       )
     }

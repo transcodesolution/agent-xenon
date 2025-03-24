@@ -6,6 +6,7 @@ import { IJob } from '@agent-xenon/interfaces';
 import { getColumns } from './Columns';
 import { ActionIcon } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
+import { usePermissions } from '@/libs/hooks/usePermissions';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -32,6 +33,7 @@ export function JobLists({ data, isFetching, onDelete }: IJobLists) {
     direction: sortOrder as 'asc' | 'desc',
   });
   const columns = getColumns(sortStatus);
+  const permission = usePermissions()
 
   const handleApplyFilter = (filters: FilterParams) => {
     const newSearchParams = updateUrlParams(filters);
@@ -57,7 +59,7 @@ export function JobLists({ data, isFetching, onDelete }: IJobLists) {
 
   return (
     <React.Fragment>
-      {selectedJobs.length > 0 &&
+      {permission?.hasJobDelete && selectedJobs.length > 0 &&
         <ActionIcon color='red' onClick={handleDeleteSelected}>
           <IconTrash size="1.5rem" />
         </ActionIcon>

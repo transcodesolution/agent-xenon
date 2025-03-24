@@ -8,6 +8,7 @@ import { useUpdateJob, useJobRoleAndDesignation, useCreateInterviewRound, useDel
 import { JobInterviewRoundList } from './JobInterviewRoundList';
 import { IInterviewRound } from '@agent-xenon/interfaces';
 import { showNotification } from '@mantine/notifications';
+import { usePermissions } from '@/libs/hooks/usePermissions';
 
 let timeOut: string | number | NodeJS.Timeout | undefined;
 
@@ -27,6 +28,7 @@ export const JobForm = () => {
   const { mutate: updateRound, } = useUpdateInterviewRound();
   const { deleteInterviewRoundMutation } = useDeleteInterviewRounds();
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
+  const permission = usePermissions()
 
   const designationsOptions = jobRoleAndDesignation?.data?.designationData.map((designation) => ({
     value: designation._id,
@@ -39,6 +41,14 @@ export const JobForm = () => {
   })) || [];
 
   const handleChange = (field: keyof typeof formState, value: string | null) => {
+    if (!permission?.hasJobUpdate) {
+      showNotification({
+        message: "You do not have permission to update job",
+        color: 'red',
+      });
+      return;
+    }
+
     const updatedFormState = {
       ...formState,
       [field]: value,
@@ -129,9 +139,11 @@ export const JobForm = () => {
           <Select label='Designation' data={designationsOptions} value={formState.designation} onChange={(val) => handleChange('designation', val)} />
           <Select label='Role' data={rolesOptions} value={formState.role} onChange={(val) => handleChange('role', val)} />
         </Flex>
-        <Button variant='outline' styles={{ root: { width: 'fit-content' } }} onClick={open} mb='md'>
-          Add Interview Round +
-        </Button>
+        {permission.hasInterviewRoundCreate &&
+          <Button variant='outline' styles={{ root: { width: 'fit-content' } }} onClick={open} mb='md'>
+            Add Interview Round +
+          </Button>
+        }
         <JobInterviewRoundList
           rounds={jobData?.data?.rounds}
           onDeleteRound={onDelete}

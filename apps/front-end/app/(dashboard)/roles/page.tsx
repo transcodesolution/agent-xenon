@@ -8,10 +8,12 @@ import { IApiResponse, IRole } from '@agent-xenon/interfaces';
 import { useRouter } from 'next/navigation';
 import { showNotification } from '@mantine/notifications';
 import { IconX } from '@tabler/icons-react';
+import { usePermissions } from '@/libs/hooks/usePermissions';
 
 export default function Page() {
   const { mutate: createRole, isPending: isCreating } = useCreateRole();
   const router = useRouter()
+  const permission = usePermissions()
 
   const handleCreateRole = () => {
     createRole(
@@ -36,6 +38,8 @@ export default function Page() {
       }
     );
   };
+
+  if (!permission?.hasRoleRead) return null;
 
   return (
     <Stack gap='sm'>
