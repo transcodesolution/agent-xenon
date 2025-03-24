@@ -1,6 +1,6 @@
 import { IApiResponse } from '@agent-xenon/interfaces';
 import http from './http-common';
-import { ICodeExecuteRequest, ICodeExecuteResponse, IGetInterviewMCQQuestionsRequest, IGetInterviewMCQQuestionsResponse, ISubmitExamMCQQuestionsRequest, ISubmitExamMCQQuestionsResponse } from '@agent-xenon/types-api';
+import { ICodeExecuteRequest, ICodeExecuteResponse, IGetInterviewMCQQuestionsRequest, IGetInterviewMCQQuestionsResponse, ISubmitInterviewQuestionsRequest, ISubmitInterviewQuestionsResponse } from '@agent-xenon/types-api';
 import { apiErrorHandler } from '@/libs/utils/apiErrorHandler';
 
 export const getInterviewMCQQuestions = async ({ roundId }: IGetInterviewMCQQuestionsRequest): Promise<IApiResponse<IGetInterviewMCQQuestionsResponse>> => {
@@ -12,9 +12,9 @@ export const getInterviewMCQQuestions = async ({ roundId }: IGetInterviewMCQQues
   }
 };
 
-export const submitExamMCQQuestions = async (params: ISubmitExamMCQQuestionsRequest): Promise<IApiResponse<ISubmitExamMCQQuestionsResponse>> => {
+export const submitExamMCQQuestions = async (params: ISubmitInterviewQuestionsRequest): Promise<IApiResponse<ISubmitInterviewQuestionsResponse>> => {
   try {
-    const result = await http.post<IApiResponse<ISubmitExamMCQQuestionsResponse>>('/applicant/exam/submit', params);
+    const result = await http.post<IApiResponse<ISubmitInterviewQuestionsResponse>>('/applicant/exam/submit', params);
     return result.data;
   } catch (error) {
     throw new Error(`Error while submit MCQ Questions: ${error}`);

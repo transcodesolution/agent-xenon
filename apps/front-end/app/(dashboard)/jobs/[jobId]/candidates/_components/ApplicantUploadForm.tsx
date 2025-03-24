@@ -7,7 +7,6 @@ import { useParams } from 'next/navigation';
 import { useCreateJobApplicantByAgent, useGetResumeUrls } from '@agent-xenon/react-query-hooks';
 
 export function ApplicantUploadForm({ refetch, onClose }: { refetch: () => void, onClose: () => void }) {
-  const [files, setFiles] = useState<File[]>([]);
   const [resumeUrls, setResumeUrls] = useState<string[]>([]);
   const { jobId } = useParams<{ jobId: string }>();
   const { mutate: createJobApplicantByAgent } = useCreateJobApplicantByAgent();
@@ -21,8 +20,6 @@ export function ApplicantUploadForm({ refetch, onClose }: { refetch: () => void,
   }, [data]);
 
   const handleDrop = async (acceptedFiles: File[]) => {
-    setFiles(acceptedFiles);
-
     for (const file of acceptedFiles) {
       const formData = new FormData();
       formData.append('document', file);
@@ -31,10 +28,10 @@ export function ApplicantUploadForm({ refetch, onClose }: { refetch: () => void,
         const uploadResponse = await uploadFileToServiceViaHandler({
           formData,
         });
-        const fileUrl = uploadResponse?.data?.resumeUrls;
-        if (fileUrl) {
-          setResumeUrls((prevUrls) => [...prevUrls, ...fileUrl]);
-          addResumeUrl({ resumeUrls: fileUrl, jobId: jobId });
+        const fileUrls = uploadResponse?.data?.files;
+        if (fileUrls) {
+          setResumeUrls((prevUrls) => [...prevUrls, ...fileUrls]);
+          addResumeUrl({ resumeUrls: fileUrls, jobId: jobId });
         }
       } catch (error) {
         console.error('Error uploading file:', file.name, error);

@@ -1,7 +1,7 @@
 'use client'
 
 import { Question } from "@/libs/components/custom/question";
-import { useGetInterviewMCQQuestions, useSubmitExamMCQQuestions } from "@agent-xenon/react-query-hooks";
+import { useGetInterviewQuestions, useSubmitInterviewQuestions } from "@agent-xenon/react-query-hooks";
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { Button, Container, Divider, Flex, Group, Stack, Title } from "@mantine/core";
 import { useParams } from "next/navigation";
@@ -11,12 +11,15 @@ import { ExamSubmissionStatus } from "../../_components/ExamSubmissionStatus";
 import { ExamStatusAlert } from "../../_components/ExamStatusAlert";
 
 export default function Page() {
+  const { id } = useParams<{ id: string }>();
+
   const [currentQuestion, setCurrentQuestion] = useState<IInterviewQuestionAnswer | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
-  const { id } = useParams<{ id: string }>();
-  const { data, isLoading, refetch } = useGetInterviewMCQQuestions({ roundId: id });
-  const { mutate: submitExamMCQQuestions, } = useSubmitExamMCQQuestions();
-  const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const { data, isLoading, refetch } = useGetInterviewQuestions({ roundId: id });
+  const { mutate: submitInterviewQuestions, } = useSubmitInterviewQuestions();
+
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const questions = data?.data?.questions || []
   const examStatus = data?.data?.status;
@@ -55,17 +58,17 @@ export default function Page() {
     const formattedAnswers = questions.map((question) => {
       const answer = answers[question._id] || "";
       return {
-        questionId: question._id || "",
-        answer: answer || ""
+        questionId: question._id,
+        answer: answer
       };
     });
 
-    submitExamMCQQuestions(
+    submitInterviewQuestions(
       { roundId: id, questionAnswers: formattedAnswers },
       {
         onSuccess: (response) => {
           if (response?.data?.status) {
-            refetch()
+            refetch();
             setIsSubmitted(false)
           } else {
             setIsSubmitted(true)
@@ -106,7 +109,6 @@ export default function Page() {
                 question={currentQuestion}
                 onAnswer={handleAnswer}
                 answers={answers[currentQuestion._id] || ""}
-
               />
             )}
           </Stack>
