@@ -8,6 +8,7 @@ import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatab
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react'
+import { usePermissions } from '@/libs/hooks/usePermissions';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -25,6 +26,7 @@ export const RoleList = () => {
   const { data, isLoading, refetch } = useGetRoles({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedRoles, setSelectedRoles] = useState<IRole[]>([]);
   const { deleteRolesMutation } = useDeleteRoles();
+  const permission = usePermissions()
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IRole>>({
     columnAccessor: sortColumn,
@@ -95,7 +97,8 @@ export const RoleList = () => {
 
   return (
     <React.Fragment>
-      {selectedRoles.length > 0 &&
+      {
+        permission?.hasJobDelete && selectedRoles.length > 0 &&
         <ActionIcon color='red' onClick={handleDeleteSelected}>
           <IconTrash size="1.5rem" />
         </ActionIcon>
@@ -119,6 +122,6 @@ export const RoleList = () => {
         onSortStatusChange={handleSortStatusChange}
         columns={columns}
       />
-    </React.Fragment>
+    </React.Fragment >
   )
 }

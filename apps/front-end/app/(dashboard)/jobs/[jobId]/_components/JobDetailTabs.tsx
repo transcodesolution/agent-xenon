@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { FloatingIndicator, Tabs } from '@mantine/core';
 import classes from '../jobdetails.module.scss';
 import { useRouter, usePathname } from 'next/navigation';
+import { usePermissions } from '@/libs/hooks/usePermissions';
 
 interface IJobDetailTabs {
   jobId: string
@@ -14,13 +15,14 @@ export const JobDetailTabs = ({ jobId }: IJobDetailTabs) => {
   const [controlsRefs, setControlsRefs] = useState<Record<string, HTMLButtonElement | null>>({});
   const router = useRouter();
   const pathName = usePathname();
+  const permission = usePermissions()
   const value = pathName.split('/')[3] || 'details'
   const setControlRef = (val: string) => (node: HTMLButtonElement) => {
 
     controlsRefs[val] = node;
     setControlsRefs(controlsRefs);
   };
-  
+
   const onTabChange = (tab: string | null) => {
     switch (tab) {
       case 'candidates':
@@ -40,12 +42,16 @@ export const JobDetailTabs = ({ jobId }: IJobDetailTabs) => {
         <Tabs.Tab value="details" ref={setControlRef('details')} className={classes.tab}>
           Details
         </Tabs.Tab>
-        <Tabs.Tab value="candidates" ref={setControlRef('candidates')} className={classes.tab}>
-          Candidates
-        </Tabs.Tab>
-        <Tabs.Tab value="rounds" ref={setControlRef('rounds')} className={classes.tab}>
-          Rounds
-        </Tabs.Tab>
+        {permission?.hasJobCandidatesTab &&
+          <Tabs.Tab value="candidates" ref={setControlRef('candidates')} className={classes.tab}>
+            Candidates
+          </Tabs.Tab>
+        }
+        {permission?.hasJobRoundsTab &&
+          <Tabs.Tab value="rounds" ref={setControlRef('rounds')} className={classes.tab}>
+            Rounds
+          </Tabs.Tab>
+        }
 
         <FloatingIndicator
           target={value ? controlsRefs[value] : null}

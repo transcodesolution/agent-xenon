@@ -13,6 +13,7 @@ import { useParams } from 'next/navigation';
 import { useGetRoleById, useUpdateRole } from '@agent-xenon/react-query-hooks';
 import { useEffect, useState } from "react";
 import { showNotification } from "@mantine/notifications";
+import { usePermissions } from "@/libs/hooks/usePermissions";
 
 let timeOut: string | number | NodeJS.Timeout | undefined;
 
@@ -21,6 +22,7 @@ export const RoleDetails = () => {
   const { data: roleData } = useGetRoleById({ roleId: roleId });
   const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>([]);
   const { mutate: updateRole } = useUpdateRole();
+  const permission = usePermissions()
 
   useEffect(() => {
     if (roleData?.data?.permissions) {
@@ -29,6 +31,13 @@ export const RoleDetails = () => {
   }, [roleData]);
 
   const handleChange = (field: string, value: string | Permission[]) => {
+    if (!permission?.hasRoleUpdate) {
+      showNotification({
+        message: "You do not have permission to update role",
+        color: 'red',
+      });
+      return;
+    }
     clearTimeout(timeOut);
     timeOut = setTimeout(() => {
       updateRole({
@@ -48,6 +57,13 @@ export const RoleDetails = () => {
   };
 
   const handlePermissionsChange = (permissions: Permission[]) => {
+    if (!permission?.hasJobRoleUpdate) {
+      showNotification({
+        message: "You do not have permission to update role",
+        color: 'red',
+      });
+      return;
+    }
     setSelectedPermissions(permissions);
     handleChange("permissions", permissions);
   };

@@ -9,9 +9,11 @@ import { IOrganization } from "@agent-xenon/interfaces";
 import { isEquals } from "@/libs/utils/ui-helpers";
 import { showNotification } from "@mantine/notifications";
 import { updateOrganization } from "@agent-xenon/web-apis";
+import { usePermissions } from "@/libs/hooks/usePermissions";
 
 export const OrganizationDetail = () => {
   const { organization } = useOrganizationStore();
+  const permission = usePermissions()
 
   const [organizationDetails, setOrganizationDetails] = useState<IOrganization | null>(null);
 
@@ -36,6 +38,13 @@ export const OrganizationDetail = () => {
   }, 600);
 
   const handleChange = (field: keyof IOrganization, value: string) => {
+    if (!permission?.hasOrganizationUpdate) {
+      showNotification({
+        message: "You do not have permission to update organization detail",
+        color: 'red',
+      });
+      return;
+    }
     if (!organizationDetails) return;
     const updatedOrganization = { ...organizationDetails, [field]: value };
     setOrganizationDetails(updatedOrganization);

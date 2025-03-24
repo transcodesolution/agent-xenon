@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { JobGrid } from './_components/JobGrid';
 import { useCreateJob, useDeleteJobs, useGetJobs } from '@agent-xenon/react-query-hooks'
 import { IApiResponse, IJob } from '@agent-xenon/interfaces'
+import { usePermissions } from '@/libs/hooks/usePermissions'
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -18,6 +19,7 @@ export default function Page() {
   const router = useRouter()
   const { mutate: createJob, isPending: isCreating } = useCreateJob();
   const { deleteJobsMutation } = useDeleteJobs();
+  const permission = usePermissions()
 
   const onDelete = (jobIds: string[]) => {
     deleteJobsMutation.mutate(
@@ -46,10 +48,14 @@ export default function Page() {
     );
   };
 
+  if (!permission?.hasJobRead) return null;
+
   return (
     <Stack gap='sm'>
       <Title order={4}>Jobs</Title>
-      <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateJob} styles={{ root: { width: 'fit-content' } }} loading={isCreating}>Create +</Button>
+      {permission?.hasJobCreate &&
+        <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateJob} styles={{ root: { width: 'fit-content' } }} loading={isCreating}>Create +</Button>
+      }
       <JobFilter />
       {view === 'list' && <JobLists data={data?.data?.jobData || []} isFetching={isLoading} onDelete={onDelete} />}
       {view === 'grid' && <JobGrid data={data?.data?.jobData || []} isFetching={isLoading} />}

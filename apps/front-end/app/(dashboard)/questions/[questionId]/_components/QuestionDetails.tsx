@@ -28,6 +28,8 @@ import { RichTextEditor } from "@mantine/tiptap";
 import { useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
+import { usePermissions } from "@/libs/hooks/usePermissions";
+import { showNotification } from "@mantine/notifications";
 
 let timeOut: string | number | NodeJS.Timeout | undefined;
 
@@ -62,6 +64,7 @@ export const QuestionDetails = () => {
       handleChange("description", editor.getHTML());
     },
   });
+  const permission = usePermissions()
 
   useEffect(() => {
     if (questionData) {
@@ -82,6 +85,13 @@ export const QuestionDetails = () => {
   }, [questionData]);
 
   const handleChange = (field: string, value: any) => {
+    if (!permission?.hasQuestionAnswerUpdate) {
+      showNotification({
+        message: "You do not have permission to update questions",
+        color: 'red',
+      });
+      return;
+    }
     const updatedState = { ...questionFormState, [field]: value };
     if (field === "isMultiSelectOption" && !value) {
       updatedState.options = updatedState.options.map((opt) => ({

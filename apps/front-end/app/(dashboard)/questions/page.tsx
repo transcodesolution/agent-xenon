@@ -8,10 +8,12 @@ import { useRouter } from 'next/navigation';
 import { showNotification } from '@mantine/notifications';
 import { IconX } from '@tabler/icons-react';
 import { IApiResponse, IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
+import { usePermissions } from '@/libs/hooks/usePermissions';
 
 export default function Page() {
   const { mutate: createQuestion, isPending: isCreating } = useCreateQuestion();
   const router = useRouter()
+  const permissions = usePermissions()
 
   const handleCreateQuestion = () => {
     createQuestion({},
@@ -34,10 +36,14 @@ export default function Page() {
     );
   };
 
+  if (!permissions?.hasQuestionAnswerRead) return null;
+
   return (
     <Stack gap='sm'>
       <Title order={4} mb='md'>Questions</Title>
-      <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateQuestion} w='fit-content' loading={isCreating}>Create +</Button>
+      {permissions?.hasQuestionAnswerCreate &&
+        <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateQuestion} w='fit-content' loading={isCreating}>Create +</Button>
+      }
       <QuestionFilter />
       <QuestionList />
     </Stack>
