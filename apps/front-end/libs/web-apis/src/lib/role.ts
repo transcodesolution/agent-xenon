@@ -39,3 +39,12 @@ export const updateRole = async (params: Partial<IRole>): Promise<IApiResponse<I
     return apiErrorHandler(error, "updating role");
   }
 };
+
+export const deleteRoles = async (roleIds: string[]): Promise<IApiResponse> => {
+  try {
+    const result = await http.delete<IApiResponse>('/role', { data: { roleIds } });
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while delete role: ${error}`);
+  }
+};

@@ -2,7 +2,7 @@
 import React from 'react';
 import { QuestionFilter } from './_components/QuestionFilter';
 import { QuestionList } from './_components/QuestionList';
-import { Button, Title } from '@mantine/core';
+import { Button, Stack, Title } from '@mantine/core';
 import { useCreateQuestion } from '@agent-xenon/react-query-hooks';
 import { useRouter } from 'next/navigation';
 import { showNotification } from '@mantine/notifications';
@@ -35,11 +35,11 @@ export default function Page() {
   };
 
   return (
-    <React.Fragment>
+    <Stack gap='sm'>
       <Title order={4} mb='md'>Questions</Title>
       <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateQuestion} w='fit-content' loading={isCreating}>Create +</Button>
       <QuestionFilter />
       <QuestionList />
-    </React.Fragment>
+    </Stack>
   )
 }

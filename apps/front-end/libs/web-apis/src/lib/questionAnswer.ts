@@ -49,3 +49,11 @@ export const updateQuestion = async (params: Partial<IInterviewQuestionAnswer>):
   }
 };
 
+export const deleteQuestions = async (questionIds: string[]): Promise<IApiResponse> => {
+  try {
+    const result = await http.delete<IApiResponse>('/questionAnswer', { data: { questionIds } });
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while delete question: ${error}`);
+  }
+};

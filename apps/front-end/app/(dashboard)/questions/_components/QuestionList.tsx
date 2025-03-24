@@ -1,12 +1,13 @@
 'use client'
-import { useGetMCQQuestions } from '@agent-xenon/react-query-hooks';
+import { useDeleteQuestions, useGetMCQQuestions } from '@agent-xenon/react-query-hooks';
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
 import { IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
-import { Anchor, Text } from '@mantine/core';
+import { ActionIcon, Anchor, Text } from '@mantine/core';
 import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatable'
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react'
+import { IconTrash } from '@tabler/icons-react';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -21,10 +22,9 @@ export const QuestionList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading } = useGetMCQQuestions({ page: Number(page), limit: Number(pageSize), search: search });
-
-
+  const { data, isLoading, refetch } = useGetMCQQuestions({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedQuestions, setSelectedQuestions] = useState<IInterviewQuestionAnswer[]>([]);
+  const { deleteQuestionsMutation } = useDeleteQuestions();
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IInterviewQuestionAnswer>>({
     columnAccessor: sortColumn,
@@ -71,27 +71,47 @@ export const QuestionList = () => {
         );
       },
     },
-
   ]
+
+  const handleDeleteSelected = () => {
+    const questionIds = selectedQuestions.map((question) => String(question._id));
+    deleteQuestionsMutation.mutate(
+      { questionIds },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
+    setSelectedQuestions([])
+  };
+
   return (
-    <DataTable
-      idAccessor='_id'
-      highlightOnHover
-      records={data?.data?.questionData}
-      fetching={isLoading}
-      selectedRecords={selectedQuestions}
-      onSelectedRecordsChange={setSelectedQuestions}
-      page={page}
-      onPageChange={handleChangePage}
-      totalRecords={3}
-      recordsPerPage={pageSize}
-      recordsPerPageOptions={PAGE_SIZES}
-      onRecordsPerPageChange={handleChangePageSize}
-      noRecordsText='No Data To Show'
-      recordsPerPageLabel=""
-      sortStatus={sortStatus}
-      onSortStatusChange={handleSortStatusChange}
-      columns={columns}
-    />
+    <React.Fragment>
+      {selectedQuestions.length > 0 &&
+        <ActionIcon color='red' onClick={handleDeleteSelected}>
+          <IconTrash size="1.5rem" />
+        </ActionIcon>
+      }
+      <DataTable
+        idAccessor='_id'
+        highlightOnHover
+        records={data?.data?.questionData}
+        fetching={isLoading}
+        selectedRecords={selectedQuestions}
+        onSelectedRecordsChange={setSelectedQuestions}
+        page={page}
+        onPageChange={handleChangePage}
+        totalRecords={3}
+        recordsPerPage={pageSize}
+        recordsPerPageOptions={PAGE_SIZES}
+        onRecordsPerPageChange={handleChangePageSize}
+        noRecordsText='No Data To Show'
+        recordsPerPageLabel=""
+        sortStatus={sortStatus}
+        onSortStatusChange={handleSortStatusChange}
+        columns={columns}
+      />
+    </React.Fragment>
   )
 }
