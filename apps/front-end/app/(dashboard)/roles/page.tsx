@@ -2,7 +2,7 @@
 import React from 'react';
 import { RoleFilter } from './_components/RoleFilter';
 import { RoleList } from './_components/RoleList';
-import { Button, Title } from '@mantine/core';
+import { Button, Stack, Title } from '@mantine/core';
 import { useCreateRole } from '@agent-xenon/react-query-hooks';
 import { IApiResponse, IRole } from '@agent-xenon/interfaces';
 import { useRouter } from 'next/navigation';
@@ -38,11 +38,11 @@ export default function Page() {
   };
 
   return (
-    <React.Fragment>
-      <Title order={4} mb='md'>Roles</Title>
-      <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateRole} w='fit-content' loading={isCreating}>Create +</Button>
+    <Stack gap='sm'>
+      <Title order={4} >Roles</Title>
+      <Button component='a' disabled={isCreating} onClick={handleCreateRole} w='fit-content' loading={isCreating}>Create +</Button>
       <RoleFilter />
       <RoleList />
-    </React.Fragment>
+    </Stack>
   )
 }

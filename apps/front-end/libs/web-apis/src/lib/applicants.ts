@@ -1,6 +1,7 @@
 import { IApiResponse, IApplicant, PaginationApiResponseType } from "@agent-xenon/interfaces";
 import http from './http-common'
 import { IGetApplicantsRequest } from "@agent-xenon/types-api";
+import { apiErrorHandler } from "@/libs/utils/apiErrorHandler";
 
 export const getApplicants = async (params: IGetApplicantsRequest): Promise<IApiResponse<PaginationApiResponseType<IApplicant[]>>> => {
   try {
@@ -10,7 +11,6 @@ export const getApplicants = async (params: IGetApplicantsRequest): Promise<IApi
     throw new Error(`Error while fetching applicants: ${error}`);
   }
 };
-
 
 export const deleteApplicants = async (applicantIds: string[]): Promise<IApiResponse> => {
   try {
@@ -26,7 +26,7 @@ export const createJobApplicant = async (params: Partial<IApplicant>): Promise<I
     const result = await http.post<IApiResponse<IApplicant>>('/applicant/createByUser', params);
     return result.data;
   } catch (error) {
-    throw new Error(`Error while creating applicant: ${error}`);
+    return apiErrorHandler(error, "creating applicant");
   }
 };
 
@@ -35,7 +35,7 @@ export const createJobApplicantByAgent = async (params: { jobId: string }): Prom
     const result = await http.post<IApiResponse<IApplicant>>('/applicant/createByAgent', params);
     return result.data;
   } catch (error) {
-    throw new Error(`Error while creating applicant: ${error}`);
+    return apiErrorHandler(error, "creating applicant");
   }
 };
 
@@ -54,6 +54,6 @@ export const updateJobApplicant = async (params: Partial<IApplicant>): Promise<I
     const result = await http.put<IApiResponse<IApplicant>>(`/applicant/${_id}`, otherParams);
     return result.data;
   } catch (error) {
-    throw new Error(`Error while updating applicant: ${error}`);
+    return apiErrorHandler(error, "updating applicant");
   }
 };

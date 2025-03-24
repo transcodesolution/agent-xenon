@@ -1,8 +1,9 @@
 'use client'
-import { useGetRoles } from '@/libs/react-query-hooks/src/lib/role'
+import { useDeleteRoles, useGetRoles } from '@/libs/react-query-hooks/src/lib/role'
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
 import { IRole } from '@agent-xenon/interfaces';
-import { Anchor, Text } from '@mantine/core';
+import { ActionIcon, Anchor, Text } from '@mantine/core';
+import { IconTrash } from '@tabler/icons-react';
 import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatable'
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -21,10 +22,9 @@ export const RoleList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading } = useGetRoles({ page: Number(page), limit: Number(pageSize), search: search });
-
-
+  const { data, isLoading, refetch } = useGetRoles({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedRoles, setSelectedRoles] = useState<IRole[]>([]);
+  const { deleteRolesMutation } = useDeleteRoles();
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IRole>>({
     columnAccessor: sortColumn,
@@ -79,25 +79,46 @@ export const RoleList = () => {
       render: ({ permissions }) => <Text>{permissions?.length || 0}</Text>,
     },
   ]
+
+  const handleDeleteSelected = () => {
+    const roleIds = selectedRoles.map((role) => String(role._id));
+    deleteRolesMutation.mutate(
+      { roleIds },
+      {
+        onSuccess: () => {
+          refetch();
+        },
+      }
+    );
+    setSelectedRoles([])
+  };
+
   return (
-    <DataTable
-      idAccessor='_id'
-      highlightOnHover
-      records={data?.data?.roleData}
-      fetching={isLoading}
-      selectedRecords={selectedRoles}
-      onSelectedRecordsChange={setSelectedRoles}
-      page={page}
-      onPageChange={handleChangePage}
-      totalRecords={3}
-      recordsPerPage={pageSize}
-      recordsPerPageOptions={PAGE_SIZES}
-      onRecordsPerPageChange={handleChangePageSize}
-      noRecordsText='No Data To Show'
-      recordsPerPageLabel=""
-      sortStatus={sortStatus}
-      onSortStatusChange={handleSortStatusChange}
-      columns={columns}
-    />
+    <React.Fragment>
+      {selectedRoles.length > 0 &&
+        <ActionIcon color='red' onClick={handleDeleteSelected}>
+          <IconTrash size="1.5rem" />
+        </ActionIcon>
+      }
+      <DataTable
+        idAccessor='_id'
+        highlightOnHover
+        records={data?.data?.roleData}
+        fetching={isLoading}
+        selectedRecords={selectedRoles}
+        onSelectedRecordsChange={setSelectedRoles}
+        page={page}
+        onPageChange={handleChangePage}
+        totalRecords={3}
+        recordsPerPage={pageSize}
+        recordsPerPageOptions={PAGE_SIZES}
+        onRecordsPerPageChange={handleChangePageSize}
+        noRecordsText='No Data To Show'
+        recordsPerPageLabel=""
+        sortStatus={sortStatus}
+        onSortStatusChange={handleSortStatusChange}
+        columns={columns}
+      />
+    </React.Fragment>
   )
 }

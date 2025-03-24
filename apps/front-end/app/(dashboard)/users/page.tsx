@@ -1,5 +1,5 @@
 'use client'
-import { Title, Button } from '@mantine/core'
+import { Title, Button, Stack } from '@mantine/core'
 import React from 'react'
 import { UserFilter } from './_components/UserFilter'
 import { UserList } from './_components/UserList'
@@ -37,11 +37,11 @@ export default function Page() {
   };
 
   return (
-    <React.Fragment>
+    <Stack gap='sm'>
       <Title order={4} mb='md'>Users</Title>
       <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateUser} w='fit-content' loading={isCreating}>Create +</Button>
       <UserFilter />
       <UserList />
-    </React.Fragment>
+    </Stack>
   )
 }
