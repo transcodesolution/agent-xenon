@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
-import { PERMISSIONS } from "../utils/permissionChecks";
+import { PERMISSION_CONFIG } from "../utils/permissionChecks";
 import { checkPermissions, usePermissionStore } from "../store/src";
+
+type PermissionKey = keyof typeof PERMISSION_CONFIG;
 
 export const usePermissions = () => {
   const { permissions } = usePermissionStore();
-  const [checkedPermissions, setCheckedPermissions] = useState<{ [key: string]: boolean }>({});
+  const [checkedPermissions, setCheckedPermissions] = useState<Record<PermissionKey, boolean>>({} as Record<PermissionKey, boolean>);
 
   useEffect(() => {
-    const permissionsChecked = Object.keys(PERMISSIONS).reduce((acc: { [k: string]: boolean }, key) => {
-      acc[key] = checkPermissions({ permissions: PERMISSIONS[key] });
+    const permissionsChecked = Object.keys(PERMISSION_CONFIG).reduce((acc: { [k: string]: boolean }, key) => {
+      acc[key] = checkPermissions({ permissions: PERMISSION_CONFIG[key] });
       return acc;
     }, {});
 

@@ -1,6 +1,6 @@
 import { Permission } from "@agent-xenon/constants";
 
-export const PERMISSIONS: { [key: string]: Permission[] } = {
+export const PERMISSION_CONFIG: { [key: string]: Permission[] } = {
   hasJobCreate: [Permission.JOB_CREATE],
   hasJobRead: [Permission.JOB_READ],
   hasJobUpdate: [Permission.JOB_UPDATE],
