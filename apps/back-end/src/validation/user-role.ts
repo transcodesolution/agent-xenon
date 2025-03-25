@@ -18,6 +18,10 @@ export const deleteUserRoleSchema = Joi.object().keys({
     roleIds: Joi.array().items(Joi.string()).required(),
 })
 
+export const userRoleByIdSchema = Joi.object().keys({
+    roleId: Joi.string().required(),
+})
+
 export const getUserRoleSchema = Joi.object().keys({
     search: Joi.string().allow("").optional(),
     ...paginationSchema,
