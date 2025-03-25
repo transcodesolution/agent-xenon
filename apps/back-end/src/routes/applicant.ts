@@ -1,5 +1,5 @@
 import express from 'express';
-import { createApplicantByAgent, createApplicantByUser, deleteApplicant, getApplicantById, getApplicantDetailGlobally, getApplicants, updateApplicant } from '../controllers/applicants/applicant';
+import { createApplicantByAgent, createApplicantByUser, deleteApplicant, getApplicantById, getApplicants, updateApplicant } from '../controllers/applicants/applicant';
 import { validateRoleAndPermissions } from '../helper/middleware';
 import { Permission } from '@agent-xenon/constants';
 const router = express.Router();
@@ -11,7 +11,6 @@ router.post("/createByAgent", validateRoleAndPermissions(commonPermissions), cre
 router.put("/:applicantId", validateRoleAndPermissions(commonPermissions), updateApplicant);
 router.delete("/", validateRoleAndPermissions(commonPermissions), deleteApplicant);
 router.get("/", validateRoleAndPermissions([Permission.APPLICANT_READ, ...commonPermissions]), getApplicants);
-router.get("/global-detail/:applicantId", validateRoleAndPermissions([Permission.APPLICANT_READ]), getApplicantDetailGlobally);
 router.get("/:applicantId", validateRoleAndPermissions(commonPermissions), getApplicantById);
 
 export const applicantRouter = router;

@@ -92,11 +92,6 @@ export const getApplicantSchema = Joi.object({
     ...paginationSchema,
 });
 
-export const getApplicantDetailGlobalSchema = Joi.object({
-    applicantId: Joi.string().required(),
-    ...paginationSchema,
-});
-
 export const getApplicantByIdSchema = Joi.object({
     applicantId: Joi.string().required(),
 });
