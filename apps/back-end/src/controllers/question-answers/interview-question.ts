@@ -138,9 +138,17 @@ export const getAllQuestionList = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId, questionFormat: value.questionFormat ?? AnswerQuestionFormat.MCQ };
+        const regexToFilterPriorityQuestionFirst = /^(text|mcq|file|code|coding)\b(\s*:)?/i;
+
+        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId };
 
         if (value.search) {
+            const searchedString = value.search.match(regexToFilterPriorityQuestionFirst)?.[1];
+            const isRelatedTextFound = !!searchedString;
+            value.search = value.search.replace(regexToFilterPriorityQuestionFirst, "").trim();
+            if (isRelatedTextFound) {
+                match.questionFormat = searchedString.toLowerCase();
+            }
             match.question = new RegExp(value.search, "i");
         }
 
