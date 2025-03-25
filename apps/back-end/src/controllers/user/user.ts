@@ -79,19 +79,19 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const deleteUser = async (req: Request, res: Response) => {
     try {
-        const { error, value } = deleteUserSchema.validate(req.params);
+        const { error, value } = deleteUserSchema.validate(req.body);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const deletedUser = await userModel.findOneAndUpdate({ _id: value.id, deletedAt: null }, { deletedAt: Date.now() });
+        const deletedUser = await userModel.updateMany({ _id: { $in: value.ids }, deletedAt: null }, { deletedAt: Date.now() });
 
-        if (!deletedUser) {
-            return res.notFound('User not found', {}, 'getDataNotFound');
+        if (deletedUser.matchedCount !== value.ids.length) {
+            return res.notFound('Some users', {}, 'getDataNotFound');
         }
 
-        return res.ok('user', {}, 'deleteDataSuccess');
+        return res.ok('users', {}, 'deleteDataSuccess');
     } catch (error) {
         return res.internalServerError(error.message, error.stack, 'customMessage');
     }

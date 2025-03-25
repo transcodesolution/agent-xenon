@@ -7,7 +7,7 @@ const router = Router();
 
 router.post('/add', validateRoleAndPermissions([Permission.USER_CREATE]), createUser);
 router.patch('/:id', validateRoleAndPermissions([Permission.USER_UPDATE]), updateUser);
-router.delete('/:id', validateRoleAndPermissions([Permission.USER_DELETE]), deleteUser);
+router.delete('/', validateRoleAndPermissions([Permission.USER_DELETE]), deleteUser);
 router.get('/', getUserDetails);
 router.get('/all', validateRoleAndPermissions([Permission.USER_READ]), getUser);
 router.get('/permissions', getUserPermissions);

@@ -15,7 +15,7 @@ export const updateUserRoleSchema = Joi.object().keys({
 })
 
 export const deleteUserRoleSchema = Joi.object().keys({
-    roleId: Joi.string().required(),
+    roleIds: Joi.array().items(Joi.string()).required(),
 })
 
 export const getUserRoleSchema = Joi.object().keys({
