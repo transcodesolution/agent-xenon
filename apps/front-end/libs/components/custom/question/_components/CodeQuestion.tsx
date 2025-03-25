@@ -20,12 +20,7 @@ export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
   const [editorTheme, setEditorTheme] = useState("vs-dark");
   const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const editorRef = useRef<HTMLDivElement | null>(null);
   const { mutate: codeExecute } = useCodeExecute()
-
-  const handleEditorDidMount: OnMount = (editor) => {
-    editorRef.current = editor;
-  };
 
   const handleRun = () => {
     const languageConfig = compilerVersionAndLanguages.find(
@@ -130,7 +125,6 @@ export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
             theme={editorTheme}
             language={language}
             onChange={handleEditorChange}
-            onMount={handleEditorDidMount}
             value={codeValue}
             options={{
               minimap: { enabled: false },
