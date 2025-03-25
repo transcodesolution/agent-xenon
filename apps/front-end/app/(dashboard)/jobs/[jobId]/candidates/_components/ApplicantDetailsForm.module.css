@@ -1,0 +1,34 @@
+.root {
+  position: relative !important;
+}
+
+.input {
+  height: rem(54) !important;
+  padding-top: rem(22) !important;
+  box-shadow: none !important;
+
+  @mixin light {
+    border-color: var(--mantine-color-gray-3) !important;
+  }
+
+  @mixin dark {
+    border-color: var(--mantine-color-dark-6) !important;
+  }
+
+  &:focus {
+    border-color: var(--mantine-color-primary-5) !important;
+  }
+}
+
+.label {
+  position: absolute !important;
+  pointer-events: none !important;
+  font-size: var(--mantine-font-size-xs) !important;
+  padding-left: var(--mantine-spacing-sm) !important;
+  padding-top: calc(var(--mantine-spacing-sm) / 2) !important;
+  z-index: 1 !important;
+}
+
+.error {
+  font-size: var(--mantine-font-size-xs) !important;
+}
