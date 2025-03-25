@@ -46,9 +46,9 @@ export const updateUser = async (params: Partial<IUser>): Promise<IApiResponse<I
 };
 
 
-export const createUser = async (params: Partial<IUser>): Promise<IApiResponse<IUser>> => {
+export const createUser = async (params: Partial<IUser>): Promise<IApiResponse<IUpdateUserResponse>> => {
   try {
-    const result = await http.post<IApiResponse<IUser>>(`/user/add`, params);
+    const result = await http.post<IApiResponse<IUpdateUserResponse>>(`/user/add`, params);
     return result.data;
   } catch (error) {
     return apiErrorHandler(error, "creating user");

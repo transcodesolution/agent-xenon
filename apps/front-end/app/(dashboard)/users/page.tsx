@@ -3,11 +3,12 @@ import { Title, Button, Stack } from '@mantine/core'
 import React from 'react'
 import { UserFilter } from './_components/UserFilter'
 import { UserList } from './_components/UserList'
-import { IApiResponse, IUser } from '@agent-xenon/interfaces';
+import { IApiResponse } from '@agent-xenon/interfaces';
 import { showNotification } from '@mantine/notifications';
 import { IconX } from '@tabler/icons-react';
 import { useCreateUser } from '@/libs/react-query-hooks/src';
 import { useRouter } from 'next/navigation'
+import { IUpdateUserResponse } from '@/libs/types-api/src'
 
 export default function Page() {
   const { mutate: createUser, isPending: isCreating } = useCreateUser();
@@ -18,10 +19,10 @@ export default function Page() {
       {
       },
       {
-        onSuccess: (newJob: IApiResponse<IUser>) => {
-          const roleId = newJob?.data?._id
-          if (roleId) {
-            router.push(`/roles/${roleId}`);
+        onSuccess: (newUser: IApiResponse<IUpdateUserResponse>) => {
+          const userId = newUser?.data?.user?._id
+          if (userId) {
+            router.push(`/users/${userId}`);
           }
         },
         onError: (error) => {

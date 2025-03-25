@@ -1,14 +1,14 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useGetRoles, useGetUserById } from "@/libs/react-query-hooks/src";
 import { useUpdateUser } from "@/libs/react-query-hooks/src/lib/user/useUpdateUser";
 import { IUser } from "@agent-xenon/interfaces";
-import { Box, Flex, Paper, PasswordInput, Select, TextInput, Title } from "@mantine/core";
+import { Box, Flex, Paper, PasswordInput, Select, TextInput, Title, ActionIcon, Text } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { showNotification } from "@mantine/notifications";
-import { IconCheck } from "@tabler/icons-react";
-import { useEffect } from "react";
+import { IconCheck, IconEdit } from "@tabler/icons-react";
 
 interface IUserDetail {
   userId: string;
@@ -23,46 +23,8 @@ export const UserDetail = ({ userId }: IUserDetail) => {
 
   const user = data?.data?.user;
   const roles = roleDataResponse?.data?.roleData || [];
-
-  const handleUpdate = useDebouncedCallback((values: EditableUserFields) => {
-    const dirtyFields = form.getDirty();
-    const updatedUser: Partial<EditableUserFields> = {};
-
-    Object.keys(dirtyFields).forEach((key) => {
-      if (dirtyFields[key as keyof EditableUserFields]) {
-        updatedUser[key as keyof EditableUserFields] = values[key as keyof EditableUserFields];
-      }
-    });
-
-    if (Object.keys(updatedUser).length === 0) {
-      return;
-    }
-
-    updateUser(
-      { _id: user?._id, ...updatedUser },
-      {
-        onSuccess: () => {
-          showNotification({
-            title: "Success",
-            message: "User Updated Successfully",
-            color: "green",
-            icon: <IconCheck size={16} />,
-          });
-        },
-        onError: (error) => {
-          showNotification({
-            title: "Error",
-            message: error instanceof Error ? error.message : "An unexpected error occurred.",
-            color: "red",
-            icon: <IconCheck size={16} />,
-          });
-        },
-      }
-    );
-
-    form.resetDirty()
-  }, 1000);
-
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
 
   const form = useForm<EditableUserFields>({
     mode: "uncontrolled",
@@ -74,7 +36,8 @@ export const UserDetail = ({ userId }: IUserDetail) => {
       roleId: '',
     },
     validate: {
-      email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
+      email: (value: string) =>
+        value.length === 0 ? "Email is required" : /^\S+@\S+$/.test(value) ? null : "Invalid email address",
       password: (value) => {
         if (value.length < 8) return "Password must be at least 8 characters long";
         if (!/[A-Z]/.test(value)) return "Password must contain at least one uppercase letter";
@@ -83,8 +46,7 @@ export const UserDetail = ({ userId }: IUserDetail) => {
         if (!/[!@#$%^&*(),.?':{}|<>]/.test(value)) return "Password must contain at least one special character";
         return null;
       },
-    },
-    onValuesChange: handleUpdate
+    }
   });
 
   useEffect(() => {
@@ -93,17 +55,45 @@ export const UserDetail = ({ userId }: IUserDetail) => {
         firstName: user.firstName || '',
         lastName: user.lastName || '',
         email: user.email || '',
-        password: user.password || '',
+        password: '',
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
+  const handleOnChange = useDebouncedCallback((field: string, value: string) => {
+    if (!user?._id || value.trim() === "") return;
+    form.setFieldValue(field, value);
+
+    updateUser(
+      { _id: user._id, [field]: value },
+      {
+        onSuccess: () => {
+          showNotification({
+            title: "Success",
+            message: "User Updated Successfully",
+            color: "green",
+            icon: <IconCheck size={16} />,
+          });
+
+          if (field === "email") setIsEditingEmail(false);
+          if (field === "password") setIsEditingPassword(false);
+        },
+        onError: (error) => {
+          showNotification({
+            title: "Error",
+            message: error instanceof Error ? error.message : "An unexpected error occurred.",
+            color: "red",
+            icon: <IconCheck size={16} />,
+          });
+        },
+      }
+    );
+  }, 1000);
+
   return (
     <Paper shadow="sm" radius="md" withBorder p="lg">
-      <Title order={2} mb="md">
-        User Details
-      </Title>
+      <Title order={2} mb="md">User Details</Title>
       <Flex direction="column" align="center" gap="md">
         <Box w="100%">
           <TextInput
@@ -111,26 +101,51 @@ export const UserDetail = ({ userId }: IUserDetail) => {
             placeholder="Enter First Name"
             mb="md"
             {...form.getInputProps("firstName")}
+            onChange={(e) => {
+              handleOnChange("firstName", e.target.value);
+            }}
           />
           <TextInput
             label="Last Name"
             placeholder="Enter Last Name"
             mb="md"
             {...form.getInputProps("lastName")}
+            onChange={(e) => {
+              handleOnChange("lastName", e.target.value);
+            }}
           />
-          <TextInput
-            label="Email"
-            name="email"
-            placeholder="Enter Email"
-            mb="md"
-            {...form.getInputProps("email")}
-          />
-          <PasswordInput
-            label="Password"
-            placeholder="Enter Password"
-            required
-            {...form.getInputProps("password")}
-          />
+          {isEditingEmail ? (
+            <TextInput
+              label="Email"
+              placeholder="Enter Email"
+              mb="md"
+              {...form.getInputProps("email")}
+              onBlur={(e) => handleOnChange("email", e.target.value)}
+            />
+          ) : (
+            <Flex align="center" justify="space-between" mb="md">
+              <Text>{form.values.email || user?.email}</Text>
+              <ActionIcon onClick={() => setIsEditingEmail(true)}>
+                <IconEdit size={16} />
+              </ActionIcon>
+            </Flex>
+          )}
+          {isEditingPassword ? (
+            <PasswordInput
+              label="Password"
+              placeholder="Enter Password"
+              mb="md"
+              {...form.getInputProps("password")}
+              onBlur={(e) => handleOnChange("password", e.target.value)}
+            />
+          ) : (
+            <Flex align="center" justify="space-between" mb="md">
+              <Text>••••••••</Text>
+              <ActionIcon onClick={() => setIsEditingPassword(true)}>
+                <IconEdit size={16} />
+              </ActionIcon>
+            </Flex>
+          )}
           <Select
             label="Role"
             placeholder="Select Role"
@@ -138,7 +153,7 @@ export const UserDetail = ({ userId }: IUserDetail) => {
             onChange={(role) => {
               const selectedRole = roles.find((_role) => _role.name === role);
               if (selectedRole) {
-                form.setFieldValue('roleId', selectedRole._id)
+                handleOnChange("roleId", selectedRole._id);
               }
             }}
           />
