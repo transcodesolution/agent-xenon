@@ -31,6 +31,10 @@ export enum Permission {
   CONNECT_APP = 'connect_app',
   DISCONNECT_APP = 'disconnect_app',
   READ_APP_INFO = 'read_app_info',
+  USER_CREATE = 'user_create',
+  USER_UPDATE = 'user_update',
+  USER_READ = 'user_read',
+  USER_DELETE = 'user_delete',
 }
 
 export const permissionsListByModuleWise: Record<string, { label: string, permissions: { label: string, value: Permission }[] }> = {
