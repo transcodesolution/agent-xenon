@@ -26,7 +26,7 @@ export const updateQuestionAnswerSchema = Joi.object().keys({
 })
 
 export const deleteQuestionAnswerSchema = Joi.object().keys({
-    questionId: Joi.string().required(),
+    questionIds: Joi.array().items(Joi.string()).required(),
 })
 
 export const getQuestionAnswerSchema = Joi.object().keys({

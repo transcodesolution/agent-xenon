@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, RootFilterQuery } from "mongoose";
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getAllQuestionSchema, getQuestionAnswerSchema, getQuestionByIdSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
 import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
@@ -65,32 +65,34 @@ export const updateQuestionAnswer = async (req: Request, res: Response) => {
 
 export const deleteQuestionAnswer = async (req: Request, res: Response) => {
     try {
-        const { error, value } = deleteQuestionAnswerSchema.validate(req.params);
+        const { error, value } = deleteQuestionAnswerSchema.validate(req.body);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkQuestionExist = await InterviewQuestionAnswer.findOne({ _id: value.questionId, deletedAt: null });
+        const Query: RootFilterQuery<IInterviewQuestionAnswer> = { _id: { $in: value.questionIds }, deletedAt: null };
 
-        if (!checkQuestionExist) return res.badRequest("question", {}, "getDataNotFound");
+        const checkQuestionExist = await InterviewQuestionAnswer.find(Query);
+
+        if (checkQuestionExist.length !== value.questionIds.length) return res.badRequest("some questions", {}, "getDataNotFound");
 
         const today = new Date();
 
-        const checkApplicantIsGivingExam = await RoundQuestionAssign.findOne({ deletedAt: null, questionId: value.questionId }).populate({
+        const checkApplicantIsGivingExam = await RoundQuestionAssign.find({ deletedAt: null, questionId: { $in: value.questionIds } }).populate({
             path: "roundId",
             match: {
                 deletedAt: null,
-                startDate: { $gte: new Date(today.setHours(0, 0, 0, 0)) },
-                endDate: { $lt: new Date(today.setHours(23, 59, 59, 999)) },
+                startDate: { $lte: today },
+                endDate: { $gt: today },
             }
         });
 
-        if (checkApplicantIsGivingExam?.roundId) return res.badRequest("round is in progress, cannot delete the question right now!", {}, "customMessage");
+        if (checkApplicantIsGivingExam.some((i) => (i?.roundId))) return res.badRequest("round is in progress, cannot delete the selected question right now!", {}, "customMessage");
 
-        const data = await InterviewQuestionAnswer.findByIdAndUpdate(value.questionId, { $set: { deletedAt: new Date() } }, { new: true });
+        await InterviewQuestionAnswer.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true });
 
-        return res.ok("question", data, "deleteDataSuccess")
+        return res.ok("questions", {}, "deleteDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

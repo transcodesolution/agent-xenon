@@ -11,7 +11,7 @@ export const createUpdateUserSchema = Joi.object({
 });
 
 export const deleteUserSchema = Joi.object({
-    id: Joi.string().required()
+    ids: Joi.array().items(Joi.string().required())
 });
 
 export const getUserSchema = Joi.object().keys({

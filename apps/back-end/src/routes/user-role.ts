@@ -11,6 +11,6 @@ router.post('/add', validateRoleAndPermissions([Permission.ROLE_CREATE]), create
 router.get('/', validateRoleAndPermissions(commonPermissions), getRoles);
 router.get('/:roleId', validateRoleAndPermissions(commonPermissions), getRoleById);
 router.patch('/:roleId', validateRoleAndPermissions([Permission.ROLE_UPDATE]), updateRole);
-router.delete('/:roleId', validateRoleAndPermissions([Permission.ROLE_DELETE]), deleteRole);
+router.delete('/', validateRoleAndPermissions([Permission.ROLE_DELETE]), deleteRole);
 
 export const roleRouter = router;

@@ -4,6 +4,7 @@ import { createUserRoleSchema, deleteUserRoleSchema, getUserRoleSchema, updateUs
 import { IRole } from "@agent-xenon/interfaces";
 import { FilterQuery } from "mongoose";
 import { RoleType } from "@agent-xenon/constants";
+import { checkSystemRoles } from "../../utils/user-role";
 
 export const createRole = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -106,31 +107,31 @@ export const updateRole = async (req: Request, res: Response) => {
 
 export const deleteRole = async (req: Request, res: Response) => {
     try {
-        const { error, value } = deleteUserRoleSchema.validate(req.params);
+        const { error, value } = deleteUserRoleSchema.validate(req.body);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const Query: FilterQuery<IRole> = { _id: value.roleId, deletedAt: null };
+        const Query: FilterQuery<IRole> = { _id: { $in: value.roleIds }, deletedAt: null };
 
-        const roleData = await roleModel.findOne(Query);
+        const roles = await roleModel.find(Query);
 
-        if (roleData?.type === RoleType.ADMINISTRATOR) {
+        if (roles.length !== value.roleIds.length) {
+            return res.badRequest('Some roles', {}, 'getDataNotFound');
+        }
+
+        if (checkSystemRoles(roles, true)) {
             return res.badRequest('You can not delete the administrator role', {}, 'customMessage');
         }
 
-        if (roleData?.type === RoleType.CANDIDATE) {
+        if (checkSystemRoles(roles, false)) {
             return res.badRequest('You can not delete the candidate role', {}, 'customMessage');
         }
 
-        const role = await roleModel.findOneAndUpdate(Query, { $set: { deletedAt: Date.now() } });
+        await roleModel.updateMany(Query, { $set: { deletedAt: Date.now() } });
 
-        if (!role) {
-            return res.badRequest('Role not found', {}, 'getDataNotFound');
-        }
-
-        return res.ok('role', role, 'deleteDataSuccess');
+        return res.ok('roles', {}, 'deleteDataSuccess');
     } catch (error) {
         return res.internalServerError(error.message, error.stack, 'customMessage');
     }
