@@ -6,7 +6,6 @@ import Applicant from '../database/models/applicant';
 import { IApplicant, IRole, IUser } from '@agent-xenon/interfaces';
 import { RoleType } from '@agent-xenon/constants';
 import { Socket } from 'socket.io';
-import { Model } from 'mongoose';
 
 const jwt_token_secret = config.JWT_TOKEN_SECRET;
 
@@ -20,6 +19,8 @@ declare module "jsonwebtoken" {
         generatedOn: string;
     }
 }
+
+interface IPopulate { role: IRole }
 
 export const JWT = async (req: Request, res: Response, next: NextFunction) => {
     const { authorization } = req.headers;
@@ -36,10 +37,18 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
                 }
             }
 
+            const roleName = "role";
+
             if (checkToken) {
                 const Query = { _id: isVerifyToken?._id, deletedAt: null };
-                const model: Model<IApplicant | IUser> = isVerifyToken.type === RoleType.CANDIDATE ? Applicant : userModel;
-                const result = await model.findOne(Query).populate<{ role: IRole }>("role");
+                let result: IUser | IApplicant;
+
+                if (isVerifyToken.type === RoleType.CANDIDATE) {
+                    result = await Applicant.findOne(Query).populate<IPopulate>(roleName);
+                } else {
+                    result = await userModel.findOne(Query).populate<IPopulate>(roleName);
+                }
+
                 // if (result?.isBlocked) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}));
                 if (isVerifyToken.organizationId !== result.organizationId.toString()) {
                     return res.forbidden("differentToken", {});
