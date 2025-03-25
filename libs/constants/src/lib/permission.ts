@@ -28,6 +28,9 @@ export enum Permission {
   INTERVIEW_ROUND_CREATE = 'interview_round_create',
   INTERVIEW_ROUND_UPDATE = 'interview_round_update',
   INTERVIEW_ROUND_DELETE = 'interview_round_delete',
+  CONNECT_APP = 'connect_app',
+  DISCONNECT_APP = 'disconnect_app',
+  READ_APP_INFO = 'read_app_info',
 }
 
 export const permissionsListByModuleWise: Record<string, { label: string, permissions: { label: string, value: Permission }[] }> = {
