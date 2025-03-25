@@ -38,7 +38,9 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
 
             if (checkToken) {
                 const Query = { _id: isVerifyToken?._id, deletedAt: null };
-                const model: Model<IApplicant | IUser> = isVerifyToken.type === RoleType.CANDIDATE ? Applicant : userModel;
+                const model: Model<IApplicant | IUser> = isVerifyToken.type === RoleType.CANDIDATE
+                    ? (Applicant as Model<IApplicant | IUser>)
+                    : (userModel as Model<IApplicant | IUser>);
                 const result = await model.findOne(Query).populate<{ role: IRole }>("role");
                 // if (result?.isBlocked) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}));
                 if (isVerifyToken.organizationId !== result.organizationId.toString()) {
