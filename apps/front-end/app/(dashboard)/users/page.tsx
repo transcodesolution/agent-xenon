@@ -38,8 +38,8 @@ export default function Page() {
 
   return (
     <Stack gap='sm'>
-      <Title order={4} mb='md'>Users</Title>
-      <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateUser} w='fit-content' loading={isCreating}>Create +</Button>
+      <Title order={4} >Users</Title>
+      <Button component='a' disabled={isCreating} onClick={handleCreateUser} w='fit-content' loading={isCreating}>Create +</Button>
       <UserFilter />
       <UserList />
     </Stack>
