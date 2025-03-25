@@ -10,7 +10,7 @@ export const signUpSchema = Joi.object().keys({
 export const loginSchema = Joi.object().keys({
     name: Joi.string().optional(),
     email: Joi.string().email().required(),
-    password: Joi.string().min(6).max(15).required(),
+    password: Joi.string().required(),
     candidateToken: Joi.string().optional(),
 });
 

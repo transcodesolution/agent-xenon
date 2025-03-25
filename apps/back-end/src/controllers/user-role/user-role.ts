@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { roleModel } from '../../database/models/role';
-import { createUserRoleSchema, deleteUserRoleSchema, getUserRoleSchema, updateUserRoleSchema } from "../../validation/user-role";
+import { createUserRoleSchema, deleteUserRoleSchema, getUserRoleSchema, updateUserRoleSchema, userRoleByIdSchema } from "../../validation/user-role";
 import { IRole } from "@agent-xenon/interfaces";
 import { FilterQuery } from "mongoose";
 import { RoleType } from "@agent-xenon/constants";
@@ -54,7 +54,7 @@ export const getRoles = async (req: Request, res: Response) => {
 
 export const getRoleById = async (req: Request, res: Response) => {
     try {
-        const { error, value } = deleteUserRoleSchema.validate(req.params);
+        const { error, value } = userRoleByIdSchema.validate(req.params);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");

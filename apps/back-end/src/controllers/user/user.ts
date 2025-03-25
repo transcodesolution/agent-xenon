@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import Organization from "../../database/models/organization";
 import { userModel } from "../../database";
-import { createUpdateUserSchema, deleteUserSchema, getUserSchema } from "../../validation/user";
+import { createUpdateUserSchema, deleteUserSchema, getUserSchema, userByIdSchema } from "../../validation/user";
 import { FilterQuery } from "mongoose";
 import { IUser } from "@agent-xenon/interfaces";
 import { generateHash } from "../../utils/password-hashing";
+import { sendMail } from "../../helper/mail";
 
 export const getUserPermissions = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -54,7 +55,7 @@ export const updateUser = async (req: Request, res: Response) => {
         }
 
         if (value.email) {
-            const existingUser = await userModel.findOne({ email: value.email, deletedAt: null, organizationId: user.organizationId });
+            const existingUser = await userModel.findOne({ id: { $ne: value.id }, email: value.email, deletedAt: null, organizationId: user.organizationId });
 
             if (existingUser) {
                 return res.badRequest('Email already exists', {}, 'customMessage');
@@ -65,10 +66,19 @@ export const updateUser = async (req: Request, res: Response) => {
             value.password = await generateHash(value.password);
         }
 
+        const oldUserData = await userModel.findOne({ _id: value.id, deletedAt: null });
+
         const updatedUser = await userModel.findOneAndUpdate({ _id: value.id, deletedAt: null }, { $set: value }, { new: true });
 
         if (!updatedUser) {
             return res.notFound('User not found', {}, 'getDataNotFound');
+        }
+
+        if (!oldUserData.email) {
+            const organizationData = await Organization.findOne({ _id: user.organizationId }, "name");
+            await sendMail(updatedUser.email, "Account Created", `Congratulations, You were added to ${organizationData.name} organization.`);
+        } else if (oldUserData.email !== value.email) {
+            await sendMail(updatedUser.email, "Account Updated", `Congratulations, Your account information is updated on ${new Date().toString()}. If you not update this information, please make sure to contact the organization admin.`);
         }
 
         return res.ok('user', { user: updatedUser }, 'updateDataSuccess');
@@ -99,7 +109,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
     try {
-        const { error, value } = deleteUserSchema.validate(req.params);
+        const { error, value } = userByIdSchema.validate(req.params);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");

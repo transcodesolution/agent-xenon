@@ -5,7 +5,7 @@ const contactInfoSchema = Joi.object({
     address: Joi.string().allow(""),
     city: Joi.string().allow(""),
     email: Joi.string().email().required(),
-    password: Joi.string().min(8).required(),
+    password: Joi.string().required(),
     phoneNumber: Joi.string().allow(""),
     state: Joi.string().allow(""),
 });
