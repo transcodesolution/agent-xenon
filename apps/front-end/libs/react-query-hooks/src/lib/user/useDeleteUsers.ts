@@ -3,12 +3,12 @@ import { IApiResponse } from '@agent-xenon/interfaces';
 import { useMutation } from '@tanstack/react-query';
 
 interface IDeleteUsersParams {
-  userIds: string[];
+  ids: string[];
 }
 
 export const useDeleteUsers = () => {
   const deleteUsersMutation = useMutation<IApiResponse, Error, IDeleteUsersParams>({
-    mutationFn: async ({ userIds }) => deleteUsers(userIds),
+    mutationFn: async ({ ids }) => deleteUsers(ids),
   });
   return {
     deleteUsersMutation,

@@ -83,9 +83,9 @@ export const UserList = () => {
   ]
 
   const handleDeleteSelected = () => {
-    const userIds = selectedUsers.map((user) => String(user._id));
+    const ids = selectedUsers.map((user) => String(user._id));
     deleteUsersMutation.mutate(
-      { userIds },
+      { ids },
       {
         onSuccess: () => {
           refetch();
