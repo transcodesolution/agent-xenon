@@ -12,7 +12,8 @@ export default function page() {
   const { data } = useGetUserById({ id: userId });
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
   const user = data?.data?.user;
-  const handleCreateUser = (user: Partial<IUser>) => {
+
+  const handleUpdateUser = (user: Partial<IUser>) => {
     updateUser(
       { _id: userId, ...user },
       {
@@ -36,6 +37,6 @@ export default function page() {
     );
   };
   return (
-    <UserForm onSubmit={handleCreateUser} isLoading={isUpdating} user={user} />
+    <UserForm onSubmit={handleUpdateUser} isLoading={isUpdating} user={user} />
   )
 }
