@@ -1,54 +1,29 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { Group, Flex, Text, Anchor } from "@mantine/core";
+import { Anchor, Flex, Text } from "@mantine/core";
 import { IconChevronLeft } from "@tabler/icons-react";
 
 interface IBackToOverview {
-  title: string;
+  title?: string;
   backUrl?: string;
-  fullWidth?: boolean;
-  withMarginBottom?: boolean;
 }
 
-export function BackToOverview({
-  title = "Back",
-  backUrl,
-  fullWidth = false,
-  withMarginBottom = true,
-}: IBackToOverview) {
+export function BackToOverview({ title = "Back", backUrl }: IBackToOverview) {
   const router = useRouter();
 
+  const handleBack = (event: React.MouseEvent) => {
+    event.preventDefault();
+    backUrl ? router.push(backUrl) : router.back();
+  };
+
   return (
-    <Group
-      justify="space-between"
-      align="center"
-      mb={withMarginBottom ? 16 : 0}
-      style={{ flexWrap: "nowrap", width: fullWidth ? "100%" : "auto" }}
-    >
-      {backUrl ? (
-        backUrl.startsWith("http") ? (
-          <Anchor href={backUrl} >
-            <Flex align="center" gap={4}>
-              <IconChevronLeft />
-              <Text truncate>{title}</Text>
-            </Flex>
-          </Anchor>
-        ) : (
-          <Anchor onClick={() => router.push(backUrl)} >
-            <Flex align="center" gap={4}>
-              <IconChevronLeft />
-              <Text truncate>{title}</Text>
-            </Flex>
-          </Anchor>
-        )
-      ) : (
-        <Flex align="center" gap={4} onClick={() => router.back()} >
-          <IconChevronLeft />
-          <Text truncate>{title}</Text>
-        </Flex>
-      )}
-    </Group>
+    <Anchor onClick={handleBack}>
+      <Flex align="center" gap={4} mb="md">
+        <IconChevronLeft />
+        <Text truncate>{title}</Text>
+      </Flex>
+    </Anchor>
   );
 }
 
