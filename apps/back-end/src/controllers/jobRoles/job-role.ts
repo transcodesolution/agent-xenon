@@ -91,12 +91,12 @@ export const getJobRoles = async (req: Request, res: Response) => {
             match.name = new RegExp(value.search, "i")
         }
 
-        const [totalData, data] = await Promise.all([
+        const [totalData, jobRoles] = await Promise.all([
             JobRole.countDocuments(match),
             JobRole.find(match).skip((value.page - 1) * value.limit).limit(value.limit)
         ])
 
-        return res.ok("job role", { jobRoleData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("job role", { jobRoles, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

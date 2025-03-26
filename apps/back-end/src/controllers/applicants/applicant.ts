@@ -6,7 +6,7 @@ import Applicant from "../../database/models/applicant";
 import ApplicantRound from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
 import { InterviewRoundStatus, JobStatus, RoleType } from "@agent-xenon/constants";
-import { roleModel } from "../../database";
+import { Role } from "../../database";
 import { resumeExtractAgent } from "../../helper/queue";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
@@ -22,7 +22,7 @@ export const createApplicantByUser = async (req: Request, res: Response) => {
 
         if (checkApplicantExist) return res.badRequest("alreadyEmail", {});
 
-        const roleData = await roleModel.findOne({ type: RoleType.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
+        const roleData = await Role.findOne({ type: RoleType.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
 
         value.organizationId = user.organizationId;
         value.roleId = roleData._id.toString();
@@ -47,7 +47,7 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
-        const roleData = await roleModel.findOne({ type: RoleType.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
+        const roleData = await Role.findOne({ type: RoleType.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
         value.resumeUrls = checkJobExist.resumeUrls;
         value.organizationId = user.organizationId;
         value.roleId = roleData._id.toString();
@@ -147,12 +147,12 @@ export const getApplicants = async (req: Request, res: Response) => {
             match._id = { $in: applicantIds };
         }
 
-        const [totalData, data] = await Promise.all([
+        const [totalData, applicants] = await Promise.all([
             Applicant.countDocuments(match),
             Applicant.find(match).sort({ _id: -1 }).skip((value.page - 1) * value.limit).limit(value.limit)
         ])
 
-        return res.ok("applicant", { applicantData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("applicant", { applicants, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

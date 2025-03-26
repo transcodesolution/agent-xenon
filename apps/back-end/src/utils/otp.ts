@@ -1,4 +1,4 @@
-import { userModel } from "../database";
+import { User } from "../database";
 
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
 
@@ -8,7 +8,7 @@ export const getUniqueOtp = async () => {
 
     while (!isUnique) {
         otp = generateOtp(); // Generate a 6-digit OTP
-        const isAlreadyAssign = await userModel.findOne({ otp });
+        const isAlreadyAssign = await User.findOne({ otp });
         if (!isAlreadyAssign) {
             isUnique = true; // Exit the loop if the OTP is unique
         }

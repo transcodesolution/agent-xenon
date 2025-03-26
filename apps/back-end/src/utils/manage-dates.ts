@@ -27,10 +27,6 @@ export const convertISTToUTC = (date: Date): Date => {
     return utcData;
 }
 
-export function getRandomNumber(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
 export const getDaysInCurrentMonth = (): number => {
     const now = new Date();
     const year = now.getFullYear();
@@ -73,6 +69,7 @@ function isConflicting(date: Date, events: Array<calendar_v3.Schema$Event>) {
             return true;
         }
 
+        // 3. Don't schedule exactly at the event's end time
         if (meetingTime === eventEnd || endMeetingTime === eventEnd) {
             return true;
         }

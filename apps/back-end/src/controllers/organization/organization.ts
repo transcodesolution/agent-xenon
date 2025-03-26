@@ -3,7 +3,7 @@ import { FilterQuery } from "mongoose";
 import { IOrganization } from "@agent-xenon/interfaces";
 import Designation from "../../database/models/designation";
 import { createOrganizationSchema, deleteOrganizationSchema, getOrganizationSchema, updateOrganizationSchema } from "../../validation/organization";
-import { roleModel, userModel } from "../../database";
+import { Role, User } from "../../database";
 import Organization from "../../database/models/organization";
 import { generateHash } from "../../utils/password-hashing";
 import Job from "../../database/models/job";
@@ -24,7 +24,7 @@ export const onBoardOrganization = async (req: Request, res: Response) => {
             return res.badRequest(error?.details[0]?.message, {}, "customMessage")
         }
 
-        const isAlready = await userModel.findOne({ email: value.email, deletedAt: null });
+        const isAlready = await User.findOne({ email: value.email, deletedAt: null });
         if (isAlready) return res.badRequest("alreadyEmail", {});
 
         const checkOrganizationNameExist = await Organization.findOne({ name: value.name, deletedAt: null });
@@ -43,24 +43,21 @@ export const onBoardOrganization = async (req: Request, res: Response) => {
             { type: RoleType.CANDIDATE, ...commonRoleDetails, permissions: candidatePermission },
         ];
 
-        const roles = await roleModel.insertMany(softwareRoles);
-
-        // if (isAlready?.isBlock == true) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}))
+        const roles = await Role.insertMany(softwareRoles);
 
         const hashPassword = await generateHash(value.password);
         delete value.password
         value.password = hashPassword
         value.organizationId = response._id;
         value.roleId = roles.find(i => i.type === RoleType.ADMINISTRATOR)?._id;
-        await new userModel(value).save();
+        await new User(value).save();
 
         // let result: any = await email_verification_mail(response, otp);
         // if (result) {
-        //     await userModel.findOneAndUpdate(body, { otp, otpExpireTime: new Date(new Date().setMinutes(new Date().getMinutes() + 10)) })
+        //     await User.findOneAndUpdate(body, { otp, otpExpireTime: new Date(new Date().setMinutes(new Date().getMinutes() + 10)) })
         // return res.status(200).json(new apiResponse(200, `${response}`, {}, {}));
         return res.ok("org_onboard_success", response)
         // }
-        // return res.status(501).json(new apiResponse(501, responseMessage?.errorMail, {}, `${result}`));
     } catch (error) {
         console.error(error);
         return res.internalServerError(error.message, error.stack, "customMessage")
@@ -144,12 +141,12 @@ export const getOrganization = async (req: Request, res: Response) => {
             ]
         }
 
-        const [totalData, data] = await Promise.all([
+        const [totalData, organizations] = await Promise.all([
             Organization.countDocuments(match),
             Organization.find(match).skip((value.page - 1) * value.limit).limit(value.limit)
         ])
 
-        return res.ok("organization", { organizationData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("organization", { organizations, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
