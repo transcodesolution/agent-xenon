@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import { responseMessage } from "./response";
+import { responseMessage } from "./response-message";
 import STATUS_CODES from "./status-codes";
-import { IApplicant, IInterviewRound, IJob, IRole, IUser } from "@agent-xenon/interfaces";
+import { IApplicant, IInterviewRound, IJob, IUser } from "@agent-xenon/interfaces";
 import { IncomingHttpHeaders } from "http";
 import { ResponseDataType } from "../types/response-data";
 

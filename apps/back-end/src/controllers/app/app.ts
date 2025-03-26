@@ -66,7 +66,7 @@ export const getApp = async (req: Request, res: Response) => {
             delete app.serviceProviders;
         }
 
-        return res.ok('app', { appData: apps }, 'getDataSuccess');
+        return res.ok('app', { apps }, 'getDataSuccess');
     } catch (error) {
         return res.internalServerError(error.message, error.stack, 'customMessage');
     }

@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import { NextFunction, Request, Response } from 'express'
 import { config } from '../config'
-import { userModel } from '../database'
+import { User } from '../database'
 import Applicant from '../database/models/applicant';
 import { IApplicant, IRole, IUser } from '@agent-xenon/interfaces';
 import { RoleType } from '@agent-xenon/constants';
@@ -28,7 +28,6 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
         try {
             const isVerifyToken = jwt.verify(authorization, jwt_token_secret);
             const checkToken = typeof isVerifyToken !== "string";
-            // if (isVerifyToken?.type != userType && userType != "5") return res.status(403).json(new apiResponse(403, responseMessage?.accessDenied, {}, {}));
             if (process?.env?.NODE_ENV == 'production' && checkToken) {
                 // 1 day expiration
                 if (parseInt(isVerifyToken.generatedOn + 86400000) < new Date().getTime()) {
@@ -46,10 +45,9 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
                 if (isVerifyToken.type === RoleType.CANDIDATE) {
                     result = await Applicant.findOne(Query).populate<IPopulate>(roleName);
                 } else {
-                    result = await userModel.findOne(Query).populate<IPopulate>(roleName);
+                    result = await User.findOne(Query).populate<IPopulate>(roleName);
                 }
 
-                // if (result?.isBlocked) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}));
                 if (isVerifyToken.organizationId !== result.organizationId.toString()) {
                     return res.forbidden("differentToken", {});
                 }
@@ -85,7 +83,7 @@ export const socketJWTAndRoomJoin = async (socket: Socket) => {
         }
         if (checkToken) {
             const Query = { _id: isVerifyToken?._id, deletedAt: null };
-            const result = await userModel.findOne(Query).populate<{ role: IRole }>("role");
+            const result = await User.findOne(Query).populate<{ role: IRole }>("role");
             if (isVerifyToken.organizationId !== result?.organizationId.toString()) {
                 return socket.emit("round-status", { status: "Error", message: "Do not try a different organization token!" });
             }

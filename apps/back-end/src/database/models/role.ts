@@ -10,4 +10,4 @@ const roleSchema = new mongoose.Schema({
     deletedAt: { type: Date, default: null },
 }, { timestamps: true, versionKey: false })
 
-export const roleModel = mongoose.model<IRole>('role', roleSchema);
+export const Role = mongoose.model<IRole>('role', roleSchema);
