@@ -39,8 +39,8 @@ export const onBoardOrganization = async (req: Request, res: Response) => {
 
         const commonRoleDetails = { deletedAt: null, organizationId: response._id };
         const softwareRoles = [
-            { type: RoleType.ADMINISTRATOR, ...commonRoleDetails, permissions: superAdminPermission },
-            { type: RoleType.CANDIDATE, ...commonRoleDetails, permissions: candidatePermission },
+            { type: RoleType.ADMINISTRATOR, name: "administrator role", ...commonRoleDetails, permissions: superAdminPermission },
+            { type: RoleType.CANDIDATE, name: "candidate role", ...commonRoleDetails, permissions: candidatePermission },
         ];
 
         const roles = await Role.insertMany(softwareRoles);
