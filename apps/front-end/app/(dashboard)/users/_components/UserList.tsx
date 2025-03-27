@@ -105,7 +105,7 @@ export const UserList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.userData}
+        records={data?.data?.users}
         fetching={isLoading}
         selectedRecords={selectedUsers}
         onSelectedRecordsChange={setSelectedUsers}

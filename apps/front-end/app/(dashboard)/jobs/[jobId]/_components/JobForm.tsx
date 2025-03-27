@@ -30,12 +30,12 @@ export const JobForm = () => {
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const permission = usePermissions()
 
-  const designationsOptions = jobRoleAndDesignation?.data?.designationData.map((designation) => ({
+  const designationsOptions = jobRoleAndDesignation?.data?.designations.map((designation) => ({
     value: designation._id,
     label: designation.name,
   })) || [];
 
-  const rolesOptions = jobRoleAndDesignation?.data?.jobRoleData.map((role) => ({
+  const rolesOptions = jobRoleAndDesignation?.data?.jobRoles.map((role) => ({
     value: role._id,
     label: role.name,
   })) || [];

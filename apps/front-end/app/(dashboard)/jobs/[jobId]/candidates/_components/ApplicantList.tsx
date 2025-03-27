@@ -102,7 +102,7 @@ export function ApplicantList() {
         <DataTable
           idAccessor="_id"
           highlightOnHover
-          records={data?.data?.applicantData || []}
+          records={data?.data?.applicants || []}
           fetching={isLoading}
           selectedRecords={selectedApplicants}
           onSelectedRecordsChange={setSelectedApplicants}

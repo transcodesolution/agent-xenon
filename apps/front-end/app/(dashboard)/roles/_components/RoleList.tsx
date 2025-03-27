@@ -106,7 +106,7 @@ export const RoleList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.roleData}
+        records={data?.data?.roles}
         fetching={isLoading}
         selectedRecords={selectedRoles}
         onSelectedRecordsChange={setSelectedRoles}

@@ -11,8 +11,8 @@ interface IRoleDesignation {
   name: string;
 }
 export interface IGetJobRoleAndDesignation {
-  jobRoleData: IRoleDesignation[];
-  designationData: IRoleDesignation[];
+  jobRoles: IRoleDesignation[];
+  designations: IRoleDesignation[];
 }
 
 export interface IDeleteInterviewRoundsRequest {
