@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Button, Flex, LoadingOverlay, Modal, Paper, Select, Stack, Textarea, TextInput } from '@mantine/core'
+import { Button, Flex, LoadingOverlay, Modal, Paper, Select, Stack, Text, Textarea, TextInput } from '@mantine/core'
 import { useDisclosure } from '@mantine/hooks';
 import { useParams } from 'next/navigation';
 import { InterviewRound } from './InterviewRound';
@@ -130,7 +130,7 @@ export const JobForm = () => {
   };
 
   return (
-    <Stack pos='relative'>
+    <Stack>
       <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
       <Paper withBorder shadow="md" p="md">
         <TextInput label='Title' value={formState.title} onChange={(e) => handleChange('title', e.target.value)} mb='md' />
@@ -139,11 +139,14 @@ export const JobForm = () => {
           <Select label='Designation' data={designationsOptions} value={formState.designation} onChange={(val) => handleChange('designation', val)} />
           <Select label='Role' data={rolesOptions} value={formState.role} onChange={(val) => handleChange('role', val)} />
         </Flex>
-        {permission.hasInterviewRoundCreate &&
-          <Button variant='outline' styles={{ root: { width: 'fit-content' } }} onClick={open} mb='md'>
-            Add Interview Round +
-          </Button>
-        }
+        <Flex justify='space-between' align='center' mb='md'>
+          <Text fw='500' size='lg' >Interview Round</Text>
+          {permission.hasInterviewRoundCreate &&
+            <Button variant='outline' styles={{ root: { width: 'fit-content' } }} onClick={open}>
+              Add +
+            </Button>
+          }
+        </Flex>
         <JobInterviewRoundList
           rounds={jobData?.data?.rounds}
           onDeleteRound={onDelete}

@@ -20,7 +20,6 @@ export default function Page() {
   const { data, isLoading, refetch } = useGetInterviewQuestions({ roundId: id });
   const { mutate: submitInterviewQuestions, } = useSubmitInterviewQuestions();
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const questions = data?.data?.questions || []
   const examStatus = data?.data?.status;
   const currentIndex = questions?.findIndex(q => q._id === currentQuestion?._id);
@@ -97,7 +96,7 @@ export default function Page() {
         />
       }
       {
-        (questions?.length > 0 && !isSubmitted) &&
+        (!!currentQuestion && !isSubmitted) &&
         <Stack>
           <Stack h="calc(100vh - 150px)">
             <Group justify="space-between" align="center" >

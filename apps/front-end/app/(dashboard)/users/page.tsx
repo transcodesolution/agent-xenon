@@ -14,8 +14,8 @@ export default function Page() {
 
   return (
     <Stack gap='sm'>
-      <Title order={4} mb='md'>Users</Title>
-      <Button mb='md' component='a' onClick={handleCreateUser} w='fit-content' >Create +</Button>
+      <Title order={4}>Users</Title>
+      <Button component='a' onClick={handleCreateUser} w='fit-content' >Create +</Button>
       <UserFilter />
       <UserList />
     </Stack >

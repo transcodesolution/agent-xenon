@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex, Paper, Text, Textarea, TextInput, Title } from "@mantine/core";
+import { Box, Flex, Paper, Stack, Text, Textarea, TextInput, Title } from "@mantine/core";
 import { IconBuilding, IconX } from "@tabler/icons-react";
 import { setOrganization, useOrganizationStore } from "../../../../libs/store/src/lib/organization";
 import { useState, useEffect } from "react";
@@ -56,34 +56,36 @@ export const OrganizationDetail = () => {
   }
 
   return (
-    <Paper shadow="sm" radius="md" withBorder p="lg">
-      <Title order={2} mb="md">Organization Settings</Title>
-      <Flex direction="column" align="center" gap="md">
-        <Box w="100%">
-          <TextInput
-            label="Organization Name"
-            name="name"
-            value={organizationDetails.name || ""}
-            onChange={(e) => handleChange("name", e.target.value)}
-            leftSection={<IconBuilding size="18" />}
-            required
-            mb="md"
-          />
-          <TextInput
-            label="Description"
-            name="description"
-            value={organizationDetails.description || ""}
-            onChange={(e) => handleChange("description", e.target.value)}
-            mb="md"
-          />
-          <Textarea
-            label="Address"
-            name="address"
-            value={organizationDetails.address || ""}
-            onChange={(e) => handleChange("address", e.target.value)}
-          />
-        </Box>
-      </Flex>
-    </Paper>
+    <Stack>
+      <Title order={4}>Organization Settings</Title>
+      <Paper shadow="sm" radius="md" withBorder p="lg">
+        <Flex direction="column" align="center" gap="md">
+          <Box w="100%">
+            <TextInput
+              label="Organization Name"
+              name="name"
+              value={organizationDetails.name || ""}
+              onChange={(e) => handleChange("name", e.target.value)}
+              leftSection={<IconBuilding size="18" />}
+              required
+              mb="md"
+            />
+            <TextInput
+              label="Description"
+              name="description"
+              value={organizationDetails.description || ""}
+              onChange={(e) => handleChange("description", e.target.value)}
+              mb="md"
+            />
+            <Textarea
+              label="Address"
+              name="address"
+              value={organizationDetails.address || ""}
+              onChange={(e) => handleChange("address", e.target.value)}
+            />
+          </Box>
+        </Flex>
+      </Paper>
+    </Stack>
   );
 };

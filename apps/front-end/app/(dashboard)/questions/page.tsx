@@ -40,9 +40,9 @@ export default function Page() {
 
   return (
     <Stack gap='sm'>
-      <Title order={4} mb='md'>Questions</Title>
+      <Title order={4} >Questions</Title>
       {permissions?.hasQuestionAnswerCreate &&
-        <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateQuestion} w='fit-content' loading={isCreating}>Create +</Button>
+        <Button component='a' disabled={isCreating} onClick={handleCreateQuestion} w='fit-content' loading={isCreating}>Create +</Button>
       }
       <QuestionFilter />
       <QuestionList />

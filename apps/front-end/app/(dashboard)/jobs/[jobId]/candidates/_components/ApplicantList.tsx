@@ -88,9 +88,9 @@ export function ApplicantList() {
 
   return (
     <>
-      <Flex gap='md' align="center" mb='md'>
+      <Flex gap='md' align="center">
         <Button onClick={() => setModalOpen(true)}>
-          + Add Applicant
+          + Add
         </Button>
         {selectedApplicants.length > 0 && (
           <ActionIcon color="red" onClick={handleDeleteSelected}>
@@ -120,7 +120,7 @@ export function ApplicantList() {
         />
       </Paper>
 
-      <Modal opened={isModalOpen} size='100%' onClose={closeModal} title="Create Applicant">
+      <Modal opened={isModalOpen} size='100%' onClose={closeModal} title={`${editingApplicantId} ? 'Update' : 'Add'`}>
         <ApplicantModal refetch={refetch} onClose={closeModal} applicantId={editingApplicantId} />
       </Modal>
     </>
