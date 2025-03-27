@@ -22,7 +22,7 @@ export const AuthProvider = ({
   useEffect(() => {
     if (data?.data) {
       setUser(data.data.user);
-      setOrganization(data.data.organizations);
+      setOrganization(data.data.organization);
       setPermissions(data?.data?.user?.role?.permissions)
     }
   }, [data]);
