@@ -2,8 +2,8 @@ import axios, { AxiosResponse, InternalAxiosRequestConfig, AxiosError as Origina
 
 type AxiosError = { config: { _retry: boolean } } & OriginalAxiosError;
 
-export const BASE_API_URL = 'http://localhost:7000';
-export const NEXT_APP_URL = 'http://localhost:3000';
+export const BASE_API_URL = process.env.NEXT_PUBLIC_BASE_API_URL;
+export const NEXT_APP_URL = '/';
 
 //this instance created to talk with back-end
 const axiosInstance = axios.create({

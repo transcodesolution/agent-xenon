@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import Organization from "../../database/models/organization";
-import { userModel } from "../../database";
-import { createUpdateUserSchema, deleteUserSchema, getUserSchema } from "../../validation/user";
+import { User } from "../../database";
+import { createUpdateUserSchema, deleteUserSchema, getUserSchema, userByIdSchema } from "../../validation/user";
 import { FilterQuery } from "mongoose";
 import { IUser } from "@agent-xenon/interfaces";
 import { generateHash } from "../../utils/password-hashing";
+import { sendMail } from "../../helper/mail";
 
 export const getUserPermissions = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -12,10 +13,10 @@ export const getUserPermissions = async (req: Request, res: Response) => {
 };
 
 export const getUserDetails = async (req: Request, res: Response) => {
-    const { user: userData } = req.headers;
+    const { user } = req.headers;
     try {
-        const organizationData = await Organization.findOne({ _id: userData.organizationId }, "name description address");
-        return res.ok('user details', { userData, organizationData }, 'getDataSuccess');
+        const organizationData = await Organization.findOne({ _id: user.organizationId }, "name description address");
+        return res.ok('user details', { user, organizationData }, 'getDataSuccess');
     } catch (error) {
         return res.internalServerError(error.message, error.stack, 'customMessage');
     }
@@ -33,7 +34,7 @@ export const createUser = async (req: Request, res: Response) => {
 
         value.organizationId = user.organizationId;
 
-        const newUser = new userModel(value);
+        const newUser = new User(value);
         await newUser.save();
 
         return res.ok('user', { user: newUser }, 'addDataSuccess');
@@ -54,7 +55,7 @@ export const updateUser = async (req: Request, res: Response) => {
         }
 
         if (value.email) {
-            const existingUser = await userModel.findOne({ email: value.email, deletedAt: null, organizationId: user.organizationId });
+            const existingUser = await User.findOne({ id: { $ne: value.id }, email: value.email, deletedAt: null, organizationId: user.organizationId });
 
             if (existingUser) {
                 return res.badRequest('Email already exists', {}, 'customMessage');
@@ -65,10 +66,19 @@ export const updateUser = async (req: Request, res: Response) => {
             value.password = await generateHash(value.password);
         }
 
-        const updatedUser = await userModel.findOneAndUpdate({ _id: value.id, deletedAt: null }, { $set: value }, { new: true });
+        const oldUserData = await User.findOne({ _id: value.id, deletedAt: null });
+
+        const updatedUser = await User.findOneAndUpdate({ _id: value.id, deletedAt: null }, { $set: value }, { new: true });
 
         if (!updatedUser) {
             return res.notFound('User not found', {}, 'getDataNotFound');
+        }
+
+        if (!oldUserData.email) {
+            const organizationData = await Organization.findOne({ _id: user.organizationId }, "name");
+            await sendMail(updatedUser.email, "Account Created", `Congratulations, You were added to ${organizationData.name} organization.`);
+        } else if (oldUserData.email !== value.email) {
+            await sendMail(updatedUser.email, "Account Updated", `Congratulations, Your account information is updated on ${new Date().toString()}. If you not update this information, please make sure to contact the organization admin.`);
         }
 
         return res.ok('user', { user: updatedUser }, 'updateDataSuccess');
@@ -85,7 +95,7 @@ export const deleteUser = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const deletedUser = await userModel.updateMany({ _id: { $in: value.ids }, deletedAt: null }, { deletedAt: Date.now() });
+        const deletedUser = await User.updateMany({ _id: { $in: value.ids }, deletedAt: null }, { deletedAt: Date.now() });
 
         if (deletedUser.matchedCount !== value.ids.length) {
             return res.notFound('Some users', {}, 'getDataNotFound');
@@ -99,13 +109,13 @@ export const deleteUser = async (req: Request, res: Response) => {
 
 export const getUserById = async (req: Request, res: Response) => {
     try {
-        const { error, value } = deleteUserSchema.validate(req.params);
+        const { error, value } = userByIdSchema.validate(req.params);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const user = await userModel.findOne({ _id: value.id, deletedAt: null });
+        const user = await User.findOne({ _id: value.id, deletedAt: null });
 
         if (!user) {
             return res.notFound('User not found', {}, 'getDataNotFound');
@@ -136,11 +146,11 @@ export const getUser = async (req: Request, res: Response) => {
         }
 
         const [totalData, users] = await Promise.all([
-            userModel.countDocuments(match),
-            userModel.find(match).sort({ _id: 1 }).populate("role", "name type").skip((value.page - 1) * value.limit).limit(value.limit)
+            User.countDocuments(match),
+            User.find(match).sort({ _id: 1 }).populate("role", "name type").skip((value.page - 1) * value.limit).limit(value.limit)
         ]);
 
-        return res.ok('user', { userData: users, totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, 'getDataSuccess');
+        return res.ok('user', { users, totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, 'getDataSuccess');
     } catch (error) {
         return res.internalServerError(error.message, error.stack, 'customMessage');
     }

@@ -38,4 +38,4 @@ userSchema.post("find", (users: HydratedDocument<IUser>[]) => {
     }
 })
 
-export const userModel = mongoose.model<IUser>('user', userSchema);
+export const User = mongoose.model<IUser>('user', userSchema);

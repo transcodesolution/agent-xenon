@@ -1,13 +1,42 @@
+"use client";
 import React from 'react'
-import { UserDetail } from './_components/UserDetails'
-import BackToOverview from '@/libs/components/custom/back-to-overview';
+import { useGetUserById, useUpdateUser } from '@/libs/react-query-hooks/src';
+import { UserForm } from '../_components/UserForm';
+import { IUser } from '@agent-xenon/interfaces';
+import { showNotification } from '@mantine/notifications';
+import { IconCheck } from '@tabler/icons-react';
+import { useParams } from 'next/navigation';
 
-export default async function page({ params }: { params: Promise<{ userId: string }> }) {
-  const { userId } = await params;
+export default function page() {
+  const { userId } = useParams<{ userId: string }>();
+  const { data } = useGetUserById({ id: userId });
+  const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
+  const user = data?.data?.user;
+
+  const handleUpdateUser = (user: Partial<IUser>) => {
+    updateUser(
+      { _id: userId, ...user },
+      {
+        onSuccess: () => {
+          showNotification({
+            title: "Success",
+            message: "User Updated Successfully",
+            color: "green",
+            icon: <IconCheck size={16} />,
+          });
+        },
+        onError: (error) => {
+          showNotification({
+            title: "Error",
+            message: error instanceof Error ? error.message : "An unexpected error occurred.",
+            color: "red",
+            icon: <IconCheck size={16} />,
+          });
+        },
+      }
+    );
+  };
   return (
-    <React.Fragment>
-      <BackToOverview title="Back" backUrl='/users' />
-      <UserDetail userId={userId} />
-    </React.Fragment>
+    <UserForm onSubmit={handleUpdateUser} isLoading={isUpdating} user={user} />
   )
 }

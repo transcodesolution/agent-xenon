@@ -2,8 +2,6 @@ export * from './lib/interfaces';
 export * from "./lib/applicant";
 export * from "./lib/organization";
 export * from "./lib/timestamp";
-export * from "./lib/module";
-export * from "./lib/permission";
 export * from "./lib/role";
 export * from "./lib/user";
 export * from "./lib/interview-question";

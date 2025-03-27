@@ -123,7 +123,7 @@ export const getQuestions = async (req: Request, res: Response) => {
             InterviewQuestionAnswer.find(match).skip((value.page - 1) * value.limit).limit(value.limit)
         ])
 
-        return res.ok("question", { questionData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("question", { questions: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -138,9 +138,17 @@ export const getAllQuestionList = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId, questionFormat: value.questionFormat ?? AnswerQuestionFormat.MCQ };
+        const regexToFilterPriorityQuestionFirst = /^(text|mcq|file|code|coding)\b(\s*:)?/i;
+
+        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId };
 
         if (value.search) {
+            const searchedString = value.search.match(regexToFilterPriorityQuestionFirst)?.[1];
+            const isRelatedTextFound = !!searchedString;
+            value.search = value.search.replace(regexToFilterPriorityQuestionFirst, "").trim();
+            if (isRelatedTextFound) {
+                match.questionFormat = searchedString.toLowerCase();
+            }
             match.question = new RegExp(value.search, "i");
         }
 

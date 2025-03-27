@@ -55,9 +55,9 @@ export const createUser = async (params: Partial<IUser>): Promise<IApiResponse<I
   }
 };
 
-export const deleteUsers = async (userIds: string[]): Promise<IApiResponse> => {
+export const deleteUsers = async (ids: string[]): Promise<IApiResponse> => {
   try {
-    const result = await http.delete<IApiResponse>('/user', { data: { userIds } });
+    const result = await http.delete<IApiResponse>('/user', { data: { ids } });
     return result.data;
   } catch (error) {
     throw new Error(`Error while delete users: ${error}`);
