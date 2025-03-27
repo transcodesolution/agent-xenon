@@ -67,6 +67,11 @@ export const getExamQuestionSchema = Joi.object().keys({
     roundId: Joi.string().required(),
 })
 
+export const getApplicantRoundByIdSchema = Joi.object().keys({
+    roundId: Joi.string().required(),
+    applicantId: Joi.string().required(),
+})
+
 export const googleRedirectSchema = Joi.object().keys({
     organizationId: Joi.string().required(),
 })

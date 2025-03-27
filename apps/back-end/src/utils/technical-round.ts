@@ -1,7 +1,7 @@
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { submitExamAnswerPayloadType, submitExamType } from "../types/technical-round";
 import candidateAnswerAnalysisAgent from "../agents/candidate-answer-analysis";
-import { OverallResult } from "./enum";
+import { OverallResult } from "@agent-xenon/constants";
 
 export const manageMCQAnswers = (question: submitExamType, answerObj: submitExamAnswerPayloadType) => {
     const answer = answerObj.answer.split("_");

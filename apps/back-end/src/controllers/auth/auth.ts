@@ -2,7 +2,7 @@
 import { Request, Response } from 'express'
 import { User } from '../../database'
 import { loginSchema } from "../../validation/auth"
-import { IApplicant, ILoginResponse, IRole, IUser } from '@agent-xenon/interfaces'
+import { IApplicant, ILoginResponse, IRole } from '@agent-xenon/interfaces'
 import Organization from '../../database/models/organization'
 import { decodeEncodedToken, generateToken } from '../../utils/generate-token'
 import { compareHash } from '../../utils/password-hashing'
@@ -30,7 +30,7 @@ export const login = async (req: Request, res: Response) => { //email or passwor
 
         let response;
         if (value.candidateToken) {
-            const applicantData = await Applicant.findOne({ "contactInfo.email": value.email, jobId: value.jobId }, "firstName lastName contactInfo role roleId").populate<{ role: IRole }>("role")
+            const applicantData = await Applicant.findOne({ "contactInfo.email": value.email, jobId: value.jobId, deletedAt: null }, "firstName lastName contactInfo role roleId").populate<{ role: IRole }>("role")
             response = {
                 ...applicantData._doc,
                 email: applicantData?.contactInfo.email,
@@ -38,7 +38,7 @@ export const login = async (req: Request, res: Response) => { //email or passwor
                 role: applicantData.role,
             } as Pick<IApplicant, "firstName" | "lastName" | "contactInfo" | "role">;
         } else {
-            response = await User.findOne({ email: value.email, organizationId: checkOrganizationExist._id }).populate<{ role: IRole }>("role")
+            response = await User.findOne({ email: value.email, organizationId: checkOrganizationExist._id, deletedAt: null }).populate<{ role: IRole }>("role")
         }
 
         if (!response) return res.badRequest("userNotFound", {})
