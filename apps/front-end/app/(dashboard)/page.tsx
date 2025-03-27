@@ -1,5 +1,6 @@
-import { Button, Flex } from "@mantine/core";
+import { redirect } from 'next/navigation';
 
 export default function page() {
-  return <Flex gap='sm'><Button>Click me</Button> <Button>Click me</Button></Flex>;
+  redirect('/dashboard');
+  return null;
 }
