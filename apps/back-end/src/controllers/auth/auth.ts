@@ -1,6 +1,6 @@
 "use strict"
 import { Request, Response } from 'express'
-import { userModel } from '../../database'
+import { User } from '../../database'
 import { loginSchema } from "../../validation/auth"
 import { IApplicant, ILoginResponse, IRole, IUser } from '@agent-xenon/interfaces'
 import Organization from '../../database/models/organization'
@@ -38,12 +38,11 @@ export const login = async (req: Request, res: Response) => { //email or passwor
                 role: applicantData.role,
             } as Pick<IApplicant, "firstName" | "lastName" | "contactInfo" | "role">;
         } else {
-            response = await userModel.findOne({ email: value.email, organizationId: checkOrganizationExist._id }).populate<{ role: IRole }>("role")
+            response = await User.findOne({ email: value.email, organizationId: checkOrganizationExist._id }).populate<{ role: IRole }>("role")
         }
 
         if (!response) return res.badRequest("userNotFound", {})
         if (!response.role) return res.badRequest("user have not valid permissions", {}, "customMessage")
-        // if (response?.isBlock == true) return res.status(403).json(new apiResponse(403, responseMessage?.accountBlock, {}, {}))
 
         let passwordMatch: boolean;
         if (value.candidateToken) {
@@ -92,7 +91,7 @@ export const login = async (req: Request, res: Response) => { //email or passwor
 //             return res.badRequest(error?.details[0]?.message, {}, "customMessage")
 //         }
 
-//         let data = await userModel.findOne(value);
+//         let data = await User.findOne(value);
 
 //         if (!data) {
 //             return res.badRequest("invalidEmail", {});
@@ -105,7 +104,7 @@ export const login = async (req: Request, res: Response) => { //email or passwor
 
 //         let response: any = { sendMail: true }
 //         if (response) {
-//             await userModel.findOneAndUpdate(value, { otp, otpExpireTime: new Date(new Date().setMinutes(new Date().getMinutes() + 10)) })
+//             await User.findOneAndUpdate(value, { otp, otpExpireTime: new Date(new Date().setMinutes(new Date().getMinutes() + 10)) })
 //             return res.status(200).json(new apiResponse(200, `${response}`, {}, {}));
 //         }
 //         else return res.status(501).json(new apiResponse(501, responseMessage?.errorMail, {}, `${response}`));
@@ -129,7 +128,7 @@ export const login = async (req: Request, res: Response) => { //email or passwor
 
 //         const payload = { password: hashPassword }
 
-//         let response = await userModel.findOneAndUpdate({ email: value?.email }, payload, { new: true })
+//         let response = await User.findOneAndUpdate({ email: value?.email }, payload, { new: true })
 //         if (response) {
 //             return res.status(200).json(new apiResponse(200, responseMessage?.resetPasswordSuccess, response, {}))
 //         }

@@ -2,14 +2,10 @@ export * from './user';
 export * from "./applicant";
 export * from "./organization";
 export * from "./role";
-export * from "./permission";
-export * from "./module";
 export * from "./designation";
 export * from "./interview-question-answer";
 export * from "./job-role"
-export * from "./module";
 export * from "./organization";
-export * from "./permission";
 export * from "./user";
 export * from "./applicant-question-answer";
 export * from "./applicant-round";

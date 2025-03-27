@@ -1,5 +1,6 @@
 import React from 'react'
 import { JobDetailTabs } from './_components/JobDetailTabs';
+import BackToOverview from '@/libs/components/custom/back-to-overview';
 
 export default async function Layout({
   children,
@@ -11,6 +12,7 @@ export default async function Layout({
   const jobId = (await params).jobId
   return (
     <section>
+      <BackToOverview title="Back" backUrl='/jobs' />
       <JobDetailTabs jobId={jobId} />
       {children}
     </section>

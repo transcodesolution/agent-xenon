@@ -14,7 +14,7 @@ const s3bucket = new S3({
     }
 });
 
-export const s3UploadPdfDocument = async (pdf: FileDataType, folderName = "resumes") => {
+export const s3UploadDocument = async (document: FileDataType, folderName = "resumes") => {
     let imageUrl = '';
     let imageKey = '';
 
@@ -22,14 +22,14 @@ export const s3UploadPdfDocument = async (pdf: FileDataType, folderName = "resum
         throw new Error("Missing aws keys");
     }
 
-    if (pdf) {
-        const objectKey = `${folderName}/${pdf.originalname + new Date().getTime()}`;
+    if (document) {
+        const objectKey = `${folderName}/${document.originalname + new Date().getTime()}`;
 
         const params: PutObjectCommandInput = {
             Bucket: config.BUCKET_NAME,
             Key: objectKey,
-            Body: pdf.buffer,
-            ContentType: pdf.mimetype,
+            Body: document.buffer,
+            ContentType: document.mimetype,
         };
 
         await s3bucket.send(new PutObjectCommand(params));

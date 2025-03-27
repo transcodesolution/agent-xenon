@@ -1,5 +1,10 @@
 import { IApplicant } from "@agent-xenon/interfaces"
 
+export interface IAgentResponse {
+    applicantId: string;
+    isSelected: boolean;
+}
+
 export interface IResumeExtractResponse {
     type: string;
     message: IApplicant[];
@@ -7,5 +12,5 @@ export interface IResumeExtractResponse {
 
 export interface IScreeningResponse {
     type: string;
-    message: string[];
+    applicants: IAgentResponse[];
 }

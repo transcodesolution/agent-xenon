@@ -123,7 +123,7 @@ export const getQuestions = async (req: Request, res: Response) => {
             InterviewQuestionAnswer.find(match).skip((value.page - 1) * value.limit).limit(value.limit)
         ])
 
-        return res.ok("question", { questionData: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("question", { questions: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

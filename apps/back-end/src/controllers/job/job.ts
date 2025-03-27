@@ -135,12 +135,12 @@ export const getJob = async (req: Request, res: Response) => {
             match.designation = value.designation;
         }
 
-        const [totalData, jobData] = await Promise.all([
+        const [totalData, jobs] = await Promise.all([
             Job.countDocuments(match),
             Job.find(match).populate("role", "name").populate("designation", "name").sort({ _id: -1 }).skip((value.page - 1) * value.limit).limit(value.limit)
         ]);
 
-        return res.ok("job", { jobData, totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        return res.ok("job", { jobs, totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -151,12 +151,12 @@ export const getJobRoleAndDesignation = async (req: Request, res: Response) => {
     try {
         const match: FilterQuery<IJob> = { deletedAt: null, organizationId: user.organizationId }
 
-        const [jobRoleData, designationData] = await Promise.all([
+        const [jobRoles, designations] = await Promise.all([
             JobRole.find(match, "name").sort({ _id: -1 }),
             Designation.find(match, "name").sort({ _id: -1 }),
         ]);
 
-        return res.ok("job role and designation", { jobRoleData, designationData }, "getDataSuccess")
+        return res.ok("job role and designation", { jobRoles, designations }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
