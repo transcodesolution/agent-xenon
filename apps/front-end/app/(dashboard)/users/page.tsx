@@ -18,6 +18,6 @@ export default function Page() {
       <Button mb='md' component='a' onClick={handleCreateUser} w='fit-content' >Create +</Button>
       <UserFilter />
       <UserList />
-    </Stack>
+    </Stack >
   )
 }
