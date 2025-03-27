@@ -57,8 +57,8 @@ export default function Page() {
         <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateJob} styles={{ root: { width: 'fit-content' } }} loading={isCreating}>Create +</Button>
       }
       <JobFilter />
-      {view === 'list' && <JobLists data={data?.data?.jobData || []} isFetching={isLoading} onDelete={onDelete} />}
-      {view === 'grid' && <JobGrid data={data?.data?.jobData || []} isFetching={isLoading} />}
+      {view === 'list' && <JobLists data={data?.data?.jobs ?? []} isFetching={isLoading} onDelete={onDelete} />}
+      {view === 'grid' && <JobGrid data={data?.data?.jobs ?? []} isFetching={isLoading} />}
     </Stack>
   )
 }

@@ -13,8 +13,8 @@ interface IUserFormProps {
 type EditableUserFields = Pick<IUser, "firstName" | "lastName" | "email" | "password" | "roleId">;
 
 export const UserForm = ({ onSubmit, isLoading, user }: IUserFormProps) => {
-  const { data: roleDataResponse } = useGetRoles({ page: 1, limit: 10, search: '' });
-  const roles = roleDataResponse?.data?.roleData || [];
+  const { data: rolesResponse } = useGetRoles({ page: 1, limit: 10, search: '' });
+  const roles = rolesResponse?.data?.roles || [];
 
   const form = useForm<EditableUserFields>({
     initialValues: {
