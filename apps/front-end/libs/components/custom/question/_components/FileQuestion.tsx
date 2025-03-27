@@ -1,5 +1,5 @@
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack, Text, Group, Flex, Avatar, Anchor, ActionIcon, Grid } from '@mantine/core';
 import { IconUpload, IconPhoto, IconX, IconTrash } from '@tabler/icons-react';
 import { uploadFileToServiceViaHandler } from '@agent-xenon/web-apis';
@@ -13,6 +13,12 @@ interface IFileQuestion {
 
 export const FileQuestion = ({ question, answer, onAnswer }: IFileQuestion) => {
   const [files, setFiles] = useState<string[]>(answer || []);
+
+  useEffect(() => {
+    if (answer) {
+      setFiles(answer);
+    }
+  }, [answer]);
 
   const handleDrop = async (acceptedFiles: File[]) => {
     const uploadedFiles: string[] = [];
