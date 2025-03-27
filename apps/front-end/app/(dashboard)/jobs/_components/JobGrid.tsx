@@ -5,18 +5,12 @@ import { IJob } from '@agent-xenon/interfaces';
 
 interface IJobGrid {
   data: IJob[];
-  isFetching:boolean;
+  isFetching: boolean;
 }
 
-export function JobGrid({ data , isFetching }: IJobGrid) {
-  const projectsLoading = false;
-
-  const jobItems = data.map((job) => (
-    <JobCard key={job._id} job={job} />
-  ));
-
-  if(isFetching){
-    return <Loader/>
+export const JobGrid = ({ data, isFetching }: IJobGrid) => {
+  if (isFetching) {
+    return <Loader />;
   }
 
   return (
@@ -25,15 +19,11 @@ export function JobGrid({ data , isFetching }: IJobGrid) {
       spacing={{ base: 10, sm: 'xl' }}
       verticalSpacing={{ base: 'md', sm: 'xl' }}
     >
-      {projectsLoading
+      {isFetching
         ? Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton
-            key={`project-loading-${i}`}
-            visible={true}
-            height={300}
-          />
+          <Skeleton key={`project-loading-${i}`} visible={true} height={300} />
         ))
-        : jobItems}
+        : data?.map((job) => <JobCard key={job._id} job={job} />)}
     </SimpleGrid>
   );
 }

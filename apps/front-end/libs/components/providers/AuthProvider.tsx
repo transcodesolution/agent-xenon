@@ -21,9 +21,9 @@ export const AuthProvider = ({
 
   useEffect(() => {
     if (data?.data) {
-      setUser(data.data.userData);
-      setOrganization(data.data.organizationData);
-      setPermissions(data?.data?.userData?.role?.permissions)
+      setUser(data.data.user);
+      setOrganization(data.data.organizations);
+      setPermissions(data?.data?.user?.role?.permissions)
     }
   }, [data]);
 

@@ -1,8 +1,8 @@
 import { IOrganization, IUser } from "@agent-xenon/interfaces";
 
 export interface IGetUserResponse {
-  userData: IUser;
-  organizationData: IOrganization;
+  user: IUser;
+  organizations: IOrganization;
 }
 
 export interface IGetUsersRequest {
@@ -11,8 +11,8 @@ export interface IGetUsersRequest {
   search: string
 }
 export interface IGetUsersResponse {
-  userData: IUser[];
-  totalData: number
+  users: IUser[];
+  totalData: number;
 }
 
 export interface IGetUserByIdRequest {

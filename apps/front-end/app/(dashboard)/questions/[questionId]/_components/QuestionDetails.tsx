@@ -81,8 +81,13 @@ export const QuestionDetails = () => {
           ],
         tags: questionData.tags || [],
       }));
+
+      if (editor && questionData.description) {
+        editor.commands.setContent(questionData.description);
+      }
     }
-  }, [questionData]);
+  }, [questionData, editor]);
+
 
   const handleChange = (field: string, value: any) => {
     if (!permission?.hasQuestionAnswerUpdate) {
@@ -112,17 +117,23 @@ export const QuestionDetails = () => {
   };
 
   const handleOptionChange = (index: number) => {
-    setQuestionFormState((prevState) => ({
-      ...prevState,
-      options: prevState.options.map((opt, i) => ({
-        ...opt,
-        isRightAnswer: questionFormState.isMultiSelectOption
-          ? i === index
-            ? !opt.isRightAnswer
-            : opt.isRightAnswer
-          : i === index,
-      })),
+    if (!permission?.hasQuestionAnswerUpdate) {
+      showNotification({
+        message: "You do not have permission to update options",
+        color: "red",
+      });
+      return;
+    }
+    const updatedOptions = questionFormState.options.map((opt, i) => ({
+      ...opt,
+      isRightAnswer: questionFormState.isMultiSelectOption
+        ? i === index
+          ? !opt.isRightAnswer
+          : opt.isRightAnswer
+        : i === index,
     }));
+
+    handleChange("options", updatedOptions);
   };
 
   return (

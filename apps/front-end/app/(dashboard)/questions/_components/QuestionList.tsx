@@ -96,7 +96,7 @@ export const QuestionList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.questionData}
+        records={data?.data?.questions}
         fetching={isLoading}
         selectedRecords={selectedQuestions}
         onSelectedRecordsChange={setSelectedQuestions}
