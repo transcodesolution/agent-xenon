@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { FilterQuery, QuerySelector } from "mongoose";
+import mongoose, { FilterQuery, QuerySelector } from "mongoose";
 import { IApplicant } from "@agent-xenon/interfaces";
 import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
 import Applicant from "../../database/models/applicant";
@@ -8,6 +8,7 @@ import Job from "../../database/models/job";
 import { InterviewRoundStatus, JobStatus, RoleType } from "@agent-xenon/constants";
 import { Role } from "../../database";
 import { resumeExtractAgent } from "../../helper/queue";
+import { getApplicantRoundStatusCommonQuery } from "../../utils/applicant";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -172,6 +173,109 @@ export const getApplicantById = async (req: Request, res: Response) => {
         const applicantData = await Applicant.findOne<IApplicant>(match);
 
         return res.ok("applicant", applicantData ?? {}, "getDataSuccess");
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getApplicantInterviewDetail = async (req: Request, res: Response) => {
+    const { user } = req.headers;
+    try {
+        const { error, value } = getApplicantByIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const applicantInterviewRounds = await Applicant.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(value.applicantId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "interviewrounds",
+                    localField: "jobId",
+                    foreignField: "jobId",
+                    as: "interviewRound",
+                    pipeline: [
+                        {
+                            $sort: {
+                                roundNumber: 1
+                            }
+                        },
+                        {
+                            $project: {
+                                name: 1,
+                                description: 1,
+                                type: 1,
+                                status: 1,
+                                startDate: 1,
+                                endDate: 1,
+                                selectionMarginInPercentage: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unwind: {
+                    path: "$interviewRound",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: "applicantrounds",
+                    let: { roundId: "$interviewRound._id" },
+                    localField: "interviewRound._id",
+                    foreignField: "roundIds",
+                    as: "applicantRound",
+                    pipeline: [
+                        {
+                            $match: {
+                                applicantId: user._id
+                            }
+                        },
+                        {
+                            $project: {
+                                _id: 0,
+                                applicantStatus: getApplicantRoundStatusCommonQuery("$$roundId")
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $unwind: {
+                    path: "$applicantRound",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    "applicantRound.applicantStatus": {
+                        $ifNull: [
+                            "$applicantRound.applicantStatus",
+                            InterviewRoundStatus.YET_TO_START
+                        ]
+                    }
+                }
+            },
+            {
+                $replaceRoot: {
+                    newRoot: {
+                        $mergeObjects: [
+                            "$interviewRound",
+                            "$applicantRound"
+                        ]
+                    }
+                }
+            }
+        ]);
+
+        return res.ok("applicant interview rounds", { applicantInterviewRounds }, "getDataSuccess");
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

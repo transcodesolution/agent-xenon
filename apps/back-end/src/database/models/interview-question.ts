@@ -2,11 +2,11 @@ import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty, InterviewRound
 import { IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
 import mongoose, { HydratedDocument, Schema } from 'mongoose';
 
-const InterviewQuestionAnswerSchema: Schema = new Schema({
+const InterviewQuestionSchema: Schema = new Schema({
     description: { type: String },
     type: { type: String, enum: InterviewRoundTypes, default: InterviewRoundTypes.ASSESSMENT },
     question: { type: String },
-    options: [{ type: { text: String, index: { type: String, enum: AnswerMcqOptionFormat }, isRightAnswer: { type: Boolean } } }],
+    options: [{ type: { text: String, index: { type: String, enum: AnswerMcqOptionFormat }, isRightAnswer: { type: Boolean }, _id: false }, }],
     tags: [{ type: String }],
     difficulty: { type: String, enum: Difficulty },
     timeLimitInMinutes: { type: Number },
@@ -17,7 +17,7 @@ const InterviewQuestionAnswerSchema: Schema = new Schema({
     deletedAt: { type: Date, default: null }
 }, { timestamps: true, versionKey: false });
 
-InterviewQuestionAnswerSchema.post("findOne", (question: HydratedDocument<IInterviewQuestionAnswer>) => {
+InterviewQuestionSchema.post("findOne", (question: HydratedDocument<IInterviewQuestionAnswer>) => {
     if (question) {
         question.set('updatedAt', undefined, { strict: false });
         question.set('deletedAt', undefined, { strict: false });
@@ -25,6 +25,6 @@ InterviewQuestionAnswerSchema.post("findOne", (question: HydratedDocument<IInter
     }
 })
 
-const InterviewQuestionAnswer = mongoose.model<IInterviewQuestionAnswer>('InterviewQuestionAnswer', InterviewQuestionAnswerSchema);
+const InterviewQuestion = mongoose.model<IInterviewQuestionAnswer>('InterviewQuestion', InterviewQuestionSchema);
 
-export default InterviewQuestionAnswer;
+export default InterviewQuestion;

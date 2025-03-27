@@ -1,9 +1,9 @@
 import { Request, Response } from "express";
 import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
-import { AnswerQuestionFormat, App, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus } from "@agent-xenon/constants";
+import { AnswerQuestionFormat, App, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus, OverallResult } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { createInterviewRoundSchema, deleteInterviewRoundSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
+import { createInterviewRoundSchema, deleteInterviewRoundSchema, getApplicantRoundByIdSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
 import InterviewRound from "../../database/models/interview-round";
 import Job from "../../database/models/job";
 import { manageMeetingRound, manageScreeningRound, manageTechnicalRound, updateApplicantStatusOnRoundComplete } from "../../utils/interview-round";
@@ -11,9 +11,10 @@ import ApplicantRound from "../../database/models/applicant-round";
 import { questionAnswerType, submitExamAnswerPayloadType } from "../../types/technical-round";
 import { manageMCQAnswers, manageTextAndCodeAnswers } from "../../utils/technical-round";
 import { sendMail } from "../../helper/mail";
-import { getSelectedApplicantDetails } from "../../utils/applicant";
+import { getApplicantRoundStatusCommonQuery, getSelectedApplicantDetails } from "../../utils/applicant";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
-import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
+import InterviewQuestion from "../../database/models/interview-question";
+import ApplicantAnswer from "../../database/models/applicant-answer";
 
 export const createInterviewRound = async (req: Request, res: Response) => {
     try {
@@ -187,14 +188,12 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
 
         const interviewRoundData = await InterviewRound.findOne<IInterviewRound<IInterviewQuestionAnswer>>(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name");
 
-        const matchApplicantRoundQuery: FilterQuery<IApplicantRound> = { deletedAt: null, roundIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.roundId) } } };
+        value.roundId = new mongoose.Types.ObjectId(value.roundId);
 
-        const checkNotCurrentRound = { $ne: [{ $arrayElemAt: ["$roundIds", -1] }, new mongoose.Types.ObjectId(value.roundId)] };
+        const matchApplicantRoundQuery: FilterQuery<IApplicantRound> = { deletedAt: null, roundIds: { $elemMatch: { $eq: value.roundId } } };
 
         const applicants = await ApplicantRound.find<IApplicantRound<IApplicant>>(matchApplicantRoundQuery, {
-            "status": {
-                $cond: [checkNotCurrentRound, InterviewRoundStatus.SELECTED, { $cond: [{ $eq: ["$status", InterviewRoundStatus.ONGOING] }, "$status", { $cond: ["$isSelected", InterviewRoundStatus.SELECTED, InterviewRoundStatus.REJECTED] }] }]
-            },
+            "status": getApplicantRoundStatusCommonQuery(value.roundId),
         }).populate("applicantId");
 
         const questions = await RoundQuestionAssign.find<IRoundQuestionAssign<IInterviewQuestionAnswer>>({ roundId: value.roundId, deletedAt: null }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes questionFormat").sort({ _id: 1 });
@@ -322,7 +321,7 @@ export const submitExam = async (req: Request, res: Response) => {
 
         res.ok("exam submitted successfully", {}, "customMessage");
 
-        await handleCandidateExamSubmission(questions, value.questionAnswers, interviewRoundData.selectionMarginInPercentage, Query, applicantRoundData.applicantId.contactInfo.email);
+        await handleCandidateExamSubmission(questions, value.questionAnswers, interviewRoundData.selectionMarginInPercentage, Query, applicantRoundData.applicantId.contactInfo.email, value.roundId, user._id.toString());
 
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
@@ -360,7 +359,7 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
 
         const questionAssignId: string[] = await RoundQuestionAssign.distinct("questionId", { deletedAt: null, roundId: value.roundId }).sort({ _id: 1 });
 
-        const questions = await InterviewQuestionAnswer.find<IInterviewQuestionAnswer>(
+        const questions = await InterviewQuestion.find<IInterviewQuestionAnswer>(
             { _id: { $in: questionAssignId } },
             "type question description options.text options.index tags difficulty timeLimitInMinutes questionFormat"
         );
@@ -380,25 +379,122 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
     }
 }
 
-export const handleCandidateExamSubmission = async (questions: questionAnswerType[], questionAnswers: submitExamAnswerPayloadType[], selectionMarginInPercentage: number, applicantRoundQuery: RootFilterQuery<IApplicantRound>, applicantEmail: string) => {
+export const getRoundByIdAndApplicantId = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = getApplicantRoundByIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        value.roundId = new mongoose.Types.ObjectId(value.roundId);
+
+        const [interviewRound, applicantRoundAndQuestionAnswers] = await Promise.all([
+            InterviewRound.findOne({ _id: value.roundId, deletedAt: null }, "name description startDate endDate status type selectionMarginInPercentage"),
+            RoundQuestionAssign.aggregate([
+                {
+                    $match: {
+                        roundId: value.roundId
+                    }
+                },
+                {
+                    $sort:
+                    {
+                        questionId: 1
+                    }
+                },
+                {
+                    $lookup:
+                    {
+                        from: "interviewquestionanswers",
+                        localField: "questionId",
+                        foreignField: "_id",
+                        as: "question"
+                    }
+                },
+                {
+                    $unwind: "$question"
+                },
+                {
+                    $lookup:
+                    {
+                        from: "applicantanswers",
+                        let: { questionId: "$question._id" },
+                        as: "answer",
+                        pipeline: [
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$applicantId", new mongoose.Types.ObjectId(value.applicantId)]
+                                    }
+                                }
+                            },
+                            {
+                                $unwind: "$answers",
+                            },
+                            {
+                                $match: {
+                                    $expr: {
+                                        $eq: ["$answers.questionId", "$$questionId"]
+                                    }
+                                }
+                            },
+                            {
+                                $replaceRoot: {
+                                    newRoot: "$answers",
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    $unwind: "$answer",
+                },
+                {
+                    $replaceRoot: {
+                        newRoot: {
+                            $mergeObjects: ["$question", "$answer"]
+                        }
+                    }
+                }
+            ])
+        ]);
+
+        return res.ok("applicant round and question answers", { interviewRound, applicantRoundAndQuestionAnswers }, "getDataSuccess");
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const handleCandidateExamSubmission = async (questions: questionAnswerType[], questionAnswers: submitExamAnswerPayloadType[], selectionMarginInPercentage: number, applicantRoundQuery: RootFilterQuery<IApplicantRound>, applicantEmail: string, roundId: string, applicantId: string) => {
     try {
         let correctAnswerCount = 0;
 
         for (const question of questions) {
             const answer = questionAnswers.find((i: submitExamAnswerPayloadType) => question.questionId._id.toString() === i.questionId);
             switch (question.questionId.questionFormat) {
-                case AnswerQuestionFormat.MCQ:
-                    correctAnswerCount += manageMCQAnswers(question, answer);
+                case AnswerQuestionFormat.MCQ: {
+                    const isCorrectAnswer = manageMCQAnswers(question, answer);
+                    correctAnswerCount += isCorrectAnswer;
+                    answer.overallResult = isCorrectAnswer ? OverallResult.Pass : OverallResult.Fail;
                     break;
-                case AnswerQuestionFormat.TEXT:
-                    correctAnswerCount += await manageTextAndCodeAnswers(question.questionId, answer);
+                }
+                case AnswerQuestionFormat.TEXT: {
+                    const isCorrectAnswer = await manageTextAndCodeAnswers(question.questionId, answer);
+                    correctAnswerCount += isCorrectAnswer;
+                    answer.overallResult = isCorrectAnswer ? OverallResult.Pass : OverallResult.Fail;
                     break;
-                case AnswerQuestionFormat.CODE:
-                    correctAnswerCount += await manageTextAndCodeAnswers(question.questionId, answer);
+                }
+                case AnswerQuestionFormat.CODE: {
+                    const isCorrectAnswer = await manageTextAndCodeAnswers(question.questionId, answer);
+                    correctAnswerCount += isCorrectAnswer;
+                    answer.overallResult = isCorrectAnswer ? OverallResult.Pass : OverallResult.Fail;
                     break;
-                case AnswerQuestionFormat.FILE:
+                } case AnswerQuestionFormat.FILE:
                     break;
             }
+            const applicantAnswerQuery = { applicantId, roundId };
+            await ApplicantAnswer.updateOne(applicantAnswerQuery, { $push: { answers: answer }, $set: applicantAnswerQuery }, { upsert: true });
         }
 
         const applicantPercentage = Math.floor((correctAnswerCount / questions.length) * 100);

@@ -5,3 +5,4 @@ export * from "./lib/technical-round";
 export * from "./lib/permission";
 export * from "./lib/exam";
 export * from "./lib/app";
+export * from "./lib/overall-result";

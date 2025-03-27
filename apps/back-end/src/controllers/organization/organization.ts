@@ -12,7 +12,7 @@ import InterviewRound from "../../database/models/interview-round";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import ApplicantRound from "../../database/models/applicant-round";
 import JobRole from "../../database/models/job-role";
-import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
+import InterviewQuestion from "../../database/models/interview-question";
 import { Permission, RoleType } from "@agent-xenon/constants";
 
 export const onBoardOrganization = async (req: Request, res: Response) => {
@@ -112,7 +112,7 @@ export const deleteOrganization = async (req: Request, res: Response) => {
             ApplicantRound.updateMany(jobQuery, { $set: { deletedAt: Date.now() } }),
             Designation.updateMany(organizationQuery, { $set: { deletedAt: Date.now() } }),
             JobRole.updateMany(organizationQuery, { $set: { deletedAt: Date.now() } }),
-            InterviewQuestionAnswer.updateMany(organizationQuery, { $set: { deletedAt: Date.now() } }),
+            InterviewQuestion.updateMany(organizationQuery, { $set: { deletedAt: Date.now() } }),
         ])
 
         return res.ok("organization", data, "deleteDataSuccess")
