@@ -82,7 +82,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no $SERVER_URL "
             cd ~/agent-xenon &&
             tar -xzf build-output.tar.gz &&
-            mv ~/agent-xenon/dist/apps/back-end/assets ~/agent-xenon/assets  &&
+            mv ~/agent-xenon/dist/apps/back-end/assets/.gitkeep ~/agent-xenon/assets/.gitkeep  &&
             mv ~/agent-xenon/dist/apps/back-end/package.json ~/agent-xenon/package.json &&
             mv ~/agent-xenon/dist/apps/back-end/package-lock.json ~/agent-xenon/package-lock.json &&
             mv ~/agent-xenon/dist/apps/back-end/main.js ~/agent-xenon/main.js
