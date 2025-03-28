@@ -24,8 +24,8 @@ jobs:
       # Ensure correct SHAs for affected commands
       - uses: nrwl/nx-set-shas@v4
 
-      - name: Build affected projects
-        run: npx nx run back-end:build --configuration=production --base=master --head=HEAD
+      - name: Build projects
+        run: npx nx run back-end:build --configuration=production
 
       - name: Archive build artifacts
         run: tar -czf build-output.tar.gz dist
