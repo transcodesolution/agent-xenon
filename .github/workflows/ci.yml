@@ -48,10 +48,25 @@ jobs:
         with:
           name: nx-build-output
 
-      - name: Deploy to server
+      # Debug: Check if SERVER_URL is set
+      - name: Debug Server URL
+        run: echo "Server URL is: '$SERVER_URL'"
+        env:
+          SERVER_URL: ${{ secrets.SERVER_URL }}
+
+      # Debug: Check SSH Connection Before Deployment
+      - name: Debug SSH Connection
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SERVER_URL >> ~/.ssh/known_hosts
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_URL "echo 'Connected successfully'"
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SERVER_URL: ${{ secrets.SERVER_URL }}
+
+      - name: Deploy to server
         run: |
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
@@ -59,4 +74,7 @@ jobs:
           ssh-keyscan -H $SERVER_URL >> ~/.ssh/known_hosts
 
           scp -i ~/.ssh/id_rsa -r build-output.tar.gz $SERVER_URL
-          ssh -i ~/.ssh/id_rsa $SERVER_URL "cd ~/agent-xenon && tar -xzf build-output.tar.gz && npm i && pm2 restart 0"
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no $SERVER_URL "cd ~/agent-xenon && tar -xzf build-output.tar.gz && npm i && pm2 restart 0"
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_URL: ${{ secrets.SERVER_URL }}
