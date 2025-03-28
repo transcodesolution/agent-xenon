@@ -86,9 +86,8 @@ jobs:
             mv ~/agent-xenon/dist/apps/back-end/package.json ~/agent-xenon/package.json &&
             mv ~/agent-xenon/dist/apps/back-end/package-lock.json ~/agent-xenon/package-lock.json &&
             mv ~/agent-xenon/dist/apps/back-end/main.js ~/agent-xenon/main.js
-            source $HOME/.bashrc &&
-            npm i && pm2 restart 0
           "
+          ssh -o StrictHostKeyChecking=no $SERVER_URL "cd /home/ubuntu/agent-xenon && npm install && pm2 restart 0"
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SERVER_URL: ${{ secrets.SERVER_URL }}
