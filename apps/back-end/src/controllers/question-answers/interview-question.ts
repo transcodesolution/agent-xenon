@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { FilterQuery, RootFilterQuery } from "mongoose";
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getAllQuestionSchema, getQuestionAnswerSchema, getQuestionByIdSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
-import InterviewQuestionAnswer from "../../database/models/interview-question-answer";
+import InterviewQuestion from "../../database/models/interview-question";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { AnswerQuestionFormat, InterviewRoundTypes } from "@agent-xenon/constants";
 
@@ -16,7 +16,7 @@ export const createQuestionAnswer = async (req: Request, res: Response) => {
         }
 
         value.organizationId = user.organizationId;
-        const data = await InterviewQuestionAnswer.create(value);
+        const data = await InterviewQuestion.create(value);
 
         return res.ok("question", data, "addDataSuccess")
     } catch (error) {
@@ -34,11 +34,11 @@ export const updateQuestionAnswer = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkQuestionExist = await InterviewQuestionAnswer.findOne({ _id: value.questionId, deletedAt: null });
+        const checkQuestionExist = await InterviewQuestion.findOne({ _id: value.questionId, deletedAt: null });
 
         if (!checkQuestionExist) return res.badRequest("question", {}, "getDataNotFound");
 
-        const checkQuestionNameExist = await InterviewQuestionAnswer.findOne({ _id: { $ne: value.questionId }, organizationId: user.organizationId, type: InterviewRoundTypes.ASSESSMENT, questionFormat: AnswerQuestionFormat.MCQ, question: value.question, deletedAt: null });
+        const checkQuestionNameExist = await InterviewQuestion.findOne({ _id: { $ne: value.questionId }, organizationId: user.organizationId, type: InterviewRoundTypes.ASSESSMENT, questionFormat: AnswerQuestionFormat.MCQ, question: value.question, deletedAt: null });
 
         if (checkQuestionNameExist) return res.badRequest("question", {}, "dataAlreadyExist");
 
@@ -55,7 +55,7 @@ export const updateQuestionAnswer = async (req: Request, res: Response) => {
 
         if (checkApplicantIsGivingExam?.roundId) return res.badRequest("round is in progress, cannot edit the question right now!", {}, "customMessage");
 
-        const data = await InterviewQuestionAnswer.findByIdAndUpdate(value.questionId, { $set: value }, { new: true });
+        const data = await InterviewQuestion.findByIdAndUpdate(value.questionId, { $set: value }, { new: true });
 
         return res.ok("question", data, "updateDataSuccess")
     } catch (error) {
@@ -73,7 +73,7 @@ export const deleteQuestionAnswer = async (req: Request, res: Response) => {
 
         const Query: RootFilterQuery<IInterviewQuestionAnswer> = { _id: { $in: value.questionIds }, deletedAt: null };
 
-        const checkQuestionExist = await InterviewQuestionAnswer.find(Query);
+        const checkQuestionExist = await InterviewQuestion.find(Query);
 
         if (checkQuestionExist.length !== value.questionIds.length) return res.badRequest("some questions", {}, "getDataNotFound");
 
@@ -90,7 +90,7 @@ export const deleteQuestionAnswer = async (req: Request, res: Response) => {
 
         if (checkApplicantIsGivingExam.some((i) => (i?.roundId))) return res.badRequest("round is in progress, cannot delete the selected question right now!", {}, "customMessage");
 
-        await InterviewQuestionAnswer.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true });
+        await InterviewQuestion.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true });
 
         return res.ok("questions", {}, "deleteDataSuccess")
     } catch (error) {
@@ -119,8 +119,8 @@ export const getQuestions = async (req: Request, res: Response) => {
         }
 
         const [totalData, data] = await Promise.all([
-            InterviewQuestionAnswer.countDocuments(match),
-            InterviewQuestionAnswer.find(match).skip((value.page - 1) * value.limit).limit(value.limit)
+            InterviewQuestion.countDocuments(match),
+            InterviewQuestion.find(match).skip((value.page - 1) * value.limit).limit(value.limit)
         ])
 
         return res.ok("question", { questions: data, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
@@ -152,7 +152,7 @@ export const getAllQuestionList = async (req: Request, res: Response) => {
             match.question = new RegExp(value.search, "i");
         }
 
-        const questionAnswerData = await InterviewQuestionAnswer.find(match, "question").sort({ _id: -1 });
+        const questionAnswerData = await InterviewQuestion.find(match, "question").sort({ _id: -1 });
 
         return res.ok("questions", questionAnswerData, "getDataSuccess")
     } catch (error) {
@@ -170,7 +170,7 @@ export const getQuestionById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, _id: value.questionId }
 
-        const questions = await InterviewQuestionAnswer.findOne(match);
+        const questions = await InterviewQuestion.findOne(match);
 
         return res.ok("interview question", questions, "getDataSuccess")
     } catch (error) {

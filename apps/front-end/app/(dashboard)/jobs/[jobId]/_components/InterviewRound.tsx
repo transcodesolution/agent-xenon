@@ -101,6 +101,8 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
     return /^\d{0,3}$/.test(value) && Number(value) <= 100;
   };
 
+  const selectedQuestionIds = formState.questions.map((q) => q._id);
+
   return (
     <Stack>
       <TextInput label="Name" value={formState.name} onChange={(e) => handleChange('name', e.target.value)} />
@@ -147,11 +149,12 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
             {mcqQuestionsData?.data?.length === 0 ? (
               <Combobox.Empty>Nothing found</Combobox.Empty>
             ) : (
-              mcqQuestionsData?.data?.map((question) => (
-                <Combobox.Option key={question._id} value={question._id}>
-                  {question.question}
-                </Combobox.Option>
-              ))
+              mcqQuestionsData?.data?.filter((question) => !selectedQuestionIds.includes(question._id))
+                .map((question) => (
+                  <Combobox.Option key={question._id} value={question._id}>
+                    {question.question}
+                  </Combobox.Option>
+                ))
             )}
           </Combobox.Options>
         </Combobox.Dropdown>

@@ -1,6 +1,6 @@
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { Checkbox, Flex, Stack, Text } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface IMCQQuestion {
   question: IInterviewQuestionAnswer;
@@ -9,9 +9,11 @@ interface IMCQQuestion {
 }
 
 export const MCQQuestion = ({ question, answer, onAnswer }: IMCQQuestion) => {
-  const [selectedAnswers, setSelectedAnswers] = useState<string[]>(
-    answer ? answer.split("_") : []
-  );
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
+
+  useEffect(() => {
+    setSelectedAnswers(answer ? answer.split("_") : []);
+  }, [answer]);
 
   const handleAnswerSelect = (optionIndex: string) => {
     let newAnswers: string[];

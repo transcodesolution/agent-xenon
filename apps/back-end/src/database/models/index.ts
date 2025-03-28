@@ -3,11 +3,11 @@ export * from "./applicant";
 export * from "./organization";
 export * from "./role";
 export * from "./designation";
-export * from "./interview-question-answer";
+export * from "./interview-question";
 export * from "./job-role"
 export * from "./organization";
 export * from "./user";
-export * from "./applicant-question-answer";
+export * from "./applicant-answer";
 export * from "./applicant-round";
 export * from "./interview-round";
 export * from "./job";

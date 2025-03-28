@@ -4,7 +4,7 @@ import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty, InterviewRound
 
 const questionAnswerSchema = {
     description: Joi.string().allow("").optional(),
-    options: Joi.array().items({ text: Joi.string().required(), isRightAnswer: Joi.boolean().required(), index: Joi.string().valid(AnswerMcqOptionFormat.A, AnswerMcqOptionFormat.B, AnswerMcqOptionFormat.C, AnswerMcqOptionFormat.D).required() }).optional(),
+    options: Joi.array().items({ text: Joi.string().allow("").required(), isRightAnswer: Joi.boolean().required(), index: Joi.string().valid(AnswerMcqOptionFormat.A, AnswerMcqOptionFormat.B, AnswerMcqOptionFormat.C, AnswerMcqOptionFormat.D).required() }).optional(),
     tags: Joi.array().items(Joi.string()).optional(),
     difficulty: Joi.string().valid(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD).optional(),
     timeLimitInMinutes: Joi.number().optional(),

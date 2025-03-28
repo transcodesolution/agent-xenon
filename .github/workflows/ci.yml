@@ -1,26 +1,19 @@
-name: CI
+name: NX Build and Deploy
 
 on:
   push:
     branches:
       - master
-  pull_request:
-
-permissions:
-  actions: read
-  contents: read
 
 jobs:
-  main:
+  build:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the code
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      # Setup Node.js
-      - uses: actions/setup-node@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: 'npm'
@@ -31,5 +24,39 @@ jobs:
       # Ensure correct SHAs for affected commands
       - uses: nrwl/nx-set-shas@v4
 
-      # Run lint, test, build, and e2e only on affected projects
-      - run: npx nx affected -t lint test build e2e --base=master --head=HEAD
+      - name: Build affected projects
+        run: npx nx run back-end:build --configuration=production --base=master --head=HEAD
+
+      - name: Archive build artifacts
+        run: tar -czf build-output.tar.gz dist
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: nx-build-output
+          path: build-output.tar.gz
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: nx-build-output
+
+      - name: Deploy to server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_URL: ${{ secrets.SERVER_URL }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SERVER_URL >> ~/.ssh/known_hosts
+
+          scp -i ~/.ssh/id_rsa -r build-output.tar.gz $SERVER_URL
+          ssh -i ~/.ssh/id_rsa $SERVER_URL "cd ~/agent-xenon && tar -xzf build-output.tar.gz && npm i && pm2 restart 0"

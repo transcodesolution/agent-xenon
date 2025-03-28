@@ -35,6 +35,7 @@ export enum Permission {
   USER_UPDATE = 'user_update',
   USER_READ = 'user_read',
   USER_DELETE = 'user_delete',
+  APPLICANT_INTERVIEW_DETAIL = 'applicant_interview_detail',
 }
 
 export const permissionsListByModuleWise: Record<string, { label: string, permissions: { label: string, value: Permission }[] }> = {
@@ -100,6 +101,7 @@ export const permissionsListByModuleWise: Record<string, { label: string, permis
       { label: "Update Organization", value: Permission.ORGANIZATION_UPDATE },
       { label: "View Job Candidates", value: Permission.JOB_CANDIDATES_TAB },
       { label: "View Job Rounds", value: Permission.JOB_ROUNDS_TAB },
+      { label: "View Applicant Interview Details", value: Permission.APPLICANT_INTERVIEW_DETAIL },
     ]
   }
 };

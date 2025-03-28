@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Group, Stack, Button, Grid, Flex, Text } from "@mantine/core";
 import { IconPlayerPlay, IconRefresh } from "@tabler/icons-react";
 import Editor, { OnMount } from "@monaco-editor/react";
@@ -15,12 +15,16 @@ interface ICodeQuestion {
 }
 
 export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
-  const [codeValue, setCodeValue] = useState(answer || "");
+  const [codeValue, setCodeValue] = useState("");
   const [language, setLanguage] = useState("javascript");
   const [editorTheme, setEditorTheme] = useState("vs-dark");
   const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const { mutate: codeExecute } = useCodeExecute()
+
+  useEffect(() => {
+    setCodeValue(answer || "");
+  }, [answer]);
 
   const handleRun = () => {
     const languageConfig = compilerVersionAndLanguages.find(
