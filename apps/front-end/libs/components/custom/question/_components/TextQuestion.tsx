@@ -1,6 +1,6 @@
 import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { Grid, Stack, Text, Textarea } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ITextQuestion {
   question: IInterviewQuestionAnswer;
@@ -9,7 +9,11 @@ interface ITextQuestion {
 }
 
 export const TextQuestion = ({ question, answer, onAnswer }: ITextQuestion) => {
-  const [text, setText] = useState(answer || "");
+  const [text, setText] = useState("");
+
+  useEffect(() => {
+    setText(answer || "");
+  }, [answer]);
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newText = event.currentTarget.value;
