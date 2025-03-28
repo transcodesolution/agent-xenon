@@ -5,7 +5,7 @@ import {
   useInterviewRoundStart,
   useInterviewRoundUpdateStatus
 } from '@agent-xenon/react-query-hooks';
-import { Stack } from '@mantine/core';
+import { LoadingOverlay, Stack } from '@mantine/core';
 import { useParams } from 'next/navigation';
 import React, { useState } from 'react';
 import { IInterviewRound } from '@agent-xenon/interfaces';
@@ -16,7 +16,7 @@ import { IUpdateInterviewRoundStatusRequest } from '@/libs/types-api/src';
 
 export const InterviewRounds = () => {
   const { jobId } = useParams<{ jobId: string }>();
-  const { data: rounds, refetch } = useGetInterviewRoundsByJobId({ jobId });
+  const { data: rounds, isLoading, refetch } = useGetInterviewRoundsByJobId({ jobId });
   const [selectedRoundId, setSelectedRoundId] = useState<string>('');
   const { data: roundData } = useGetInterviewRoundsById({ roundId: selectedRoundId });
 
@@ -48,7 +48,8 @@ export const InterviewRounds = () => {
   };
 
   return (
-    <Stack gap="lg">
+    <Stack>
+      <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
       {rounds?.data?.map((round: IInterviewRound, index: number) => {
         const isPreviousRoundsCompleted = rounds?.data?.slice(0, index)
           .every((prevRound) => prevRound.status === InterviewRoundStatus.COMPLETED);

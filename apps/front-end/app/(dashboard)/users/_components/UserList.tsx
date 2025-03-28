@@ -56,7 +56,9 @@ export const UserList = () => {
       width: 'auto',
       render: ({ firstName, lastName, _id }) => {
         return (
-          <Anchor component={Link} href={`/users/${_id}`} style={{ position: 'relative' }}>{`${firstName} ${lastName}`}</Anchor>
+          <Anchor component={Link} href={`/users/${_id}`} style={{ position: 'relative' }}>
+            {firstName || lastName ? `${firstName ?? ''} ${lastName ?? ''}`.trim() : '-'}
+          </Anchor>
         );
       },
     },

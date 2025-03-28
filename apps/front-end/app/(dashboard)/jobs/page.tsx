@@ -54,7 +54,7 @@ export default function Page() {
     <Stack gap='sm'>
       <Title order={4}>Jobs</Title>
       {permission?.hasJobCreate &&
-        <Button mb='md' component='a' disabled={isCreating} onClick={handleCreateJob} styles={{ root: { width: 'fit-content' } }} loading={isCreating}>Create +</Button>
+        <Button component='a' disabled={isCreating} onClick={handleCreateJob} styles={{ root: { width: 'fit-content' } }} loading={isCreating}>Create +</Button>
       }
       <JobFilter />
       {view === 'list' && <JobLists data={data?.data?.jobs ?? []} isFetching={isLoading} onDelete={onDelete} />}

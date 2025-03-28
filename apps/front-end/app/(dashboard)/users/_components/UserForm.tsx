@@ -71,7 +71,7 @@ export const UserForm = ({ onSubmit, isLoading, user }: IUserFormProps) => {
           />
           <Flex mt="md" justify="flex-end" gap="sm">
             <Button onClick={handleSubmit} loading={isLoading}>
-              {user ? "Save User" : "Create User"}
+              {user ? "Save" : "Create"}
             </Button>
           </Flex>
         </Box>

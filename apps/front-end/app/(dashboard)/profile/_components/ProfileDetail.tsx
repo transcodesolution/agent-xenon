@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Flex, Paper, Text, TextInput, Title } from "@mantine/core";
+import { Box, Flex, Paper, Stack, Text, TextInput, Title } from "@mantine/core";
 import { setUser, useUserStore } from "../../../../libs/store/src/lib/user";
 import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "@mantine/hooks";
@@ -46,35 +46,37 @@ export const ProfileDetail = () => {
   }
 
   return (
-    <Paper shadow="sm" radius="md" withBorder p="lg">
-      <Title order={2} mb="md">Profile</Title>
-      <Flex direction="column" align="center" gap="md">
-        <Box w="100%">
-          <TextInput
-            label="First Name"
-            name="firstName"
-            value={userDetails.firstName || ""}
-            onChange={(e) => handleChange("firstName", e.target.value)}
-            mb="md"
-            required
-          />
-          <TextInput
-            label="Last Name"
-            name="lastName"
-            value={userDetails.lastName || ""}
-            onChange={(e) => handleChange("lastName", e.target.value)}
-            mb="md"
-            required
-          />
-          <TextInput
-            label="Email"
-            name="email"
-            value={userDetails.email || ""}
-            mb="md"
-            disabled
-          />
-        </Box>
-      </Flex>
-    </Paper>
+    <Stack>
+      <Title order={4}>Profile</Title>
+      <Paper shadow="sm" radius="md" withBorder p="lg">
+        <Flex direction="column" align="center" gap="md">
+          <Box w="100%">
+            <TextInput
+              label="First Name"
+              name="firstName"
+              value={userDetails.firstName || ""}
+              onChange={(e) => handleChange("firstName", e.target.value)}
+              mb="md"
+              required
+            />
+            <TextInput
+              label="Last Name"
+              name="lastName"
+              value={userDetails.lastName || ""}
+              onChange={(e) => handleChange("lastName", e.target.value)}
+              mb="md"
+              required
+            />
+            <TextInput
+              label="Email"
+              name="email"
+              value={userDetails.email || ""}
+              mb="md"
+              disabled
+            />
+          </Box>
+        </Flex>
+      </Paper>
+    </Stack>
   );
 };
