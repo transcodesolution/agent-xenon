@@ -1,9 +1,9 @@
 name: NX Build and Deploy
 
 on:
-  push:
+  pull_request:
     branches:
-      - master
+      - development
 
 jobs:
   build:
