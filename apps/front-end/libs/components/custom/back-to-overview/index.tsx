@@ -19,7 +19,7 @@ export function BackToOverview({ title = "Back", backUrl }: IBackToOverview) {
 
   return (
     <Anchor onClick={handleBack}>
-      <Flex align="center" gap={4} mb="md">
+      <Flex align="center" gap={4}>
         <IconChevronLeft />
         <Text truncate>{title}</Text>
       </Flex>

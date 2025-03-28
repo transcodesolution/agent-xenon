@@ -5,6 +5,7 @@ import {
   Group,
   Paper,
   Flex,
+  LoadingOverlay,
 } from "@mantine/core";
 import { Permission } from "@agent-xenon/constants";
 import { IconUsers, IconX } from "@tabler/icons-react";
@@ -19,7 +20,7 @@ let timeOut: string | number | NodeJS.Timeout | undefined;
 
 export const RoleDetails = () => {
   const { roleId } = useParams<{ roleId: string }>();
-  const { data: roles } = useGetRoleById({ roleId: roleId });
+  const { data: roles, isLoading } = useGetRoleById({ roleId: roleId });
   const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>([]);
   const { mutate: updateRole } = useUpdateRole();
   const permission = usePermissions()
@@ -70,6 +71,7 @@ export const RoleDetails = () => {
 
   return (
     <Stack gap="lg">
+      <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
       <Paper shadow="sm" radius="md" withBorder p='lg'>
         <Stack gap="md">
           <Flex align="center" gap="md">

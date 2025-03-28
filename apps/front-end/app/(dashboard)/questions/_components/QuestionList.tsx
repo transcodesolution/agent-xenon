@@ -69,8 +69,15 @@ export const QuestionList = () => {
         return (
           <Text c='primary'>{type || 'custom'}</Text>
         );
-      },
+      }
     },
+    {
+      accessor: 'questionFormat',
+      title: 'Answer Format',
+      ellipsis: true,
+      sortable: true,
+      render: ({ questionFormat }) => <Text>{questionFormat || 'N/A'}</Text>,
+    }
   ]
 
   const handleDeleteSelected = () => {

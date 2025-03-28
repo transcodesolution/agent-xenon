@@ -11,6 +11,8 @@ import {
   TagsInput,
   Tooltip,
   Text,
+  Stack,
+  LoadingOverlay,
 } from "@mantine/core";
 import {
   AnswerQuestionFormat,
@@ -54,7 +56,7 @@ export const QuestionDetails = () => {
     isMultiSelectOption: false,
   });
 
-  const { data } = useGetQuestionById({ questionId });
+  const { data, isLoading } = useGetQuestionById({ questionId });
   const questionData = data?.data;
   const { mutate: updateQuestion } = useUpdateQuestion();
   const editor = useEditor({
@@ -137,147 +139,150 @@ export const QuestionDetails = () => {
   };
 
   return (
-    <Paper shadow="sm" radius="md" withBorder p="lg">
-      <Grid>
-        <Grid.Col span={12}>
-          <TextInput
-            required
-            label="Question Title"
-            placeholder="Enter question title"
-            value={questionFormState.question}
-            onChange={(e) => handleChange("question", e.target.value)}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={6}>
-          <NumberInput
-            required
-            label="Time Limit (minutes)"
-            placeholder="Enter time limit"
-            min={1}
-            value={questionFormState.timeLimitInMinutes}
-            onChange={(value) => handleChange("timeLimitInMinutes", value)}
-            leftSection={
-              <Tooltip label="Time in minutes" withArrow>
-                <IconAlertCircle size={16} />
-              </Tooltip>
-            }
-          />
-        </Grid.Col>
-
-        <Grid.Col span={6}>
-          <TagsInput
-            label="Tags"
-            placeholder="Add tags"
-            value={questionFormState.tags}
-            onChange={(value: string[]) => handleChange("tags", value)}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={6}>
-          <Select
-            label="Round Type"
-            data={Object.values(InterviewRoundTypes).map((type) => ({
-              value: type,
-              label: type,
-            }))}
-            value={questionFormState.type}
-            onChange={(value) => handleChange("type", value)}
-          />
-        </Grid.Col>
-
-        <Grid.Col span={6}>
-          <Select
-            required
-            label="Input Type"
-            placeholder="Select input format"
-            data={Object.values(AnswerQuestionFormat).map((type) => ({
-              value: type,
-              label: type,
-            }))}
-            value={questionFormState.questionFormat}
-            onChange={(value) => handleChange("questionFormat", value)}
-          />
-        </Grid.Col>
-
-        {questionFormState.questionFormat === AnswerQuestionFormat.MCQ && (
-          <React.Fragment>
-            <Grid.Col span={12}>
-              <Checkbox
-                label="Allow multiple correct answers"
-                checked={questionFormState.isMultiSelectOption}
-                onChange={(e) => handleChange("isMultiSelectOption", e.target.checked)}
-                size="md"
-                radius="sm"
-                className="border-2"
-              />
-            </Grid.Col>
-
-            <Grid.Col span={12}>
-              {questionFormState.options.map((option, index) => (
-                <Flex key={option.index} gap="md" mb="md" align="center">
-                  <Checkbox
-                    checked={option.isRightAnswer}
-                    onChange={() => handleOptionChange(index)}
-                    size="md"
-                    radius="sm"
-                    className="border-2"
-                  />
-                  <TextInput
-                    required
-                    placeholder={`Option ${option.index}`}
-                    value={option.text}
-                    onChange={(e) => {
-                      const updatedOptions = [...questionFormState.options];
-                      updatedOptions[index] = {
-                        ...updatedOptions[index],
-                        text: e.target.value,
-                      };
-                      handleChange("options", updatedOptions);
-                    }}
-                    w='100%'
-                  />
-                </Flex>
-              ))}
-            </Grid.Col>
-          </React.Fragment>
-        )}
-
-        {questionFormState.questionFormat !== AnswerQuestionFormat.MCQ && (
+    <Stack>
+      <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
+      <Paper shadow="sm" radius="md" withBorder p="lg">
+        <Grid>
           <Grid.Col span={12}>
-            <Textarea
-              label="Evaluation Criteria"
-              placeholder="Enter evaluation criteria or rubric"
-              minRows={4}
-              value={questionFormState.evaluationCriteria}
-              onChange={(e) =>
-                handleChange("evaluationCriteria", e.target.value)
+            <TextInput
+              required
+              label="Question Title"
+              placeholder="Enter question title"
+              value={questionFormState.question}
+              onChange={(e) => handleChange("question", e.target.value)}
+            />
+          </Grid.Col>
+
+          <Grid.Col span={6}>
+            <NumberInput
+              required
+              label="Time Limit (minutes)"
+              placeholder="Enter time limit"
+              min={1}
+              value={questionFormState.timeLimitInMinutes}
+              onChange={(value) => handleChange("timeLimitInMinutes", value)}
+              leftSection={
+                <Tooltip label="Time in minutes" withArrow>
+                  <IconAlertCircle size={16} />
+                </Tooltip>
               }
             />
           </Grid.Col>
-        )}
-        {questionFormState.questionFormat !== AnswerQuestionFormat.MCQ && (
-          <Grid.Col span={12}>
-            <Text size="sm" fw='500'>Question Description</Text>
-            <RichTextEditor editor={editor}>
-              <RichTextEditor.Toolbar>
-                <RichTextEditor.ControlsGroup>
-                  <RichTextEditor.Bold />
-                  <RichTextEditor.Italic />
-                  <RichTextEditor.Underline />
-                  <RichTextEditor.Strikethrough />
-                </RichTextEditor.ControlsGroup>
-                <RichTextEditor.ControlsGroup>
-                  <RichTextEditor.Link />
-                  <RichTextEditor.Unlink />
-                </RichTextEditor.ControlsGroup>
-              </RichTextEditor.Toolbar>
-              <RichTextEditor.Content />
-            </RichTextEditor>
+
+          <Grid.Col span={6}>
+            <TagsInput
+              label="Tags"
+              placeholder="Add tags"
+              value={questionFormState.tags}
+              onChange={(value: string[]) => handleChange("tags", value)}
+            />
           </Grid.Col>
-        )
-        }
-      </Grid>
-    </Paper>
+
+          <Grid.Col span={6}>
+            <Select
+              label="Round Type"
+              data={Object.values(InterviewRoundTypes).map((type) => ({
+                value: type,
+                label: type,
+              }))}
+              value={questionFormState.type}
+              onChange={(value) => handleChange("type", value)}
+            />
+          </Grid.Col>
+
+          <Grid.Col span={6}>
+            <Select
+              required
+              label="Input Type"
+              placeholder="Select input format"
+              data={Object.values(AnswerQuestionFormat).map((type) => ({
+                value: type,
+                label: type,
+              }))}
+              value={questionFormState.questionFormat}
+              onChange={(value) => handleChange("questionFormat", value)}
+            />
+          </Grid.Col>
+
+          {questionFormState.questionFormat === AnswerQuestionFormat.MCQ && (
+            <React.Fragment>
+              <Grid.Col span={12}>
+                <Checkbox
+                  label="Allow multiple correct answers"
+                  checked={questionFormState.isMultiSelectOption}
+                  onChange={(e) => handleChange("isMultiSelectOption", e.target.checked)}
+                  size="md"
+                  radius="sm"
+                  className="border-2"
+                />
+              </Grid.Col>
+
+              <Grid.Col span={12}>
+                {questionFormState.options.map((option, index) => (
+                  <Flex key={option.index} gap="md" mb="md" align="center">
+                    <Checkbox
+                      checked={option.isRightAnswer}
+                      onChange={() => handleOptionChange(index)}
+                      size="md"
+                      radius="sm"
+                      className="border-2"
+                    />
+                    <TextInput
+                      required
+                      placeholder={`Option ${option.index}`}
+                      value={option.text}
+                      onChange={(e) => {
+                        const updatedOptions = [...questionFormState.options];
+                        updatedOptions[index] = {
+                          ...updatedOptions[index],
+                          text: e.target.value,
+                        };
+                        handleChange("options", updatedOptions);
+                      }}
+                      w='100%'
+                    />
+                  </Flex>
+                ))}
+              </Grid.Col>
+            </React.Fragment>
+          )}
+
+          {questionFormState.questionFormat !== AnswerQuestionFormat.MCQ && (
+            <Grid.Col span={12}>
+              <Textarea
+                label="Evaluation Criteria"
+                placeholder="Enter evaluation criteria or rubric"
+                minRows={4}
+                value={questionFormState.evaluationCriteria}
+                onChange={(e) =>
+                  handleChange("evaluationCriteria", e.target.value)
+                }
+              />
+            </Grid.Col>
+          )}
+          {questionFormState.questionFormat !== AnswerQuestionFormat.MCQ && (
+            <Grid.Col span={12}>
+              <Text size="sm" fw='500'>Question Description</Text>
+              <RichTextEditor editor={editor}>
+                <RichTextEditor.Toolbar>
+                  <RichTextEditor.ControlsGroup>
+                    <RichTextEditor.Bold />
+                    <RichTextEditor.Italic />
+                    <RichTextEditor.Underline />
+                    <RichTextEditor.Strikethrough />
+                  </RichTextEditor.ControlsGroup>
+                  <RichTextEditor.ControlsGroup>
+                    <RichTextEditor.Link />
+                    <RichTextEditor.Unlink />
+                  </RichTextEditor.ControlsGroup>
+                </RichTextEditor.Toolbar>
+                <RichTextEditor.Content />
+              </RichTextEditor>
+            </Grid.Col>
+          )
+          }
+        </Grid>
+      </Paper>
+    </Stack>
   );
 };

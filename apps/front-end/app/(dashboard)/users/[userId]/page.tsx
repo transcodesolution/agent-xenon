@@ -6,10 +6,12 @@ import { IUser } from '@agent-xenon/interfaces';
 import { showNotification } from '@mantine/notifications';
 import { IconCheck } from '@tabler/icons-react';
 import { useParams } from 'next/navigation';
+import BackToOverview from '@/libs/components/custom/back-to-overview';
+import { LoadingOverlay, Stack } from '@mantine/core';
 
 export default function page() {
   const { userId } = useParams<{ userId: string }>();
-  const { data } = useGetUserById({ id: userId });
+  const { data, isLoading } = useGetUserById({ id: userId });
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
   const user = data?.data?.user;
 
@@ -37,6 +39,10 @@ export default function page() {
     );
   };
   return (
-    <UserForm onSubmit={handleUpdateUser} isLoading={isUpdating} user={user} />
+    <Stack gap="lg" pos='relative'>
+      <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
+      <BackToOverview title="Back" backUrl='/users' />
+      <UserForm onSubmit={handleUpdateUser} isLoading={isUpdating} user={user} />
+    </Stack>
   )
 }

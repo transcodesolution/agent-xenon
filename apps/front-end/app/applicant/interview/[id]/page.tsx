@@ -96,7 +96,7 @@ export default function Page() {
         />
       }
       {
-        (questions?.length > 0 && !isSubmitted) &&
+        (!!currentQuestion && !isSubmitted) &&
         <Stack>
           <Stack h="calc(100vh - 150px)">
             <Group justify="space-between" align="center" >
