@@ -120,7 +120,7 @@ export function ApplicantList() {
         />
       </Paper>
 
-      <Modal opened={isModalOpen} size='100%' onClose={closeModal} title={`${editingApplicantId} ? 'Update' : 'Add'`}>
+      <Modal opened={isModalOpen} size='100%' onClose={closeModal} title={editingApplicantId ? "Update" : "Add"}>
         <ApplicantModal refetch={refetch} onClose={closeModal} applicantId={editingApplicantId} />
       </Modal>
     </>
