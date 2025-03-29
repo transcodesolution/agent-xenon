@@ -80,16 +80,17 @@ jobs:
 
           echo "Extracting and restarting services..."
           ssh -o StrictHostKeyChecking=no $SERVER_URL "
-            export NVM_DIR=\"$HOME/.nvm\";
-            [ -s \"\$NVM_DIR/nvm.sh\" ] && \. \"\$NVM_DIR/nvm.sh\";
-            [ -s \"\$NVM_DIR/bash_completion\" ] && \. \"\$NVM_DIR/bash_completion\";
-            nvm use 22.14.0 &&
             cd ~/agent-xenon &&
             tar -xzf build-output.tar.gz &&
             mv ~/agent-xenon/dist/apps/back-end/assets/.gitkeep ~/agent-xenon/assets/.gitkeep &&
             mv ~/agent-xenon/dist/apps/back-end/package.json ~/agent-xenon/package.json &&
             mv ~/agent-xenon/dist/apps/back-end/package-lock.json ~/agent-xenon/package-lock.json &&
             mv ~/agent-xenon/dist/apps/back-end/main.js ~/agent-xenon/main.js &&
+
+            export NVM_DIR=\"$HOME/.nvm\" &&
+            [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\" &&
+            nvm use 22 &&
+            
             npm install &&
             pm2 restart 0
           "
