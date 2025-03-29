@@ -43,7 +43,7 @@ export const SignInForm = () => {
   const handleSignInFormSubmit = form.onSubmit(async ({ email, password }) => {
     try {
       const previousURL = document.referrer;
-      const redirectUrl = token ? new URL(previousURL).pathname : "/dashboard";
+      const redirectUrl = token ? new URL(previousURL).pathname : "/";
 
       await nextServerSignIn({
         email,
