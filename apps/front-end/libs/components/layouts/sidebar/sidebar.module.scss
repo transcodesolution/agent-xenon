@@ -37,3 +37,18 @@
 .chevron {
   transition: transform 200ms ease;
 }
+
+.sidebarLink {
+  text-decoration: none;
+  color: #000;
+  font-size: var(--mantine-font-size-md);
+  font-weight: 400;
+   &:hover {
+    background-color: light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-7));
+  }
+}
+
+.active {
+  color: var(--mantine-primary-color-5);
+  font-weight: bold;
+}
