@@ -87,7 +87,7 @@ jobs:
             mv ~/agent-xenon/dist/apps/back-end/package-lock.json ~/agent-xenon/package-lock.json &&
             mv ~/agent-xenon/dist/apps/back-end/main.js ~/agent-xenon/main.js &&
             echo "moved code done" &&
-            sudo apt install nodejs &&
+            sudo apt install -y nodejs &&
             which npm &&
             npm i install pm2 -g &&
             npm install &&
