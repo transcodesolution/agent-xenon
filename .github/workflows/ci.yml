@@ -86,9 +86,15 @@ jobs:
             mv ~/agent-xenon/dist/apps/back-end/package.json ~/agent-xenon/package.json &&
             mv ~/agent-xenon/dist/apps/back-end/package-lock.json ~/agent-xenon/package-lock.json &&
             mv ~/agent-xenon/dist/apps/back-end/main.js ~/agent-xenon/main.js &&
+            echo "moved code done" &&
 
             export NVM_DIR=\"$HOME/.nvm\" &&
-            [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\" &&
+            echo "export done" &&
+            [ -s \"$NVM_DIR/nvm.sh\" ] &&
+            echo "checking done" &&
+            . \"$NVM_DIR/nvm.sh\" &&
+            echo "nvm activate done" &&
+            which nvm &&
             nvm use 22 &&
             
             npm install &&
