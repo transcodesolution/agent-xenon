@@ -80,14 +80,26 @@ jobs:
 
           echo "Extracting and restarting services..."
           ssh -o StrictHostKeyChecking=no $SERVER_URL "
+            export NVM_DIR=\$HOME/.nvm
+            [ -s \"\$NVM_DIR/nvm.sh\" ] && . \"\$NVM_DIR/nvm.sh\"
+            [ -s \"\$NVM_DIR/bash_completion\" ] && . \"\$NVM_DIR/bash_completion\"  # Optional: Load completion
+            nvm use 22.14.0
+            export PATH=\$NVM_DIR/versions/node/v22.14.0/bin:\$PATH
+
+            # Debugging: Verify installation
+            echo 'Node.js version:'
+            node -v
+            echo 'NPM version:'
+            npm -v
+            
             cd ~/agent-xenon &&
             tar -xzf build-output.tar.gz &&
-            mv ~/agent-xenon/dist/apps/back-end/assets ~/agent-xenon/assets  &&
+            mv ~/agent-xenon/dist/apps/back-end/assets/.gitkeep ~/agent-xenon/assets/.gitkeep &&
             mv ~/agent-xenon/dist/apps/back-end/package.json ~/agent-xenon/package.json &&
             mv ~/agent-xenon/dist/apps/back-end/package-lock.json ~/agent-xenon/package-lock.json &&
             mv ~/agent-xenon/dist/apps/back-end/main.js ~/agent-xenon/main.js &&
-            pm2 restart 0
-          "
+            npm install &&
+            pm2 restart 0"
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SERVER_URL: ${{ secrets.SERVER_URL }}
