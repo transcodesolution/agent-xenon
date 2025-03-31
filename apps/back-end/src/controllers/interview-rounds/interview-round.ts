@@ -198,8 +198,10 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
 
         const questions = await RoundQuestionAssign.find<IRoundQuestionAssign<IInterviewQuestionAnswer>>({ roundId: value.roundId, deletedAt: null }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes questionFormat").sort({ _id: 1 });
 
-        interviewRoundData._doc.applicants = applicants;
-        interviewRoundData._doc.questions = questions.map(i => i.questionId);
+        if (interviewRoundData) {
+            interviewRoundData._doc.applicants = applicants;
+            interviewRoundData._doc.questions = questions.map(i => i.questionId);
+        }
 
         return res.ok("interview round", interviewRoundData ?? {}, "getDataSuccess")
     } catch (error) {
