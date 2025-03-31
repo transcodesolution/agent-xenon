@@ -32,7 +32,7 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
                 // 1 day expiration
                 if (parseInt(isVerifyToken.generatedOn + 86400000) < new Date().getTime()) {
                     // if (parseInt(isVerifyToken.generatedOn + 120000) < new Date().getTime()) {
-                    return res.resourceUnavailable("tokenExpire", {})
+                    return res.unAuthorizedAccess("tokenExpire", {})
                 }
             }
 
