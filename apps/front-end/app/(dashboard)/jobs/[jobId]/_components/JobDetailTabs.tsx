@@ -25,8 +25,8 @@ export const JobDetailTabs = ({ jobId }: IJobDetailTabs) => {
 
   const onTabChange = (tab: string | null) => {
     switch (tab) {
-      case 'candidates':
-        router.push(`/jobs/${jobId}/candidates`)
+      case 'applicants':
+        router.push(`/jobs/${jobId}/applicants`)
         break;
       case 'rounds':
         router.push(`/jobs/${jobId}/rounds`)
@@ -42,9 +42,9 @@ export const JobDetailTabs = ({ jobId }: IJobDetailTabs) => {
         <Tabs.Tab value="details" ref={setControlRef('details')} className={classes.tab}>
           Details
         </Tabs.Tab>
-        {permission?.hasJobCandidatesTab &&
-          <Tabs.Tab value="candidates" ref={setControlRef('candidates')} className={classes.tab}>
-            Candidates
+        {permission?.hasJobApplicantsTab &&
+          <Tabs.Tab value="applicants" ref={setControlRef('applicants')} className={classes.tab}>
+            Applicants
           </Tabs.Tab>
         }
         {permission?.hasJobRoundsTab &&

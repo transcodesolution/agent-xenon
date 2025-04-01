@@ -1,3 +1,4 @@
+import { IMCQOptions } from "./interview-question";
 import { IRole } from "./role";
 import { ITimestamp } from "./timestamp";
 
@@ -54,3 +55,43 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     isSelectedByAgent: boolean;
     _doc?: IApplicant;
 }
+
+export interface IApplicantInterviewRounds {
+    applicantInterviewRounds: IApplicantInterviewRound[]
+}
+export interface IApplicantInterviewRound {
+    applicantStatus: string;
+    endDate: Date;
+    name: string;
+    selectionMarginInPercentage: number;
+    startDate: Date;
+    status: string;
+    type: string;
+    _id: string;
+};
+
+
+export interface IApplicantInterviewRoundDetail {
+    interviewRound: IApplicantInterviewRound,
+    applicantRoundAndQuestionAnswers: IApplicantQuestionAnswer
+}
+export interface IApplicantQuestionAnswer {
+    _id: string;
+    type: string;
+    tags: string[];
+    organizationId: string;
+    questionFormat: string;
+    deletedAt: string | null;
+    options: IMCQOptions[];
+    createdAt: string;
+    updatedAt: string;
+    description: string;
+    difficulty: string;
+    evaluationCriteria: string;
+    question: string;
+    timeLimitInMinutes: number;
+    questionId: string;
+    answer: string;
+    overallResult: string;
+    isMultiSelectOption?: boolean;
+};
