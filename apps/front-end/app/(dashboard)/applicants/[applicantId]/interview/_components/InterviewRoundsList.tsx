@@ -1,15 +1,19 @@
+import { useGetApplicantInterviewRounds } from '@agent-xenon/react-query-hooks';
 import { getStatusColor } from '@/libs/utils/ui-helpers';
-import { IApplicantInterviewRound } from '@agent-xenon/interfaces';
 import { Text, Paper, Badge, Group, Stack } from '@mantine/core';
 import dayjs from 'dayjs';
+import { useParams, useRouter } from 'next/navigation';
 
-interface InterviewRoundsList {
-  rounds: IApplicantInterviewRound[];
-  selectedRoundId: string | null;
-  onSelectRound: (roundId: string) => void;
-}
+export const InterviewRoundsList = () => {
+  const { applicantId, roundId } = useParams<{ applicantId: string, roundId: string }>();
+  const { data: applicantInterviewRounds } = useGetApplicantInterviewRounds({ applicantId: applicantId });
+  const rounds = applicantInterviewRounds?.data?.applicantInterviewRounds || []
+  const router = useRouter();
 
-export const InterviewRoundsList = ({ rounds, selectedRoundId, onSelectRound }: InterviewRoundsList) => {
+  const handleSelectRound = (roundId: string) => {
+    router.push(`/applicants/${applicantId}/interview/${roundId}`);
+  };
+
   return (
     <Stack h='calc(100vh - 190px)' styles={{ root: { overflowY: 'auto' } }}>
       {rounds.map((round) => (
@@ -17,12 +21,12 @@ export const InterviewRoundsList = ({ rounds, selectedRoundId, onSelectRound }: 
           key={round._id}
           p="md"
           withBorder
-          shadow={selectedRoundId === round._id ? 'md' : 'sm'}
+          shadow={roundId === round._id ? 'md' : 'sm'}
           style={{
             cursor: 'pointer',
-            borderColor: selectedRoundId === round._id ? 'var(--mantine-color-blue-6)' : undefined,
+            borderColor: roundId === round._id ? 'var(--mantine-color-blue-6)' : undefined,
           }}
-          onClick={() => onSelectRound(round._id)} // Pass only the round ID
+          onClick={() => handleSelectRound(round._id)}
         >
           <Group mb="xs">
             <Text fw={600}>{round.name}</Text>

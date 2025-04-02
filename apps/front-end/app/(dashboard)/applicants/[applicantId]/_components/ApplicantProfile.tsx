@@ -1,6 +1,4 @@
-import {
-  Card, Avatar, Text, Group, Badge, Divider, List, Box, Tabs, Flex
-} from '@mantine/core';
+import { Card, Avatar, Text, Group, Badge, Divider, List, Box, Tabs, Flex } from '@mantine/core';
 import { IconAt, IconPhone, IconMapPin } from '@tabler/icons-react';
 import { IApplicant } from '@agent-xenon/interfaces';
 
@@ -13,7 +11,7 @@ export const ApplicantProfile = ({ applicant }: IApplicantProfile) => {
     return (
       <Card withBorder p="md" radius="md" shadow="sm">
         <Text ta="center" fs="italic" c="dimmed">
-          Loading applicant profile...
+          Loading applicant...
         </Text>
       </Card>
     );
@@ -28,7 +26,7 @@ export const ApplicantProfile = ({ applicant }: IApplicantProfile) => {
           </Avatar>
           <div>
             <Text fw={700} size="lg">{`${applicant.firstName} ${applicant.lastName}`}</Text>
-            <Text color="dimmed" size="sm">
+            <Text c="dimmed" size="sm">
               {applicant.role?.name || "Role not specified"}
             </Text>
           </div>
@@ -124,7 +122,7 @@ export const ApplicantProfile = ({ applicant }: IApplicantProfile) => {
                 </List.Item>
               ))
             ) : (
-              <Text size="sm" color="dimmed">No education details available</Text>
+              <Text size="sm" c="dimmed">No education details available</Text>
             )}
           </List>
         </Tabs.Panel>
@@ -145,7 +143,7 @@ export const ApplicantProfile = ({ applicant }: IApplicantProfile) => {
                 </List.Item>
               ))
             ) : (
-              <Text size="sm" color="dimmed">No projects available</Text>
+              <Text size="sm" c="dimmed">No projects available</Text>
             )}
           </List>
         </Tabs.Panel>

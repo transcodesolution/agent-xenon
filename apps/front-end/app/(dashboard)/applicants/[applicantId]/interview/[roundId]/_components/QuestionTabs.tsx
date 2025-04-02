@@ -1,8 +1,9 @@
 import { useState, useMemo } from 'react';
-import { Box, Tabs, Text, Badge, Group, Stack } from '@mantine/core';
+import { Box, Tabs, Text, Badge, Group } from '@mantine/core';
 import { IconCode, IconFileText, IconListCheck } from '@tabler/icons-react';
 import { QuestionCard } from './QuestionCard';
 import { IApplicantQuestionAnswer } from '@agent-xenon/interfaces';
+import { AnswerQuestionFormat } from '@agent-xenon/constants';
 
 interface IQuestionTabs {
   questions: IApplicantQuestionAnswer[] | [];
@@ -12,27 +13,27 @@ export const QuestionTabs = ({ questions }: IQuestionTabs) => {
   const [activeTab, setActiveTab] = useState<string | null>('all');
 
   const codeQuestions = useMemo(() =>
-    questions.filter(q => q.questionFormat === 'code'),
+    questions.filter(q => q.questionFormat === AnswerQuestionFormat.CODE),
     [questions]
   );
 
   const textQuestions = useMemo(() =>
-    questions.filter(q => q.questionFormat === 'text'),
+    questions.filter(q => q.questionFormat === AnswerQuestionFormat.TEXT),
     [questions]
   );
 
   const mcqQuestions = useMemo(() =>
-    questions.filter(q => q.questionFormat === 'mcq'),
+    questions.filter(q => q.questionFormat === AnswerQuestionFormat.MCQ),
     [questions]
   );
 
   const getFilteredQuestions = () => {
     switch (activeTab) {
-      case 'code':
+      case AnswerQuestionFormat.CODE:
         return codeQuestions;
-      case 'text':
+      case AnswerQuestionFormat.TEXT:
         return textQuestions;
-      case 'mcq':
+      case AnswerQuestionFormat.MCQ:
         return mcqQuestions;
       default:
         return questions;

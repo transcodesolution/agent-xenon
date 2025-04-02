@@ -5,29 +5,13 @@ import { McqAnswer } from './McqAnswer';
 import { IconClock, IconTag } from '@tabler/icons-react';
 import { IApplicantQuestionAnswer } from '@agent-xenon/interfaces';
 import { AnswerQuestionFormat } from '@agent-xenon/constants';
+import { getDifficultyColor } from '@/libs/utils/ui-helpers';
 
 interface IQuestionCard {
   question: IApplicantQuestionAnswer;
 }
 
 export const QuestionCard = ({ question }: IQuestionCard) => {
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty.toLowerCase()) {
-      case 'easy':
-        return 'green';
-      case 'medium':
-        return 'yellow';
-      case 'hard':
-        return 'red';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getResultColor = (result: string) => {
-    return result === 'Pass' ? 'green' : 'red';
-  };
-  console.log('question', question, "------------>", question.answer);
 
   const renderAnswer = () => {
     switch (question.questionFormat) {
@@ -51,7 +35,7 @@ export const QuestionCard = ({ question }: IQuestionCard) => {
       <Group mb="md">
         <Text fw={600} size="lg">{question.question}</Text>
         <Badge
-          color={getResultColor(question.overallResult)}
+          color={question.overallResult === 'Pass' ? 'green' : 'red'}
           variant="filled"
         >
           {question.overallResult}
@@ -90,17 +74,19 @@ export const QuestionCard = ({ question }: IQuestionCard) => {
         </Group>
       </Group>
 
-      {question.evaluationCriteria && (
-        <Box mb="md">
-          <Text size="sm" fw={500} mb="xs">Evaluation Criteria:</Text>
-          <Text size="sm">{question.evaluationCriteria}</Text>
-        </Box>
-      )}
+      {
+        question.evaluationCriteria && (
+          <Box mb="md">
+            <Text size="sm" fw={500} mb="xs">Evaluation Criteria:</Text>
+            <Text size="sm">{question.evaluationCriteria}</Text>
+          </Box>
+        )
+      }
 
       <Divider my="sm" />
 
       {/* Applicants's Answer */}
       {renderAnswer()}
-    </Card>
+    </Card >
   );
 }
