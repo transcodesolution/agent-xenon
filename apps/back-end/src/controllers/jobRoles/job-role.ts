@@ -13,10 +13,6 @@ export const createJobRole = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkRoleExist = await JobRole.findOne({ organizationId: user.organizationId, name: value.name, deletedAt: null });
-
-        if (checkRoleExist) return res.badRequest("job role", {}, "dataAlreadyExist");
-
         value.organizationId = user.organizationId;
         const data = await JobRole.create(value);
 
