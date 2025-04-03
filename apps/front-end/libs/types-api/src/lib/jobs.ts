@@ -6,7 +6,7 @@ export interface IGetJobsParams {
   designation?: string;
 };
 
-interface IRoleDesignation {
+export interface IRoleDesignation {
   _id: string;
   name: string;
 }

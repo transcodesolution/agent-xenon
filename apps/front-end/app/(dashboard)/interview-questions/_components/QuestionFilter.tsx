@@ -1,6 +1,4 @@
-
 'use client'
-
 import { useRouter, useSearchParams } from 'next/navigation'
 import { CloseButton, Flex, Input } from '@mantine/core'
 import React, { useRef } from 'react'

@@ -21,7 +21,7 @@ export default function Page() {
         onSuccess: (newJob: IApiResponse<IInterviewQuestionAnswer>) => {
           const QuestionId = newJob?.data?._id
           if (QuestionId) {
-            router.push(`/questions/${QuestionId}`);
+            router.push(`/interview-questions/${QuestionId}`);
           }
         },
         onError: (error) => {
