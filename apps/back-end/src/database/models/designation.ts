@@ -3,6 +3,7 @@ import mongoose, { Schema } from 'mongoose';
 
 const DesignationSchema: Schema = new Schema({
   name: { type: String },
+  description: { type: String },
   organizationId: { type: Schema.Types.ObjectId },
   deletedAt: { type: Date, default: null }
 }, { timestamps: true, versionKey: false });

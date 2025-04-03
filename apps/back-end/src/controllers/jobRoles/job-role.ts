@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import { createJobRoleSchema, deleteJobRoleSchema, getJobRoleSchema, updateJobRoleSchema } from "../../validation/job-role";
+import { createJobRoleSchema, deleteJobRoleSchema, getJobRoleByIdSchema, getJobRoleSchema, updateJobRoleSchema } from "../../validation/job-role";
 import JobRole from "../../database/models/job-role";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, RootFilterQuery } from "mongoose";
 import { IJobRole } from "@agent-xenon/interfaces";
+import Job from "../../database/models/job";
 
 export const createJobRole = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -56,20 +57,26 @@ export const updateJobRole = async (req: Request, res: Response) => {
 export const deleteJobRole = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
-        const { error, value } = deleteJobRoleSchema.validate(req.params);
+        const { error, value } = deleteJobRoleSchema.validate(req.body);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkRoleExist = await JobRole.findOne({ _id: value.jobRoleId, deletedAt: null });
+        const Query: RootFilterQuery<IJobRole> = { _id: { $in: value.jobRoleId }, deletedAt: null };
 
-        if (!checkRoleExist) return res.badRequest("job role", {}, "getDataNotFound");
+        const checkRoleExist = await JobRole.find(Query);
+
+        if (checkRoleExist.length !== value.jobRoleId.length) return res.badRequest("some job roles", {}, "getDataNotFound");
 
         value.organizationId = user.organizationId;
-        const data = await JobRole.findByIdAndUpdate(value.jobRoleId, { $set: { deletedAt: new Date() } }, { new: true });
 
-        return res.ok("job role", data, "deleteDataSuccess")
+        await Promise.all([
+            JobRole.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true }),
+            Job.updateMany({ deletedAt: Query.deletedAt, role: Query._id }, { $set: { role: null } })
+        ]);
+
+        return res.ok("job roles", {}, "deleteDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -97,6 +104,24 @@ export const getJobRoles = async (req: Request, res: Response) => {
         ])
 
         return res.ok("job role", { jobRoles, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getJobRoleById = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = getJobRoleByIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IJobRole> = { deletedAt: null, _id: value.jobRoleId }
+
+        const jobRole = await JobRole.findOne(match);
+
+        return res.ok("job role", jobRole, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

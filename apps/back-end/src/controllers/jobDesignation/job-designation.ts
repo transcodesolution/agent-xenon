@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
-import { FilterQuery } from "mongoose";
+import { FilterQuery, RootFilterQuery } from "mongoose";
 import { IDesignation } from "@agent-xenon/interfaces";
 import Designation from "../../database/models/designation";
-import { createDesignationSchema, deleteDesignationSchema, getDesignationSchema, updateDesignationSchema } from "../../validation/designation";
+import { createDesignationSchema, deleteDesignationSchema, getDesignationSchema, getJobDesignationByIdSchema, updateDesignationSchema } from "../../validation/designation";
+import Job from "../../database/models/job";
 
 export const createJobDesignation = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -56,20 +57,26 @@ export const updateJobDesignation = async (req: Request, res: Response) => {
 export const deleteJobDesignation = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
-        const { error, value } = deleteDesignationSchema.validate(req.params);
+        const { error, value } = deleteDesignationSchema.validate(req.body);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkDesignationExist = await Designation.findOne({ _id: value.designationId, deletedAt: null });
+        const Query: RootFilterQuery<IDesignation> = { _id: { $in: value.designationId }, deletedAt: null };
 
-        if (!checkDesignationExist) return res.badRequest("designation", {}, "getDataNotFound");
+        const checkDesignationExist = await Designation.find(Query);
+
+        if (checkDesignationExist.length !== value.designationId.length) return res.badRequest("some job designations", {}, "getDataNotFound");
 
         value.organizationId = user.organizationId;
-        const data = await Designation.findByIdAndUpdate(value.designationId, { $set: { deletedAt: new Date() } }, { new: true });
 
-        return res.ok("designation", data, "deleteDataSuccess")
+        await Promise.all([
+            Designation.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true }),
+            Job.updateMany({ deletedAt: Query.deletedAt, designation: Query._id }, { $set: { designation: null } })
+        ]);
+
+        return res.ok("designations", {}, "deleteDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -97,6 +104,24 @@ export const getJobDesignation = async (req: Request, res: Response) => {
         ])
 
         return res.ok("designation", { designations, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getJobDesignationById = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = getJobDesignationByIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IDesignation> = { deletedAt: null, _id: value.designationId }
+
+        const designation = await Designation.findOne(match);
+
+        return res.ok("designation", designation, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
