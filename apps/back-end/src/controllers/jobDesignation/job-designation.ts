@@ -14,10 +14,6 @@ export const createJobDesignation = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkDesignationExist = await Designation.findOne({ organizationId: user.organizationId, name: value.name, deletedAt: null });
-
-        if (checkDesignationExist) return res.badRequest("designation", {}, "dataAlreadyExist");
-
         value.organizationId = user.organizationId;
         const data = await Designation.create(value);
 
