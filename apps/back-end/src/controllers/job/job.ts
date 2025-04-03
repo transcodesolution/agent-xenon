@@ -8,7 +8,6 @@ import { IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import Applicant from "../../database/models/applicant";
 import ApplicantRound from "../../database/models/applicant-round";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
-import { JobStatus } from "@agent-xenon/constants";
 import { JobQueryType } from "../../types/job";
 import Designation from "../../database/models/designation";
 import JobRole from "../../database/models/job-role";
@@ -61,8 +60,6 @@ export const updateJob = async (req: Request, res: Response) => {
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
 
-        if (checkJobExist.status === JobStatus.INTERVIEW_STARTED) { return res.badRequest("could not edit job right now as already interview started!", {}, "customMessage"); }
-
         if (value?.screeningCriteria) {
             value.qualificationCriteria = value.screeningCriteria;
         }
@@ -88,8 +85,6 @@ export const deleteJob = async (req: Request, res: Response) => {
         const checkJobExist = await Job.find({ _id: jobQuery, deletedAt: null });
 
         if (checkJobExist.length !== value.jobIds.length) return res.badRequest("job", {}, "getDataNotFound");
-
-        if (checkJobExist.some((i) => i.status === JobStatus.INTERVIEW_STARTED)) { return res.badRequest("could not delete jobs right now as some jobs already has interview started!", {}, "customMessage"); }
 
         const jobsUpdateResult = await Job.updateMany({ _id: jobQuery }, { $set: { deletedAt: new Date() } }, { new: true });
 
@@ -137,7 +132,7 @@ export const getJob = async (req: Request, res: Response) => {
 
         const [totalData, jobs] = await Promise.all([
             Job.countDocuments(match),
-            Job.find(match).populate("role", "name").populate("designation", "name").sort({ _id: -1 }).skip((value.page - 1) * value.limit).limit(value.limit)
+            Job.find(match).populate("role", "name", "", { deletedAt: null }).populate("designation", "name", "", { deletedAt: null }).sort({ _id: -1 }).skip((value.page - 1) * value.limit).limit(value.limit)
         ]);
 
         return res.ok("job", { jobs, totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
@@ -192,12 +187,13 @@ export const getJobById = async (req: Request, res: Response) => {
                     from: "designations",
                     localField: "designation",
                     foreignField: "_id",
-                    as: "designationData",
+                    as: "designation",
+                    pipeline: [{ $match: { deletedAt: null } }]
                 }
             },
             {
                 $unwind: {
-                    path: "$designationData",
+                    path: "$designation",
                     preserveNullAndEmptyArrays: true
                 }
             },
@@ -206,12 +202,13 @@ export const getJobById = async (req: Request, res: Response) => {
                     from: "jobroles",
                     localField: "role",
                     foreignField: "_id",
-                    as: "roleData",
+                    as: "role",
+                    pipeline: [{ $match: { deletedAt: null } }]
                 }
             },
             {
                 $unwind: {
-                    path: "$roleData",
+                    path: "$role",
                     preserveNullAndEmptyArrays: true
                 }
             },

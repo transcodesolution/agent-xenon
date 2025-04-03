@@ -3,7 +3,6 @@ import { createJobRoleSchema, deleteJobRoleSchema, getJobRoleByIdSchema, getJobR
 import JobRole from "../../database/models/job-role";
 import { FilterQuery, RootFilterQuery } from "mongoose";
 import { IJobRole } from "@agent-xenon/interfaces";
-import Job from "../../database/models/job";
 
 export const createJobRole = async (req: Request, res: Response) => {
     const { user } = req.headers;

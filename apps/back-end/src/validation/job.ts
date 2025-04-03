@@ -26,7 +26,7 @@ export const createJobSchema = Joi.object().keys({
 export const updateJobSchema = Joi.object().keys({
     ...jobSchema,
     ...jobIdSchema,
-    status: Joi.string().valid(JobStatus.CLOSE, JobStatus.PAUSED, JobStatus.INTERVIEW_STARTED).optional(),
+    status: Joi.string().valid(JobStatus.CLOSE, JobStatus.PAUSED).optional(),
 })
 
 export const deleteJobSchema = Joi.object().keys({
