@@ -408,7 +408,7 @@ export const getRoundByIdAndApplicantId = async (req: Request, res: Response) =>
                 {
                     $lookup:
                     {
-                        from: "interviewquestionanswers",
+                        from: "interviewquestions",
                         localField: "questionId",
                         foreignField: "_id",
                         as: "question"

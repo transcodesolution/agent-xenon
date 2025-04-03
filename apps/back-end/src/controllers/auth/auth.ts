@@ -2,15 +2,15 @@
 import { Request, Response } from 'express'
 import { User } from '../../database'
 import { loginSchema } from "../../validation/auth"
-import { IApplicant, ILoginResponse, IRole } from '@agent-xenon/interfaces'
+import { IApplicant, ILoginResponse, IRole, IUser } from '@agent-xenon/interfaces'
 import Organization from '../../database/models/organization'
-import { decodeEncodedToken, generateToken } from '../../utils/generate-token'
+import { generateToken } from '../../utils/generate-token'
 import { compareHash } from '../../utils/password-hashing'
 import Applicant from '../../database/models/applicant'
+import { UserType } from '@agent-xenon/constants'
+import { RootFilterQuery } from 'mongoose'
 
-export const login = async (req: Request, res: Response) => { //email or password // phone or password
-    // reqInfo(req)
-    // let rootTabs: any;
+export const login = async (req: Request, res: Response) => {
     try {
         const { error, value } = loginSchema.validate(req.body)
 
@@ -18,34 +18,34 @@ export const login = async (req: Request, res: Response) => { //email or passwor
             return res.badRequest(error?.details[0]?.message, {}, "customMessage")
         }
 
-        if (value.candidateToken) {
-            const decodedString = decodeEncodedToken(value.candidateToken);
-            value.name = decodedString.orgName;
-            value.jobId = decodedString.jobId;
-        }
-
         const checkOrganizationExist = await Organization.findOne({ name: value.name, deletedAt: null })
 
         if (!checkOrganizationExist) return res.badRequest("invalid_organization", {})
 
+        const isApplicantLogin = value.userType === UserType.APPLICANT;
+
+        const loginQuery: RootFilterQuery<IApplicant | IUser> = { organizationId: checkOrganizationExist._id, deletedAt: null };
+
         let response;
-        if (value.candidateToken) {
-            const applicantData = await Applicant.findOne({ "contactInfo.email": value.email, jobId: value.jobId, deletedAt: null }, "firstName lastName contactInfo role roleId").populate<{ role: IRole }>("role")
+        if (isApplicantLogin) {
+            loginQuery["contactInfo.email"] = value.email;
+            const applicantData = await Applicant.findOne(loginQuery, "firstName lastName contactInfo password role roleId").populate<{ role: IRole }>("role")
             response = {
-                ...applicantData._doc,
+                ...applicantData?._doc,
                 email: applicantData?.contactInfo.email,
-                password: applicantData?.contactInfo.password,
-                role: applicantData.role,
-            } as Pick<IApplicant, "firstName" | "lastName" | "contactInfo" | "role">;
+                password: applicantData?.password,
+                role: applicantData?.role,
+            } as Pick<IApplicant, "firstName" | "lastName" | "password" | "contactInfo" | "role">;
         } else {
-            response = await User.findOne({ email: value.email, organizationId: checkOrganizationExist._id, deletedAt: null }).populate<{ role: IRole }>("role")
+            loginQuery.email = value.email;
+            response = await User.findOne(loginQuery).populate<{ role: IRole }>("role")
         }
 
         if (!response) return res.badRequest("userNotFound", {})
         if (!response.role) return res.badRequest("user have not valid permissions", {}, "customMessage")
 
         let passwordMatch: boolean;
-        if (value.candidateToken) {
+        if (isApplicantLogin) {
             passwordMatch = value.password === response.password;
         } else {
             passwordMatch = await compareHash(value.password, response.password);
@@ -63,7 +63,6 @@ export const login = async (req: Request, res: Response) => { //email or passwor
                 generatedOn: (new Date().getTime())
             })
             result = {
-                // isEmailVerified: response?.isEmailVerified,
                 userType: response.role.type,
                 firstName: response?.firstName,
                 lastName: response?.lastName,

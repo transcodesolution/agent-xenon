@@ -26,5 +26,4 @@ export interface IInterviewRound<T = string> extends Partial<Document>, ITimesta
     previousRound?: Partial<IInterviewRound<T>>;
     questions?: T[]
     applicants?: IApplicantRoundList[]
-    expiredDate: Date;
 }

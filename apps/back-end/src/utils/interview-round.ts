@@ -2,7 +2,6 @@ import { App, InterviewRoundStatus } from "@agent-xenon/constants";
 import filterCandidateAgent from "../agents/screening-candidate";
 import { IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import { getSelectedApplicantDetails } from "./applicant";
-import { createEncodedShortToken } from "./generate-token";
 import { config } from "../config";
 import { sendMail } from "../helper/mail";
 import InterviewRound from "../database/models/interview-round";
@@ -35,12 +34,11 @@ export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => 
     const applicants = await getSelectedApplicantDetails(roundData.jobId._id);
     const domainUrl = config.FRONTEND_URL.replace(/(?<=\/\/)([^.]+)(?=\.)/, `${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
     const roundId = roundData._id.toString();
-    const token = createEncodedShortToken(roundData.jobId._id.toString(), applicants[0].organizationId.name);
 
     const bulkOps = applicants.map(i => ({
         updateOne: {
-            filter: { jobId: i.jobId, applicantId: i._id },
-            update: { $set: { jobId: i.jobId, applicantId: i._id, status: InterviewRoundStatus.ONGOING }, $push: { roundIds: roundId } },
+            filter: { jobId: roundData.jobId._id, applicantId: i._id },
+            update: { $set: { jobId: roundData.jobId._id, applicantId: i._id, status: InterviewRoundStatus.ONGOING }, $push: { roundIds: roundId } },
             upsert: true
         }
     }));
@@ -59,11 +57,11 @@ export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => 
 
             Your credentials:
             Email: ${i.contactInfo.email}
-            Password: ${i.contactInfo.password}
+            Password: ${i.password}
 
             Please login with above credentials and start examination.
 
-            Here is your examincation link: ${domainUrl}/${roundId}?token=${token}
+            Here is your examincation link: ${domainUrl}/${roundId}
 
             Best wishes and good luck.
             Thank you.

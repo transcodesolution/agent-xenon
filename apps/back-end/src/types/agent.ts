@@ -7,7 +7,7 @@ export interface IAgentResponse {
 
 export interface IResumeExtractResponse {
     type: string;
-    message: IApplicant[];
+    message: IApplicant;
 }
 
 export interface IScreeningResponse {
