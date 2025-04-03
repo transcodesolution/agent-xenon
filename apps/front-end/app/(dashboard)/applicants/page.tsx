@@ -1,4 +1,3 @@
-'use client'
 import { Stack, Title } from "@mantine/core";
 import React from "react";
 import { ApplicantList } from "./_components/ApplicantList";

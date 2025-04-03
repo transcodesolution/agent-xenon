@@ -1,5 +1,3 @@
-'use client';
-import React from 'react';
 import { Text, Card } from '@mantine/core';
 
 export default function Page() {

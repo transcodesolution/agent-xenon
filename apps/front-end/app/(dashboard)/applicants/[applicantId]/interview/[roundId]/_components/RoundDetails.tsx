@@ -1,3 +1,4 @@
+'use client'
 import { Box, Text, Title, Badge, Card, Group, Divider, LoadingOverlay } from '@mantine/core';
 import { IconCalendar } from '@tabler/icons-react';
 import { QuestionTabs } from './QuestionTabs';
@@ -27,52 +28,41 @@ export const RoundDetails = () => {
     );
   }
 
+  if (isLoading) {
+    return <LoadingOverlay visible />
+  }
 
   return (
-    <>
-      {isLoading &&
-        <LoadingOverlay visible />
-      }
-
-      <Card withBorder radius="md" p="md" shadow="sm">
-        <Title order={3} mb="md">{interviewRound?.name}</Title>
-        <Group mb="md">
-          <Group>
-            <IconCalendar size={16} />
-            <Text size="sm">
-              {dayjs(interviewRound.startDate).format('DD-MM-YYYY | HH:mm')} - {dayjs(interviewRound.endDate).format('DD-MM-YYYY | HH:mm')}
-            </Text>
-          </Group>
-
-          <Group >
-            <Badge color={getStatusColor(interviewRound.status)} variant="light">
-              Round: {interviewRound.status}
-            </Badge>
-
-            {interviewRound.applicantStatus && (
-              <Badge color={getStatusColor(interviewRound.applicantStatus)} variant="filled">
-                Applicant: {interviewRound.applicantStatus}
-              </Badge>
-            )}
-          </Group>
+    <Card withBorder radius="md" p="md" shadow="sm">
+      <Title order={3} mb="md">{interviewRound?.name}</Title>
+      <Group mb="md">
+        <Group>
+          <IconCalendar size={16} />
+          <Text size="sm">
+            {dayjs(interviewRound.startDate).format('DD-MM-YYYY | HH:mm')} - {dayjs(interviewRound.endDate).format('DD-MM-YYYY | HH:mm')}
+          </Text>
         </Group>
 
-        <Box>
-          <Text fw={500} size="sm">Selection Criteria:</Text>
-          <Text size="sm">{interviewRound.selectionMarginInPercentage}% pass rate required</Text>
-        </Box>
+        <Group >
+          <Badge color={getStatusColor(interviewRound.status)} variant="light">
+            Round: {interviewRound.status}
+          </Badge>
 
-        <Divider my="md" />
+          {interviewRound.applicantStatus && (
+            <Badge color={getStatusColor(interviewRound.applicantStatus)} variant="filled">
+              Applicant: {interviewRound.applicantStatus}
+            </Badge>
+          )}
+        </Group>
+      </Group>
 
-        {roundDetails ? (
-          <QuestionTabs questions={Array.isArray(roundDetails) ? roundDetails : [roundDetails]} />
-        ) : (
-          <Text ta="center" fs="italic" c="dimmed" py="md">
-            Loading questions...
-          </Text>
-        )}
-      </Card>
-    </>
+      <Box>
+        <Text fw={500} size="sm">Selection Criteria:</Text>
+        <Text size="sm">{interviewRound.selectionMarginInPercentage}% pass rate required</Text>
+      </Box>
 
+      <Divider my="md" />
+      <QuestionTabs questions={Array.isArray(roundDetails) ? roundDetails : [roundDetails]} />
+    </Card>
   );
 }

@@ -19,6 +19,7 @@ export function ApplicantList() {
   const page = Number(searchParams.get("page")) || 1;
   const pageSize = Number(searchParams.get("pageSize")) || PAGE_SIZES[0];
   const sortColumn = searchParams.get("sortColumn") || "appliedDate";
+  const searchText = searchParams.get("search") || "";
   const sortOrder = SORT_ORDER.includes(searchParams.get("sortOrder") || "") ? searchParams.get("sortOrder") : "desc";
 
 
@@ -30,6 +31,7 @@ export function ApplicantList() {
   const { data, isLoading, refetch } = useGetApplicants({
     page,
     limit: pageSize,
+    search: searchText
   });
 
   const { deleteApplicantsMutation } = useDeleteApplicants();

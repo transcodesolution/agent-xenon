@@ -1,4 +1,3 @@
-'use client'
 import React from 'react';
 import { Stack } from '@mantine/core';
 import { ApplicantDetails } from './_components/ApplicantDetails';
