@@ -1,7 +1,7 @@
 "use strict"
 import { Router } from 'express'
 import { JWT } from '../helper/jwt'
-import { jobRoleRouter } from './job-roles'
+import { jobRoleRouter } from './job-role'
 import { authRouter } from './auth'
 import { designationRouter } from './job-designation'
 import { interviewQuestionAnswerRouter } from './interview-question'
