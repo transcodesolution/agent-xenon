@@ -28,7 +28,7 @@ const mockData = [
     permissions: [Permission.JOB_READ, Permission.QUESTION_ANSWER_READ],
     links: [
       { label: 'Jobs', link: '/jobs', permissions: [Permission.JOB_READ] },
-      { label: 'Candidates', link: '/candidates', permissions: [Permission.JOB_READ] },
+      { label: 'Applicants', link: '/applicants', permissions: [Permission.JOB_READ] },
       { label: 'Q&A', link: '/questions', permissions: [Permission.QUESTION_ANSWER_READ] },
     ],
   },

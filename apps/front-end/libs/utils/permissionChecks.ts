@@ -21,7 +21,7 @@ export const PERMISSION_CONFIG: { [key: string]: Permission[] } = {
   hasDesignationDelete: [Permission.DESIGNATION_DELETE],
 
   hasApplicantRead: [Permission.APPLICANT_READ],
-  hasJobCandidatesTab: [Permission.JOB_CANDIDATES_TAB],
+  hasJobApplicantsTab: [Permission.JOB_CANDIDATES_TAB],
   hasJobRoundsTab: [Permission.JOB_ROUNDS_TAB],
   hasRoundOrderUpdate: [Permission.ROUND_ORDER_UPDATE],
 

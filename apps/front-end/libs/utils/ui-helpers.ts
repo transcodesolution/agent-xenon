@@ -1,4 +1,4 @@
-import { InterviewRoundStatus, InterviewRoundTypes } from "@agent-xenon/constants";
+import { Difficulty, InterviewRoundStatus, InterviewRoundTypes } from "@agent-xenon/constants";
 
 export const getStatusColor = (status: string): string => {
   switch (status) {
@@ -45,4 +45,15 @@ export const isEquals = <T>(obj1: T, obj2: T): boolean => {
   return keys1.every((key) => isEquals((obj1 as Record<string, unknown>)[key], (obj2 as Record<string, unknown>)[key]));
 };
 
-
+export const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty.toLowerCase()) {
+    case Difficulty.EASY:
+      return 'green';
+    case Difficulty.MEDIUM:
+      return 'yellow';
+    case Difficulty.HARD:
+      return 'red';
+    default:
+      return 'gray';
+  }
+};
