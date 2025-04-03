@@ -13,7 +13,7 @@ export const updateJobRoleSchema = Joi.object().keys({
 })
 
 export const deleteJobRoleSchema = Joi.object().keys({
-    jobRoleId: Joi.array().items(Joi.string().required()),
+    jobRoleIds: Joi.array().items(Joi.string().required()),
 })
 
 export const getJobRoleSchema = Joi.object().keys({

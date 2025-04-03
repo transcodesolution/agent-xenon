@@ -13,7 +13,7 @@ export const updateDesignationSchema = Joi.object().keys({
 })
 
 export const deleteDesignationSchema = Joi.object().keys({
-    designationId: Joi.array().items(Joi.string().required()),
+    designationIds: Joi.array().items(Joi.string().required()),
 })
 
 export const getDesignationSchema = Joi.object().keys({

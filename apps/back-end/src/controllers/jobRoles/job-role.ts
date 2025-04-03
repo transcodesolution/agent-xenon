@@ -63,18 +63,15 @@ export const deleteJobRole = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const Query: RootFilterQuery<IJobRole> = { _id: { $in: value.jobRoleId }, deletedAt: null };
+        const Query: RootFilterQuery<IJobRole> = { _id: { $in: value.jobRoleIds }, deletedAt: null };
 
         const checkRoleExist = await JobRole.find(Query);
 
-        if (checkRoleExist.length !== value.jobRoleId.length) return res.badRequest("some job roles", {}, "getDataNotFound");
+        if (checkRoleExist.length !== value.jobRoleIds.length) return res.badRequest("some job roles", {}, "getDataNotFound");
 
         value.organizationId = user.organizationId;
 
-        await Promise.all([
-            JobRole.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true }),
-            Job.updateMany({ deletedAt: Query.deletedAt, role: Query._id }, { $set: { role: null } })
-        ]);
+        await JobRole.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true });
 
         return res.ok("job roles", {}, "deleteDataSuccess")
     } catch (error) {

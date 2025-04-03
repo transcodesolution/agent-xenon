@@ -63,18 +63,15 @@ export const deleteJobDesignation = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const Query: RootFilterQuery<IDesignation> = { _id: { $in: value.designationId }, deletedAt: null };
+        const Query: RootFilterQuery<IDesignation> = { _id: { $in: value.designationIds }, deletedAt: null };
 
         const checkDesignationExist = await Designation.find(Query);
 
-        if (checkDesignationExist.length !== value.designationId.length) return res.badRequest("some job designations", {}, "getDataNotFound");
+        if (checkDesignationExist.length !== value.designationIds.length) return res.badRequest("some job designations", {}, "getDataNotFound");
 
         value.organizationId = user.organizationId;
 
-        await Promise.all([
-            Designation.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true }),
-            Job.updateMany({ deletedAt: Query.deletedAt, designation: Query._id }, { $set: { designation: null } })
-        ]);
+        await Designation.updateMany(Query, { $set: { deletedAt: new Date() } }, { new: true });
 
         return res.ok("designations", {}, "deleteDataSuccess")
     } catch (error) {
