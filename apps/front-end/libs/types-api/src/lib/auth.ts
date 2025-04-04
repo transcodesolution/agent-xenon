@@ -1,8 +1,10 @@
+import { UserType } from "@agent-xenon/constants";
+
 export interface ISignInRequest {
   name: string;
   email: string;
   password: string;
-  candidateToken?: string;
+  userType?: UserType;
 }
 
 export interface ISignInResponse {

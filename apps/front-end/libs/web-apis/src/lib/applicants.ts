@@ -1,6 +1,6 @@
 import { IApiResponse, IApplicant, IApplicantInterviewRoundDetail, IApplicantInterviewRounds, PaginationApiResponseType } from "@agent-xenon/interfaces";
 import http from './http-common'
-import { IGetApplicantsRequest } from "@agent-xenon/types-api";
+import { IDeleteApplicantsRequest, IGetApplicantsRequest } from "@agent-xenon/types-api";
 import { apiErrorHandler } from "@/libs/utils/apiErrorHandler";
 
 export const getApplicants = async (params: IGetApplicantsRequest): Promise<IApiResponse<PaginationApiResponseType<IApplicant[]>>> => {
@@ -12,9 +12,9 @@ export const getApplicants = async (params: IGetApplicantsRequest): Promise<IApi
   }
 };
 
-export const deleteApplicants = async (applicantIds: string[]): Promise<IApiResponse> => {
+export const deleteApplicants = async (params: IDeleteApplicantsRequest): Promise<IApiResponse> => {
   try {
-    const result = await http.delete<IApiResponse>('/applicant', { data: { applicantIds } });
+    const result = await http.delete<IApiResponse>('/applicant', { data: params });
     return result.data;
   } catch (error) {
     throw new Error(`Error while delete applicants: ${error}`);
