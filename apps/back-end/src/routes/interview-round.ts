@@ -11,7 +11,7 @@ router.get("/by-job/:jobId", validateRoleAndPermissions([Permission.JOB_ROUNDS_T
 router.get("/:roundId/applicant/:applicantId", validateRoleAndPermissions([Permission.APPLICANT_INTERVIEW_DETAIL]), getRoundByIdAndApplicantId);
 router.get("/:roundId", validateRoleAndPermissions([Permission.JOB_ROUNDS_TAB]), getInterviewRoundsById);
 router.post("/start", validateRoleAndPermissions([Permission.JOB_ROUNDS_TAB]), validateInterviewRound, manageInterviewRound);
-router.post("/order-update", validateRoleAndPermissions([Permission.ROUND_ORDER_UPDATE]), updateRoundOrder);
+router.patch("/order-update", validateRoleAndPermissions([Permission.ROUND_ORDER_UPDATE]), updateRoundOrder);
 router.patch("/status/:roundId", validateRoleAndPermissions([Permission.JOB_ROUNDS_TAB]), updateRoundStatus);
 
 export const interviewRoundRouter = router;
