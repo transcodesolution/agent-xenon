@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import mongoose, { FilterQuery, QuerySelector, RootFilterQuery, UpdateQuery } from "mongoose";
 import { IApplicant, IApplicantRound } from "@agent-xenon/interfaces";
-import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
+import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantInterviewDetailSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
 import Applicant from "../../database/models/applicant";
 import ApplicantRound from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
@@ -178,7 +178,7 @@ export const getApplicantById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IApplicant> = { deletedAt: null, organizationId: user.organizationId, _id: value.applicantId };
 
-        const applicantData = await Applicant.findOne<IApplicant>(match);
+        const applicantData = await Applicant.findOne<IApplicant>(match).populate("appliedJobIds");
 
         return res.ok("applicant", applicantData ?? {}, "getDataSuccess");
     } catch (error) {
@@ -187,18 +187,21 @@ export const getApplicantById = async (req: Request, res: Response) => {
 }
 
 export const getApplicantInterviewDetail = async (req: Request, res: Response) => {
-    const { user } = req.headers;
     try {
-        const { error, value } = getApplicantByIdSchema.validate(req.params);
+        const { error, value } = getApplicantInterviewDetailSchema.validate(req.params);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
+        value.applicantId = new mongoose.Types.ObjectId(value.applicantId);
+
         const applicantInterviewRounds = await Applicant.aggregate([
             {
                 $match: {
-                    _id: new mongoose.Types.ObjectId(value.applicantId)
+                    _id: value.applicantId,
+                    deletedAt: null,
+                    appliedJobIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.jobId) } },
                 }
             },
             {
@@ -208,6 +211,7 @@ export const getApplicantInterviewDetail = async (req: Request, res: Response) =
                     foreignField: "jobId",
                     as: "interviewRound",
                     pipeline: [
+                        { $match: { deletedAt: null } },
                         {
                             $sort: {
                                 roundNumber: 1
@@ -243,7 +247,7 @@ export const getApplicantInterviewDetail = async (req: Request, res: Response) =
                     pipeline: [
                         {
                             $match: {
-                                applicantId: user._id
+                                applicantId: value.applicantId
                             }
                         },
                         {

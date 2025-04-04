@@ -11,7 +11,7 @@ router.post("/createByAgent", validateRoleAndPermissions(commonPermissions), cre
 router.put("/:applicantId", validateRoleAndPermissions(commonPermissions), updateApplicant);
 router.delete("/", validateRoleAndPermissions(commonPermissions), deleteApplicant);
 router.get("/", validateRoleAndPermissions([Permission.APPLICANT_READ, ...commonPermissions]), getApplicants);
-router.get("/interview-detail/:applicantId", validateRoleAndPermissions([Permission.APPLICANT_INTERVIEW_DETAIL]), getApplicantInterviewDetail);
+router.get("/interview-detail/:applicantId/job/:jobId", validateRoleAndPermissions([Permission.APPLICANT_INTERVIEW_DETAIL]), getApplicantInterviewDetail);
 router.get("/:applicantId", validateRoleAndPermissions(commonPermissions), getApplicantById);
 
 export const applicantRouter = router;

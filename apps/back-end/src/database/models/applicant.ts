@@ -19,7 +19,7 @@ const ApplicantSchema: Schema = new Schema({
     strengths: [{ type: String }],
     salaryExpectation: { type: Number },
     feedback: { type: String },
-    appliedJobIds: { type: [Schema.Types.ObjectId], index: true, },
+    appliedJobIds: { type: [Schema.Types.ObjectId], ref: "Job", index: true, },
     organizationId: { type: Schema.Types.ObjectId, ref: "Organization", index: true },
     experienceDetails: [{
         durationStart: { type: Date },
