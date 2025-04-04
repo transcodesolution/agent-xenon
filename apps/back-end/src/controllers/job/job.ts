@@ -12,6 +12,7 @@ import { JobQueryType } from "../../types/job";
 import Designation from "../../database/models/designation";
 import JobRole from "../../database/models/job-role";
 import { s3deleteObjects } from "../../utils/s3";
+import { IPagination } from "../../types/aggregate-pagination";
 
 export const createJob = async (req: Request, res: Response) => {
     const { user } = req.headers;

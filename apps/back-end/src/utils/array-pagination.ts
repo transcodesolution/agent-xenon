@@ -1,4 +1,4 @@
-export function paginateArray(data: Array<any>, page: number, limit: number) {
+export function paginateArray(data: Array<object | string | number>, page: number, limit: number) {
     // Calculate the starting index based on the page and limit
     const skip = (page - 1) * limit;
 

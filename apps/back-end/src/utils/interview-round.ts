@@ -183,7 +183,7 @@ export const manageMeetingScheduleWithCandidate = async (jobId: string, intervie
                 const start = startDateTime.toISOString();
                 startDateTime.setMinutes(startDateTime.getMinutes() + 60);
                 const end = startDateTime.toISOString();
-                const eventData = await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
+                await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
                 // scheduledMeetings.push(eventData.data);
                 await ApplicantRound.updateOne({ jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundId } }, { upsert: true })
             } else {
