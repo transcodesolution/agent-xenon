@@ -11,14 +11,32 @@ import { useParams } from 'next/navigation';
 import { showNotification } from "@mantine/notifications";
 import { usePermissions } from "@/libs/hooks/usePermissions";
 import { useGetDesignationById, useUpdateDesignation } from "@agent-xenon/react-query-hooks";
-
-let timeOut: string | number | NodeJS.Timeout | undefined;
+import { useDebouncedCallback } from "@mantine/hooks";
 
 export const DesignationDetails = () => {
   const { designationId } = useParams<{ designationId: string }>();
   const { data: designation, isLoading } = useGetDesignationById({ designationId: designationId });
   const { mutate: updateDesignation } = useUpdateDesignation();
-  const permission = usePermissions()
+  const permission = usePermissions();
+
+  const debouncedUpdate = useDebouncedCallback((field: string, value: string | Permission[]) => {
+    updateDesignation(
+      {
+        _id: designationId,
+        [field]: value,
+      },
+      {
+        onError: (error) => {
+          showNotification({
+            title: "Update Failed",
+            message: error.message,
+            color: "red",
+            icon: <IconX size={16} />,
+          });
+        },
+      }
+    );
+  }, 600);
 
   const handleChange = (field: string, value: string | Permission[]) => {
     if (!permission?.hasDesignationUpdate) {
@@ -28,25 +46,8 @@ export const DesignationDetails = () => {
       });
       return;
     }
-    clearTimeout(timeOut);
-    timeOut = setTimeout(() => {
-      updateDesignation(
-        {
-          _id: designationId,
-          [field]: value,
-        },
-        {
-          onError: (error) => {
-            showNotification({
-              title: "Update Failed",
-              message: error.message,
-              color: "red",
-              icon: <IconX size={16} />,
-            });
-          },
-        }
-      );
-    }, 600);
+
+    debouncedUpdate(field, value);
   };
 
   return (
@@ -66,4 +67,4 @@ export const DesignationDetails = () => {
       />
     </Stack>
   );
-}
+};

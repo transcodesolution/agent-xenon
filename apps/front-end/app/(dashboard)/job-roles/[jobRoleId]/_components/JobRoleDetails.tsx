@@ -11,14 +11,32 @@ import { useParams } from 'next/navigation';
 import { useGetJobRoleById, useUpdateJobRole } from '@agent-xenon/react-query-hooks';
 import { showNotification } from "@mantine/notifications";
 import { usePermissions } from "@/libs/hooks/usePermissions";
-
-let timeOut: string | number | NodeJS.Timeout | undefined;
+import { useDebouncedCallback } from "@mantine/hooks";
 
 export const JobRoleDetails = () => {
   const { jobRoleId } = useParams<{ jobRoleId: string }>();
-  const { data: jobRoles, isLoading } = useGetJobRoleById({ jobRoleId: jobRoleId });
+  const { data: jobRoles, isLoading } = useGetJobRoleById({ jobRoleId });
   const { mutate: updateRole } = useUpdateJobRole();
-  const permission = usePermissions()
+  const permission = usePermissions();
+
+  const debouncedUpdate = useDebouncedCallback((field: string, value: string | Permission[]) => {
+    updateRole(
+      {
+        _id: jobRoleId,
+        [field]: value,
+      },
+      {
+        onError: (error) => {
+          showNotification({
+            title: "Update Failed",
+            message: error.message,
+            color: "red",
+            icon: <IconX size={16} />,
+          });
+        },
+      }
+    );
+  }, 600);
 
   const handleChange = (field: string, value: string | Permission[]) => {
     if (!permission?.hasJobRoleUpdate) {
@@ -28,22 +46,8 @@ export const JobRoleDetails = () => {
       });
       return;
     }
-    clearTimeout(timeOut);
-    timeOut = setTimeout(() => {
-      updateRole({
-        _id: jobRoleId,
-        [field]: value,
-      }, {
-        onError: (error) => {
-          showNotification({
-            title: "Update Failed",
-            message: error.message,
-            color: "red",
-            icon: <IconX size={16} />,
-          });
-        },
-      });
-    }, 600);
+
+    debouncedUpdate(field, value);
   };
 
   return (
@@ -64,4 +68,4 @@ export const JobRoleDetails = () => {
       />
     </Stack>
   );
-}
+};
