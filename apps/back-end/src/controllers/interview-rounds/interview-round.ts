@@ -15,6 +15,7 @@ import { getApplicantRoundStatusCommonQuery, getSelectedApplicantDetails } from 
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
 import InterviewQuestion from "../../database/models/interview-question";
 import ApplicantAnswer from "../../database/models/applicant-answer";
+import { APPLICANT_REJECTION_TEMPLATE, APPLICANT_SELECTION_TEMPLATE } from "../../helper/email-templates/interview-status";
 
 export const createInterviewRound = async (req: Request, res: Response) => {
     try {
@@ -117,6 +118,7 @@ export const deleteInterviewRound = async (req: Request, res: Response) => {
 }
 
 export const updateRoundStatus = async (req: Request, res: Response) => {
+    const { user } = req.headers;
     try {
         Object.assign(req.body, req.params);
         const { error, value } = updateRoundStatusSchema.validate(req.body);
@@ -124,6 +126,10 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
+
+        const interviewRoundData = await InterviewRound.findOne<IInterviewRound>({ _id: value.roundId, deletedAt: null }, "name type status");
+
+        if (!interviewRoundData) { return res.badRequest("interview round", {}, "getDataNotFound") };
 
         let message = "round status";
 
@@ -143,23 +149,20 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
 
             await ApplicantRound.updateOne(Query, { $set: value });
 
+
             const selectedApplicants = await getSelectedApplicantDetails(value.jobId);
             const applicantIds = await ApplicantRound.distinct("applicantId", jobWiseQuery);
             if (selectedApplicants.length <= applicantIds.length) {
-                await InterviewRound.updateOne({ _id: value.roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
+                interviewRoundData.status = InterviewRoundStatus.COMPLETED;
+                await interviewRoundData.save();
             }
 
-            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
-
-            We appreciate your time and effort in participating in the technical round for the applied position.  
-            
-            ${value.isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
-            
-            Thank you for your interest in our company.`)
+            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", value.isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, user.organization.name, { roundName: interviewRoundData.name, roundType: interviewRoundData.type });
 
             message = "applicant round status";
         } else {
-            await InterviewRound.updateOne({ _id: value.roundId }, { $set: { status: value.roundStatus } });
+            interviewRoundData.status = value.roundStatus;
+            await interviewRoundData.save();
             if (value.status === InterviewRoundStatus.COMPLETED) {
                 await updateApplicantStatusOnRoundComplete<string>({ $eq: value.roundId });
             }
@@ -318,7 +321,7 @@ export const submitExam = async (req: Request, res: Response) => {
 
         res.ok("exam submitted successfully", {}, "customMessage");
 
-        await handleCandidateExamSubmission(questions, value.questionAnswers, interviewRoundData.selectionMarginInPercentage, Query, applicantRoundData.applicantId.contactInfo.email, value.roundId, user._id.toString());
+        await handleCandidateExamSubmission(questions, value.questionAnswers, Query, applicantRoundData.applicantId.contactInfo.email, interviewRoundData, user._id.toString(), user.organization.name);
 
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
@@ -463,7 +466,7 @@ export const getRoundByIdAndApplicantId = async (req: Request, res: Response) =>
     }
 }
 
-export const handleCandidateExamSubmission = async (questions: questionAnswerType[], questionAnswers: submitExamAnswerPayloadType[], selectionMarginInPercentage: number, applicantRoundQuery: RootFilterQuery<IApplicantRound>, applicantEmail: string, roundId: string, applicantId: string) => {
+export const handleCandidateExamSubmission = async (questions: questionAnswerType[], questionAnswers: submitExamAnswerPayloadType[], applicantRoundQuery: RootFilterQuery<IApplicantRound>, applicantEmail: string, interviewRoundData: IInterviewRound, applicantId: string, organizationName: string) => {
     try {
         let correctAnswerCount = 0;
 
@@ -490,13 +493,13 @@ export const handleCandidateExamSubmission = async (questions: questionAnswerTyp
                 } case AnswerQuestionFormat.FILE:
                     break;
             }
-            const applicantAnswerQuery = { applicantId, roundId };
+            const applicantAnswerQuery = { applicantId, roundId: interviewRoundData._id };
             await ApplicantAnswer.updateOne(applicantAnswerQuery, { $push: { answers: answer }, $set: applicantAnswerQuery }, { upsert: true });
         }
 
         const applicantPercentage = Math.floor((correctAnswerCount / questions.length) * 100);
 
-        const isSelected = applicantPercentage >= selectionMarginInPercentage;
+        const isSelected = applicantPercentage >= interviewRoundData.selectionMarginInPercentage;
 
         await Promise.all([
             ApplicantRound.updateOne(applicantRoundQuery, {
@@ -505,13 +508,7 @@ export const handleCandidateExamSubmission = async (questions: questionAnswerTyp
                     status: InterviewRoundStatus.COMPLETED
                 }
             }),
-            sendMail(applicantEmail, "Candidate Interview Status Mail", `Dear Candidate,  
-
-                We appreciate your time and effort in participating in the technical round for the applied position.  
-
-                ${isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
-
-                Thank you for your interest in our company.`)
+            sendMail(applicantEmail, "Candidate Interview Status Mail", isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName, { roundName: interviewRoundData.name, roundType: interviewRoundData.type }),
         ]);
     } catch (error) {
         console.error("submitExam: ", error.message);

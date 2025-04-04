@@ -16,6 +16,9 @@ import ApplicantRound from "../database/models/applicant-round";
 import { socketIo } from "../helper/socket";
 import { checkGoogleTokenExpiry } from "./google-service";
 import AppModel from "../database/models/app";
+import { APPLICANT_EXAMINATION_TEMPLATE } from "../helper/email-templates/interview-round";
+import { REGEX } from "./constants";
+import { updateFrontendDomainUrl } from "./technical-round";
 
 export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, organizationId: string) => {
     const Query: RootFilterQuery<IInterviewRound> = { _id: roundData._id };
@@ -32,7 +35,7 @@ export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, org
 
 export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => {
     const applicants = await getSelectedApplicantDetails(roundData.jobId._id);
-    const domainUrl = config.FRONTEND_URL.replace(/(?<=\/\/)([^.]+)(?=\.)/, `${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
+    const domainUrl = updateFrontendDomainUrl(applicants[0]?.organizationId?.name);
     const roundId = roundData._id.toString();
 
     const bulkOps = applicants.map(i => ({
@@ -46,27 +49,7 @@ export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => 
     await ApplicantRound.bulkWrite(bulkOps);
 
     await Promise.all(applicants.map((i) => {
-        return sendMail(i.contactInfo.email, `Technical Round Exam Link`, `
-            Dear candidate,
-
-            We have receive your inquiry in our organization as your are looking to collaborate in our team.
-
-            Get ready for your first ${roundData.type} round.
-
-            We are sending you a link to give examnication from your home.
-
-            Your credentials:
-            Email: ${i.contactInfo.email}
-            Password: ${i.password}
-
-            Please login with above credentials and start examination.
-
-            Here is your examincation link: ${domainUrl}/${roundId}
-
-            Best wishes and good luck.
-            Thank you.
-            HR ${i.organizationId.name}.
-        `)
+        return sendMail(i.contactInfo.email, `Exam Invitation Mail`, APPLICANT_EXAMINATION_TEMPLATE, i.organizationId.name, { roundType: roundData.type, applicantEmail: i.contactInfo.email, applicantPassword: i.password, examLink: `${domainUrl}/${config.EXAM_PAGE_FRONTEND_ROUTE_NAME}/${roundId}` });
     }));
 }
 

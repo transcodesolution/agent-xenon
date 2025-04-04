@@ -6,6 +6,8 @@ import { FilterQuery } from "mongoose";
 import { IUser } from "@agent-xenon/interfaces";
 import { generateHash } from "../../utils/password-hashing";
 import { sendMail } from "../../helper/mail";
+import { ACCOUNT_CREATION_TEMPLATE, ACCOUNT_UPDATION_TEMPLATE } from "../../helper/email-templates/user";
+import { updateFrontendDomainUrl } from "../../utils/technical-round";
 
 export const getUserPermissions = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -74,11 +76,12 @@ export const updateUser = async (req: Request, res: Response) => {
             return res.notFound('User not found', {}, 'getDataNotFound');
         }
 
+        const organizationData = await Organization.findOne({ _id: user.organizationId }, "name");
+
         if (!oldUserData.email) {
-            const organizationData = await Organization.findOne({ _id: user.organizationId }, "name");
-            await sendMail(updatedUser.email, "Account Created", `Congratulations, You were added to ${organizationData.name} organization.`);
+            await sendMail(updatedUser.email, "Account Created", ACCOUNT_CREATION_TEMPLATE, organizationData.name, { frontendDomailUrl: updateFrontendDomainUrl(organizationData.name) });
         } else if (oldUserData.email !== value.email) {
-            await sendMail(updatedUser.email, "Account Updated", `Congratulations, Your account information is updated on ${new Date().toString()}. If you not update this information, please make sure to contact the organization admin.`);
+            await sendMail(updatedUser.email, "Account Updated", ACCOUNT_UPDATION_TEMPLATE, organizationData.name, { updatedOn: new Date().toLocaleString() });
         }
 
         return res.ok('user', { user: updatedUser }, 'updateDataSuccess');

@@ -20,8 +20,6 @@ declare module "jsonwebtoken" {
     }
 }
 
-interface IPopulate { role: IRole }
-
 export const JWT = async (req: Request, res: Response, next: NextFunction) => {
     const { authorization } = req.headers;
     if (authorization) {
@@ -36,6 +34,7 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
                 }
             }
 
+            const organizationName = "organization";
             const roleName = "role";
 
             if (checkToken) {
@@ -43,9 +42,9 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
                 let result: IUser | IApplicant;
 
                 if (isVerifyToken.type === RoleType.CANDIDATE) {
-                    result = await Applicant.findOne(Query).populate<IPopulate>(roleName);
+                    result = await Applicant.findOne(Query).populate(roleName).populate(organizationName);
                 } else {
-                    result = await User.findOne(Query).populate<IPopulate>(roleName);
+                    result = await User.findOne(Query).populate(roleName).populate(organizationName);
                 }
 
                 if (isVerifyToken.organizationId !== result.organizationId.toString()) {

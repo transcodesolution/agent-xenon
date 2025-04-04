@@ -17,6 +17,7 @@ export const config = {
   SERVICE: process.env.SERVICE,
   FCM_KEY: process.env.FCM_KEY,
   FRONTEND_URL: process.env.FRONTEND_URL,
+  EXAM_PAGE_FRONTEND_ROUTE_NAME: process.env.EXAM_PAGE_FRONTEND_ROUTE_NAME,
   BACKEND_URL: process.env.BACKEND_URL,
   NODE_ENV: process.env.NODE_ENV,
   S3_BUCKET_KEY: process.env.S3_BUCKET_KEY,
