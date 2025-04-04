@@ -8,6 +8,7 @@ import { generateHash } from "../../utils/password-hashing";
 import { sendMail } from "../../helper/mail";
 import { ACCOUNT_CREATION_TEMPLATE, ACCOUNT_UPDATION_TEMPLATE } from "../../helper/email-templates/user";
 import { updateFrontendDomainUrl } from "../../utils/technical-round";
+import { generateMailBody } from "../../utils/mail";
 
 export const getUserPermissions = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -79,9 +80,11 @@ export const updateUser = async (req: Request, res: Response) => {
         const organizationData = await Organization.findOne({ _id: user.organizationId }, "name");
 
         if (!oldUserData.email) {
-            await sendMail(updatedUser.email, "Account Created", ACCOUNT_CREATION_TEMPLATE, organizationData.name, { frontendDomailUrl: updateFrontendDomainUrl(organizationData.name) });
+            const html = generateMailBody({ template: ACCOUNT_CREATION_TEMPLATE, organizationName: organizationData.name, extraData: { frontendDomailUrl: updateFrontendDomainUrl(organizationData.name) } });
+            await sendMail(updatedUser.email, "Account Created", html);
         } else if (oldUserData.email !== value.email) {
-            await sendMail(updatedUser.email, "Account Updated", ACCOUNT_UPDATION_TEMPLATE, organizationData.name, { updatedOn: new Date().toLocaleString() });
+            const html = generateMailBody({ template: ACCOUNT_UPDATION_TEMPLATE, organizationName: organizationData.name, extraData: { updatedOn: new Date().toLocaleString() } });
+            await sendMail(updatedUser.email, "Account Updated", html);
         }
 
         return res.ok('user', { user: updatedUser }, 'updateDataSuccess');

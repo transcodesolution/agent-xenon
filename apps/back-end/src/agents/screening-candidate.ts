@@ -9,6 +9,7 @@ import { RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRound, IOrganization } from "@agent-xenon/interfaces";
 import { APPLICANT_SELECTION_TEMPLATE, APPLICANT_REJECTION_TEMPLATE } from "../helper/email-templates/interview-status";
 import InterviewRound from "../database/models/interview-round";
+import { generateMailBody } from "../utils/mail";
 
 const client = createOpenAIClient();
 
@@ -65,7 +66,8 @@ async function updateApplicantSelectedToDb(jobId: string, roundId: string, isSel
     }, { upsert: true });
     if (email) {
         const interviewRoundData = await InterviewRound.findOne({ _id: roundId, deletedAt: null }, "name type").lean();
-        await sendMail(email, "Candidate Interview Status Mail", isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName, { roundName: interviewRoundData.name, roundType: interviewRoundData.type });
+        const html = generateMailBody({ template: isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
+        await sendMail(email, "Candidate Interview Status Mail", html);
     }
     return "done";
 }

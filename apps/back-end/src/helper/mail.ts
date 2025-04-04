@@ -1,8 +1,5 @@
 import nodemailer, { SendMailOptions } from "nodemailer"
 import { config } from "../config";
-import ejs from "ejs";
-import { capitalize } from "../utils/capitalize";
-import { IMailTemplate } from "../types/mail-template";
 
 const transporter = nodemailer.createTransport({
     service: "gmail",
@@ -12,12 +9,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-export const sendMail = async (targetMail: string, subject: string, template: string, organizationName: string, extraData: IMailTemplate) => {
-    const html = ejs.render(
-        template,
-        { ...extraData, organizationName: capitalize(organizationName) }
-    );
-
+export const sendMail = async (targetMail: string, subject: string, html: string) => {
     const mailConfigurations: SendMailOptions = {
         from: config.MAIL,
         to: targetMail,

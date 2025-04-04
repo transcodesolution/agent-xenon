@@ -17,8 +17,8 @@ import { socketIo } from "../helper/socket";
 import { checkGoogleTokenExpiry } from "./google-service";
 import AppModel from "../database/models/app";
 import { APPLICANT_EXAMINATION_TEMPLATE } from "../helper/email-templates/interview-round";
-import { REGEX } from "./constants";
 import { updateFrontendDomainUrl } from "./technical-round";
+import { generateMailBody } from "./mail";
 
 export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, organizationId: string) => {
     const Query: RootFilterQuery<IInterviewRound> = { _id: roundData._id };
@@ -35,7 +35,8 @@ export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, org
 
 export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => {
     const applicants = await getSelectedApplicantDetails(roundData.jobId._id);
-    const domainUrl = updateFrontendDomainUrl(applicants[0]?.organizationId?.name);
+    const organizationName = applicants[0]?.organizationId?.name;
+    const domainUrl = updateFrontendDomainUrl(organizationName);
     const roundId = roundData._id.toString();
 
     const bulkOps = applicants.map(i => ({
@@ -48,8 +49,13 @@ export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => 
 
     await ApplicantRound.bulkWrite(bulkOps);
 
+    const extraDataToCreateHtmlBody = { template: APPLICANT_EXAMINATION_TEMPLATE, organizationName, extraData: { roundType: roundData.type, applicantEmail: "", applicantPassword: "", examLink: `${domainUrl}/${config.EXAM_PAGE_FRONTEND_ROUTE_NAME}/${roundId}` } };
+
     await Promise.all(applicants.map((i) => {
-        return sendMail(i.contactInfo.email, `Exam Invitation Mail`, APPLICANT_EXAMINATION_TEMPLATE, i.organizationId.name, { roundType: roundData.type, applicantEmail: i.contactInfo.email, applicantPassword: i.password, examLink: `${domainUrl}/${config.EXAM_PAGE_FRONTEND_ROUTE_NAME}/${roundId}` });
+        extraDataToCreateHtmlBody.extraData.applicantEmail = i.contactInfo.email;
+        extraDataToCreateHtmlBody.extraData.applicantPassword = i.password;
+        const html = generateMailBody(extraDataToCreateHtmlBody);
+        return sendMail(i.contactInfo.email, `Exam Invitation Mail`, html);
     }));
 }
 

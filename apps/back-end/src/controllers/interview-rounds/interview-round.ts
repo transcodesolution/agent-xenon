@@ -16,6 +16,7 @@ import { IRoundQuestionAssign } from "../../types/round-question-assign";
 import InterviewQuestion from "../../database/models/interview-question";
 import ApplicantAnswer from "../../database/models/applicant-answer";
 import { APPLICANT_REJECTION_TEMPLATE, APPLICANT_SELECTION_TEMPLATE } from "../../helper/email-templates/interview-status";
+import { generateMailBody } from "../../utils/mail";
 
 export const createInterviewRound = async (req: Request, res: Response) => {
     try {
@@ -157,7 +158,9 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
                 await interviewRoundData.save();
             }
 
-            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", value.isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, user.organization.name, { roundName: interviewRoundData.name, roundType: interviewRoundData.type });
+            const html = generateMailBody({ template: value.isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName: user.organization.name, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
+
+            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", html);
 
             message = "applicant round status";
         } else {
@@ -501,6 +504,8 @@ export const handleCandidateExamSubmission = async (questions: questionAnswerTyp
 
         const isSelected = applicantPercentage >= interviewRoundData.selectionMarginInPercentage;
 
+        const html = generateMailBody({ template: isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
+
         await Promise.all([
             ApplicantRound.updateOne(applicantRoundQuery, {
                 $set: {
@@ -508,7 +513,7 @@ export const handleCandidateExamSubmission = async (questions: questionAnswerTyp
                     status: InterviewRoundStatus.COMPLETED
                 }
             }),
-            sendMail(applicantEmail, "Candidate Interview Status Mail", isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName, { roundName: interviewRoundData.name, roundType: interviewRoundData.type }),
+            sendMail(applicantEmail, "Candidate Interview Status Mail", html),
         ]);
     } catch (error) {
         console.error("submitExam: ", error.message);
