@@ -1,4 +1,4 @@
-interface IPagination<T> {
+export interface IPagination<T> {
     totalData: number
     data: Array<T>
 }
