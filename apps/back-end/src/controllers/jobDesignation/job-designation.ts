@@ -3,7 +3,6 @@ import { FilterQuery, RootFilterQuery } from "mongoose";
 import { IDesignation } from "@agent-xenon/interfaces";
 import Designation from "../../database/models/designation";
 import { createDesignationSchema, deleteDesignationSchema, getDesignationSchema, getJobDesignationByIdSchema, updateDesignationSchema } from "../../validation/designation";
-import Job from "../../database/models/job";
 
 export const createJobDesignation = async (req: Request, res: Response) => {
     const { user } = req.headers;

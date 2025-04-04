@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
-import { AnswerQuestionFormat, App, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus, OverallResult } from "@agent-xenon/constants";
+import { AnswerQuestionFormat, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, OverallResult } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { createInterviewRoundSchema, deleteInterviewRoundSchema, getApplicantRoundByIdSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
 import InterviewRound from "../../database/models/interview-round";
@@ -27,7 +27,6 @@ export const createInterviewRound = async (req: Request, res: Response) => {
         const checkJobExist = await Job.findOne({ _id: value.jobId, deletedAt: null });
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
-        if (checkJobExist.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can create round right now interview is already started!", {}, "getDataNotFound");
 
         const interviewRoundData = await InterviewRound.create(value);
 
@@ -55,8 +54,6 @@ export const updateInterviewRound = async (req: Request, res: Response) => {
         const checkRoundExist = await InterviewRound.findOne<IInterviewRound<IJob>>({ _id: value.roundId, deletedAt: null }).populate("jobId", "status");
 
         if (!checkRoundExist) return res.badRequest("interview round", {}, "getDataNotFound");
-
-        if (checkRoundExist.jobId.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can edit round right now interview is already started!", {}, "getDataNotFound");
 
         const interviewRoundData = await InterviewRound.findByIdAndUpdate(value.roundId, { $set: value }, { new: true });
 
@@ -108,8 +105,6 @@ export const deleteInterviewRound = async (req: Request, res: Response) => {
         if (checkRoundsExist.length !== value.roundIds.length) return res.badRequest("interview rounds", {}, "getDataNotFound");
 
         const jobData = checkRoundsExist[0]?.jobId;
-
-        if (jobData?.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can delete round right now interview is already started!", {}, "getDataNotFound");
 
         const interviewRoundData = await InterviewRound.updateMany(roundIdQuery, { $set: { deletedAt: new Date() } }, { new: true });
 
