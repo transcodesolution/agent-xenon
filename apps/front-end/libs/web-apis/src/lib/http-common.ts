@@ -39,14 +39,7 @@ export const setupAxiosInterceptors = ({ token }: { token: string }) => {
     (error: AxiosError) => {
       if (error.response?.status === 401) {
         if (typeof window !== 'undefined') {
-          const currentUrl = new URL(window.location.href);
-          const tokenParam = currentUrl.searchParams.get('token');
-
-          const newUrl = new URL('/signin', window.location.origin);
-          if (tokenParam) {
-            newUrl.searchParams.set('token', tokenParam);
-          }
-          window.location.href = newUrl.toString();
+          window.location.href = '/signin';
         }
       }
       return Promise.reject(error);

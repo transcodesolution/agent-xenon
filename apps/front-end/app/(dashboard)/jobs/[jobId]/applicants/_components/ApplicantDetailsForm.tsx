@@ -20,12 +20,12 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
     initialValues: {
       firstName: '',
       lastName: '',
+      password: '',
       contactInfo: {
         address: '',
         city: '',
         state: '',
         email: '',
-        password: '',
         phoneNumber: '',
       },
       skills: [] as string[],
@@ -39,11 +39,11 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
     validate: {
       firstName: (value: string) => (value.length === 0 ? 'First name is required' : null),
       lastName: (value: string) => (value.length === 0 ? 'Last name is required' : null),
+      password: (value: string) =>
+        value.length < 8 ? 'Password must be at least 8 characters' : null,
       contactInfo: {
         email: (value: string) =>
           value.length === 0 ? 'Email is required' : /^\S+@\S+$/.test(value) ? null : 'Invalid email address',
-        password: (value: string) =>
-          value.length < 8 ? 'Password must be at least 8 characters' : null,
         phoneNumber: (value: string) => (value.length === 0 ? 'Phone number is required' : null),
         address: (value: string) => (value.length === 0 ? 'Address is required' : null),
         city: (value: string) => (value.length === 0 ? 'City is required' : null),
@@ -61,12 +61,12 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
       form.setValues({
         firstName: applicantData?.data?.firstName || '',
         lastName: applicantData?.data?.lastName || '',
+        password: applicantData?.data?.password || '',
         contactInfo: {
           address: applicantData?.data?.contactInfo?.address || '',
           city: applicantData?.data?.contactInfo?.city || '',
           state: applicantData?.data?.contactInfo?.state || '',
           email: applicantData?.data?.contactInfo?.email || '',
-          password: applicantData?.data?.contactInfo?.password || '',
           phoneNumber: applicantData?.data?.contactInfo?.phoneNumber || '',
         },
         skills: Array.isArray(applicantData?.data?.skills) ? applicantData.data.skills : [],
@@ -189,6 +189,7 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
     const formData = {
       firstName: form.values.firstName,
       lastName: form.values.lastName,
+      password: form.values.password,
       contactInfo: form.values.contactInfo,
       skills: form.values.skills,
       hobbies: form.values.hobbies,
@@ -290,7 +291,7 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
           <TextInput label="Email" required placeholder="Enter email" {...form.getInputProps('contactInfo.email')} classNames={classes} />
         </Grid.Col>
         <Grid.Col span={6}>
-          <TextInput label="Password" required placeholder="Enter password" {...form.getInputProps('contactInfo.password')} classNames={classes} />
+          <TextInput label="Password" required placeholder="Enter password" {...form.getInputProps('password')} classNames={classes} />
         </Grid.Col>
         <Grid.Col span={6}>
           <TextInput label="Phone Number" required placeholder="Enter phone number" {...form.getInputProps('contactInfo.phoneNumber')} classNames={classes} />

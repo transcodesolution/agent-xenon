@@ -6,7 +6,7 @@ import { ISignInRequest } from '@agent-xenon/types-api';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password, candidateToken } = body;
+    const { name, email, password, userType } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -22,8 +22,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const signInData: ISignInRequest = { name, email, password };
-    if (candidateToken) signInData.candidateToken = candidateToken;
+    const signInData: ISignInRequest = { name, email, password, userType };
+
     const result = await signIn(signInData);
 
     if (result.status === 200) {
