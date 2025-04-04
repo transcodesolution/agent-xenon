@@ -28,8 +28,8 @@ const SortableRoundItem: React.FC<ISortableRoundItem> = ({ round, onEdit, onDele
       <Box p="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}>
         <Group justify="space-between" wrap="nowrap">
           <Group gap="sm">
-            <Box {...attributes} {...listeners} style={{ cursor: 'grab', color: 'var(--mantine-color-gray-6)' }}>
-              <IconGripVertical size={20} />
+            <Box {...attributes} {...listeners} >
+              <IconGripVertical size={20} cursor='grab' color='var(--mantine-color-gray-6)' />
             </Box>
             <Stack gap={5}>
               <Text fw={600} size="md">{round.name || 'Unnamed Round'}</Text>
@@ -45,7 +45,7 @@ const SortableRoundItem: React.FC<ISortableRoundItem> = ({ round, onEdit, onDele
       </Box>
 
       <Box p="xs">
-        <Text size="sm" fw={500} mb={5}>Qualification Criteria:</Text>
+        <Text size="sm" fw={500} mb='sm'>Qualification Criteria:</Text>
         <Text size="sm" c="dimmed" mb="md" lineClamp={2}>
           {round.qualificationCriteria || 'No criteria specified'}
         </Text>
