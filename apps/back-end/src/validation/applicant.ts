@@ -5,7 +5,6 @@ const contactInfoSchema = Joi.object({
     address: Joi.string().allow(""),
     city: Joi.string().allow(""),
     email: Joi.string().email().required(),
-    password: Joi.string().required(),
     phoneNumber: Joi.string().allow(""),
     state: Joi.string().allow(""),
 });
@@ -56,6 +55,7 @@ export const createApplicantByUserSchema = Joi.object({
     experienceDetails: experienceDetailsSchema,
     projects: projectsSchema,
     education: educationSchema,
+    password: Joi.string().required(),
 });
 
 export const createApplicantByAgentSchema = Joi.object({
@@ -78,17 +78,17 @@ export const updateApplicantSchema = Joi.object({
     projects: projectsSchema,
     education: educationSchema,
     applicantId: Joi.string().required(),
+    password: Joi.string().required(),
 });
 
 export const deleteApplicantSchema = Joi.object({
     applicantIds: Joi.array().items(Joi.string()).required(),
+    jobId: Joi.string().optional(),
 });
 
 export const getApplicantSchema = Joi.object({
     search: Joi.string().allow("", null).optional(),
     jobId: Joi.string().optional(),
-    roundId: Joi.string().optional(),
-    isSelectedByAgent: Joi.boolean().optional(),
     ...paginationSchema,
 });
 

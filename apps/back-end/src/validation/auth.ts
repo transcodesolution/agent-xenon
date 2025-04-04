@@ -1,3 +1,4 @@
+import { UserType } from "@agent-xenon/constants";
 import Joi from "joi";
 
 export const signUpSchema = Joi.object().keys({
@@ -11,7 +12,7 @@ export const loginSchema = Joi.object().keys({
     name: Joi.string().optional(),
     email: Joi.string().email().required(),
     password: Joi.string().required(),
-    candidateToken: Joi.string().allow("").optional(),
+    userType: Joi.string().valid(...Object.values(UserType)).required(),
 });
 
 // export const resetPasswordSchema = Joi.object().keys({

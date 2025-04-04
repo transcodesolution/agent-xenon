@@ -33,9 +33,9 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
         city: string;
         state: string;
         email: string;
-        password: string;
         phoneNumber: string;
     };
+    password: string;
     firstName: string;
     socialLinks: object;
     summary: string;
@@ -46,7 +46,7 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     feedback: string;
     roleId: U;
     role: IRole;
-    jobId: string;
+    appliedJobIds: string[];
     organizationId: T;
     experienceDetails: IExperienceDetail[];
     education: IEducation[];
