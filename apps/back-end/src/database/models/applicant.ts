@@ -62,6 +62,14 @@ const ApplicantSchema: Schema = new Schema({
                 foreignField: '_id',
                 justOne: true
             }
+        },
+        organization: {
+            options: {
+                ref: 'Organization',
+                localField: 'organizationId',
+                foreignField: '_id',
+                justOne: true
+            }
         }
     }
 });

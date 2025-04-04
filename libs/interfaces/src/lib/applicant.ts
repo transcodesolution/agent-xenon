@@ -1,4 +1,5 @@
 import { IMCQOptions } from "./interview-question";
+import { IOrganization } from "./organization";
 import { IRole } from "./role";
 import { ITimestamp } from "./timestamp";
 
@@ -48,6 +49,7 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     role: IRole;
     appliedJobIds: string[];
     organizationId: T;
+    organization: IOrganization;
     experienceDetails: IExperienceDetail[];
     education: IEducation[];
     projects: IProject[];

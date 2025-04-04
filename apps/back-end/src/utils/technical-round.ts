@@ -2,6 +2,8 @@ import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { submitExamAnswerPayloadType, submitExamType } from "../types/technical-round";
 import candidateAnswerAnalysisAgent from "../agents/candidate-answer-analysis";
 import { OverallResult } from "@agent-xenon/constants";
+import { config } from "../config";
+import { REGEX } from "./constants";
 
 export const manageMCQAnswers = (question: submitExamType, answerObj: submitExamAnswerPayloadType) => {
     const answer = answerObj.answer.split("_");
@@ -17,4 +19,8 @@ export const manageTextAndCodeAnswers = async (question: Pick<IInterviewQuestion
     const agentResponse = await candidateAnswerAnalysisAgent(question, answerObj.answer);
 
     return Number(agentResponse.overallStatus === OverallResult.Pass);
+}
+
+export const updateFrontendDomainUrl = (organizationName: string) => {
+    return config.FRONTEND_URL.replace(REGEX.onFindOrganizationNameInFrontendURL, `${organizationName.replace(REGEX.findWhiteSpace, "")}`);
 }
