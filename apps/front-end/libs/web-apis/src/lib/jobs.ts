@@ -1,6 +1,6 @@
 import { IApiResponse, IInterviewRound, IJob, PaginationApiResponseType } from '@agent-xenon/interfaces';
 import http from './http-common';
-import { IGetJobRoleAndDesignation, IGetJobsParams, IUpdateInterviewRoundStatusRequest } from '@agent-xenon/types-api';
+import { IGetJobRoleAndDesignation, IGetJobsParams, IInterviewRoundUpdateOrder, IUpdateInterviewRoundStatusRequest } from '@agent-xenon/types-api';
 
 export const getJobs = async (params: IGetJobsParams): Promise<IApiResponse<PaginationApiResponseType<IJob[]>>> => {
   try {
@@ -146,5 +146,14 @@ export const updateRoundStatus = async (params: IUpdateInterviewRoundStatusReque
     return result.data;
   } catch (error) {
     throw new Error(`Error while updating interviewRound: ${error}`);
+  }
+};
+
+export const updateInterviewRoundOrder = async (params: IInterviewRoundUpdateOrder): Promise<IApiResponse<IInterviewRound>> => {
+  try {
+    const result = await http.patch<IApiResponse<IInterviewRound>>(`/interview-round/order-update`, params);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while updating order: ${error}`);
   }
 };
