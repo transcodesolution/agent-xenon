@@ -1,70 +1,85 @@
-import { Button } from '@mantine/core';
-import { DataTable } from 'mantine-datatable';
 import React from 'react';
+import { Box, Paper, Text } from '@mantine/core';
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { IJob } from '@agent-xenon/interfaces';
-import { IconEdit } from '@tabler/icons-react';
-import dayjs from 'dayjs';
-import { usePermissions } from '@/libs/hooks/usePermissions';
+import SortableRoundItem from './SortableRoundItem';
+import { modals } from '@mantine/modals';
 
 interface IJobInterviewRoundList {
   rounds?: IJob['rounds'];
-  onDeleteRound: (roundId: string[]) => void;
+  onDeleteRound: (roundIds: string[]) => void;
   onEditRound: (roundId: string) => void;
+  onReorderRounds: (roundIds: string[]) => void;
 }
 
-export const JobInterviewRoundList = ({ rounds, onDeleteRound, onEditRound }: IJobInterviewRoundList) => {
-  const permission = usePermissions()
+export const JobInterviewRoundList = ({
+  rounds = [],
+  onDeleteRound,
+  onEditRound,
+  onReorderRounds,
+}: IJobInterviewRoundList) => {
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { delay: 100, tolerance: 5 },
+    })
+  );
 
-  const columns = [
-    {
-      accessor: 'name', title: 'Name', ellipsis: true,
-      width: 350,
-      render: (round: { name?: string }) => round.name || '-'
-    },
-    {
-      accessor: 'type', title: 'Type', ellipsis: true,
-      width: 250,
-    },
-    {
-      accessor: 'endDate',
-      title: 'Expire Date & Time',
-      ellipsis: true,
-      width: 250,
-      render: (round: { endDate?: Date }) =>
-        round.endDate ? dayjs(round.endDate).format('DD-MM-YYYY | HH:mm') : '-'
-    },
-    {
-      accessor: 'qualificationCriteria',
-      title: 'Qualification Criteria',
-      ellipsis: true,
-      width: 500,
-      render: (round: { qualificationCriteria?: string }) => round.qualificationCriteria || '-'
-    },
-    {
-      accessor: 'actions',
-      title: 'Actions',
-      render: (round: { _id: string }) => (
-        <>
-          {permission?.hasInterviewRoundUpdate && <Button color="var(--mantine-color-teal-filled-hover)" size="xs" onClick={() => onEditRound(round._id)} style={{ marginRight: '5px' }}>
-            <IconEdit />
-          </Button>
-          }
-          {permission?.hasInterviewRoundDelete && <Button color="red" size="xs" onClick={() => onDeleteRound([round._id])}>
-            Delete
-          </Button>
-          }
-        </>
-      )
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = rounds.findIndex((item) => item._id === active.id);
+      const newIndex = rounds.findIndex((item) => item._id === over.id);
+      const reorderedRounds = [...rounds];
+      const [removed] = reorderedRounds.splice(oldIndex, 1);
+      reorderedRounds.splice(newIndex, 0, removed);
+      onReorderRounds(reorderedRounds.map((round) => round._id));
     }
-  ];
+  };
+
+  const handleDelete = (roundId: string) => {
+    modals.openConfirmModal({
+      title: 'Confirm Delete',
+      centered: true,
+      children: (
+        <Text size="sm">
+          Are you sure you want to delete this interview round? This action
+          cannot be undone.
+        </Text>
+      ),
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => onDeleteRound([roundId]),
+    });
+  };
+
+  if (!rounds.length) {
+    return (
+      <Paper p="lg" withBorder ta="center" c="dimmed">
+        <Text>No Interview Rounds Available</Text>
+      </Paper>
+    );
+  }
 
   return (
-    <DataTable
-      idAccessor='_id'
-      columns={columns}
-      records={rounds || []}
-      highlightOnHover
-      noRecordsText='No Interview Rounds Available'
-    />
+    <Box>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <SortableContext
+          items={rounds.map((round) => round._id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {rounds.map((round) => (
+            <SortableRoundItem
+              key={round._id}
+              round={round}
+              onEdit={() => onEditRound(round._id)}
+              onDelete={() => handleDelete(round._id)}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+    </Box>
   );
 };
+
+export default JobInterviewRoundList;

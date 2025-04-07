@@ -25,3 +25,7 @@ export interface IUpdateInterviewRoundStatusRequest {
   roundStatus: string
   applicantId?: string
 };
+
+export interface IInterviewRoundUpdateOrder {
+  roundOrderIds: string[]
+}

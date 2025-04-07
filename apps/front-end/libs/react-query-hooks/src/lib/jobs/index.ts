@@ -12,3 +12,4 @@ export * from './useUpdateInterviewRound';
 export * from './useGetInterviewRoundsByJobId';
 export * from './useInterviewRoundStart';
 export * from './useInterviewRoundUpdateStatus';
+export * from './useUpdateInterviewRoundOrder';
