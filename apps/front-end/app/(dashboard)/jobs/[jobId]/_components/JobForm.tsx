@@ -31,7 +31,7 @@ export const JobForm = () => {
   });
 
   const { mutate: updateJob } = useUpdateJob();
-  const { data: jobRoleAndDesignation } = useJobRoleAndDesignation();
+  const { data: jobRoleAndDesignationResponse } = useJobRoleAndDesignation();
   const { mutate: createRound } = useCreateInterviewRound();
   const { mutate: updateRound } = useUpdateInterviewRound();
   const { mutate: updateRoundOrder } = useUpdateInterviewRoundOrder();
@@ -39,27 +39,28 @@ export const JobForm = () => {
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const permission = usePermissions();
   const job = getJobByIdResponse?.data;
+  const jobRoleAndDesignation = jobRoleAndDesignationResponse?.data
 
   useEffect(() => {
     if (job) {
-      setRounds(job?.rounds as IInterviewRound[]);
+      setRounds(job.rounds as IInterviewRound[]);
       setFormState({
-        title: job?.title || '',
-        description: job?.description || '',
-        designation: job?.designation || '',
-        role: job?.role || '',
+        title: job.title || '',
+        description: job.description || '',
+        designation: job.designation || '',
+        role: job.role || '',
       });
     }
   }, [job]);
 
   const designationsOptions =
-    jobRoleAndDesignation?.data?.designations.map((designation) => ({
+    jobRoleAndDesignation?.designations.map((designation) => ({
       value: designation._id,
       label: designation.name,
     })) || [];
 
   const rolesOptions =
-    jobRoleAndDesignation?.data?.jobRoles.map((role) => ({
+    jobRoleAndDesignation?.jobRoles.map((role) => ({
       value: role._id,
       label: role.name,
     })) || [];

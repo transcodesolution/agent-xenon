@@ -19,9 +19,9 @@ export const InterviewRounds = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const { data: getInterviewRoundsResponse, isLoading, refetch } = useGetInterviewRoundsByJobId({ jobId });
   const [selectedRoundId, setSelectedRoundId] = useState<string>('');
-  const { data: getSelectedRoundResponse } = useGetInterviewRoundsById({ roundId: selectedRoundId });
+  const { data: getInterviewRoundsByIdResponse } = useGetInterviewRoundsById({ roundId: selectedRoundId });
   const interviewRounds = getInterviewRoundsResponse?.data || [];
-  const selectedRoundApplicants = getSelectedRoundResponse?.data?.applicants || [];
+  const selectedRoundApplicants = getInterviewRoundsByIdResponse?.data?.applicants || [];
 
   const { mutate: startInterviewRound } = useInterviewRoundStart();
   const { mutate: updateRoundStatus } = useInterviewRoundUpdateStatus();

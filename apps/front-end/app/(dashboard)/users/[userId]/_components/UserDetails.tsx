@@ -19,9 +19,9 @@ type EditableUserFields = Pick<IUser, "firstName" | "lastName" | "email" | "pass
 export const UserDetail = ({ userId }: IUserDetail) => {
   const { mutate: updateUser } = useUpdateUser();
   const { data: getRolesResponse } = useGetRoles({ page: 1, limit: 10, search: '' });
-  const { data: getUserResponse } = useGetUserById({ id: userId });
+  const { data: getUserByIdResponse } = useGetUserById({ id: userId });
 
-  const user = getUserResponse?.data?.user;
+  const user = getUserByIdResponse?.data?.user;
   const roles = getRolesResponse?.data?.roles || [];
 
   const handleUpdate = useDebouncedCallback((values: EditableUserFields) => {

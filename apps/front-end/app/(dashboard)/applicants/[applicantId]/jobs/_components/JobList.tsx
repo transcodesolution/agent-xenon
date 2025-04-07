@@ -6,8 +6,8 @@ import { JobsCard } from './JobsCard';
 
 export const JobList = () => {
   const { applicantId } = useParams<{ applicantId: string }>();
-  const { data: getJobResponse, isFetching } = useGetApplicantAppliedJobsById({ applicantId: applicantId });
-  const jobs = getJobResponse?.data ?? [];
+  const { data: getApplicantAppliedJobsByIdResponse, isFetching } = useGetApplicantAppliedJobsById({ applicantId: applicantId });
+  const jobs = getApplicantAppliedJobsByIdResponse?.data || [];
 
   if (isFetching) {
     return <LoadingOverlay visible />
@@ -19,7 +19,7 @@ export const JobList = () => {
       spacing={{ base: 10, sm: 'xl' }}
       verticalSpacing={{ base: 'md', sm: 'xl' }}
     >
-      {jobs?.map((job) => <JobsCard key={job._id} job={job} />)}
+      {jobs.map((job) => <JobsCard key={job._id} job={job} />)}
     </SimpleGrid>
   );
 };

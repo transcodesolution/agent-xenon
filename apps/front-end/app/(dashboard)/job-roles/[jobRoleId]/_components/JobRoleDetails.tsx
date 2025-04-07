@@ -15,10 +15,10 @@ import { useDebouncedCallback } from "@mantine/hooks";
 
 export const JobRoleDetails = () => {
   const { jobRoleId } = useParams<{ jobRoleId: string }>();
-  const { data: getJobRoleResponse, isLoading } = useGetJobRoleById({ jobRoleId });
+  const { data: getJobRoleByIdResponse, isLoading } = useGetJobRoleById({ jobRoleId });
   const { mutate: updateRole } = useUpdateJobRole();
   const permission = usePermissions();
-  const jobRole = getJobRoleResponse?.data;
+  const jobRole = getJobRoleByIdResponse?.data;
 
   const debouncedUpdate = useDebouncedCallback((field: string, value: string | Permission[]) => {
     updateRole(

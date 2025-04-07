@@ -24,8 +24,8 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
   });
   const mcqQuestions = getAllMCQQuestionsResponse?.data;
 
-  const { data: getInterviewRoundResponse } = useGetInterviewRoundsById({ roundId });
-  const round = getInterviewRoundResponse?.data;
+  const { data: getInterviewRoundByIdResponse } = useGetInterviewRoundsById({ roundId });
+  const round = getInterviewRoundByIdResponse?.data;
 
   const [formState, setFormState] = useState<{
     name: string;

@@ -20,8 +20,8 @@ let timeOut: string | number | NodeJS.Timeout | undefined;
 
 export const RoleDetails = () => {
   const { roleId } = useParams<{ roleId: string }>();
-  const { data: getRoleResponse, isLoading } = useGetRoleById({ roleId });
-  const roleData = getRoleResponse?.data;
+  const { data: getRoleByIdResponse, isLoading } = useGetRoleById({ roleId });
+  const roleData = getRoleByIdResponse?.data;
   const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>([]);
   const { mutate: updateRole } = useUpdateRole();
   const permission = usePermissions()

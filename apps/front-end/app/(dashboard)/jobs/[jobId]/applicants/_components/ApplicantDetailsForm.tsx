@@ -14,8 +14,8 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
   const { jobId } = useParams<{ jobId: string }>();
   const { mutate: createJobApplicant } = useCreateJobApplicant();
   const { mutate: updateJobApplicant } = useUpdateJobApplicant();
-  const { data: getApplicantResponse } = useGetApplicantById({ applicantId });
-  const applicant = getApplicantResponse?.data;
+  const { data: getApplicantByIdResponse } = useGetApplicantById({ applicantId });
+  const applicant = getApplicantByIdResponse?.data;
 
   const form = useForm({
     initialValues: {
