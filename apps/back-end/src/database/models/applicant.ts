@@ -70,6 +70,13 @@ const ApplicantSchema: Schema = new Schema({
                 foreignField: '_id',
                 justOne: true
             }
+        },
+        appliedJobs: {
+            options: {
+                ref: 'Job',
+                localField: 'appliedJobIds',
+                foreignField: '_id',
+            }
         }
     }
 });
