@@ -85,7 +85,7 @@ export const manageMeetingRound = async (roundData: IInterviewRound<IJob>, organ
         return res.expectationFailed(expiryResponse.message, {}, "customMessage");
     }
 
-    res.ok("meeting round is started successfully", {}, "customMessage");
+    res.ok("interview round is started successfully", {}, "customMessage");
     await manageMeetingScheduleWithCandidate(jobId, roundData.interviewerEmail, roundId);
 }
 

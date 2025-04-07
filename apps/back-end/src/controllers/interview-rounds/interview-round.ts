@@ -252,7 +252,6 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
 
         interviewRoundData.status = InterviewRoundStatus.ONGOING;
         interviewRoundData.startDate = currentDate;
-        await interviewRoundData.save();
 
         switch (interviewRoundData.type) {
             case InterviewRoundTypes.SCREENING:
@@ -264,10 +263,13 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
                 //     return res.badRequest("technical round already in progress", {}, "customMessage");
                 // }
                 await manageTechnicalRound(interviewRoundData);
-                return res.ok("interview round started successfully", {}, "customMessage");
+                res.ok("interview round started successfully", {}, "customMessage");
+                break;
             case InterviewRoundTypes.MEETING:
                 await manageMeetingRound(interviewRoundData, user.organizationId, res);
         }
+
+        await interviewRoundData.save();
 
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
