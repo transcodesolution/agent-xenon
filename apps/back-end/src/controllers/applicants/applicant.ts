@@ -178,9 +178,28 @@ export const getApplicantById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IApplicant> = { deletedAt: null, organizationId: user.organizationId, _id: value.applicantId };
 
-        const applicantData = await Applicant.findOne<IApplicant>(match).populate("appliedJobs");
+        const applicantData = await Applicant.findOne<IApplicant>(match, "firstName lastName contactInfo skills hobbies strengths education projects experienceDetails socialLinks password").lean();
 
         return res.ok("applicant", applicantData ?? {}, "getDataSuccess");
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getApplicantJobs = async (req: Request, res: Response) => {
+    const { user } = req.headers;
+    try {
+        const { error, value } = getApplicantByIdSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IApplicant> = { deletedAt: null, organizationId: user.organizationId, _id: value.applicantId };
+
+        const applicantData = await Applicant.findOne(match).populate({ path: "appliedJobs", select: "title description status role designation", populate: [{ path: "role", select: "name" }, { path: "designation", select: "name" }] }).lean();
+
+        return res.ok("applicant", applicantData?.appliedJobs ?? [], "getDataSuccess");
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

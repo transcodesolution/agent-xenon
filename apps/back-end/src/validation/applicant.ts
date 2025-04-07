@@ -93,7 +93,7 @@ export const getApplicantSchema = Joi.object({
 });
 
 export const getApplicantByIdSchema = Joi.object({
-    applicantId: Joi.string().required(),
+    applicantId: Joi.string().optional(),
 });
 
 export const getApplicantInterviewDetailSchema = Joi.object({
