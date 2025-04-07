@@ -1,6 +1,7 @@
 import { IApiResponse, IInterviewRound, IJob, PaginationApiResponseType } from '@agent-xenon/interfaces';
 import http from './http-common';
 import { IGetJobRoleAndDesignation, IGetJobsParams, IInterviewRoundUpdateOrder, IUpdateInterviewRoundStatusRequest } from '@agent-xenon/types-api';
+import { apiErrorHandler } from '@/libs/utils/apiErrorHandler';
 
 export const getJobs = async (params: IGetJobsParams): Promise<IApiResponse<PaginationApiResponseType<IJob[]>>> => {
   try {
@@ -134,7 +135,7 @@ export const interviewRoundStart = async (params: { jobId: string, roundId: stri
     const result = await http.post<IApiResponse<IInterviewRound>>(`/interview-round/start`, params);
     return result.data;
   } catch (error) {
-    throw new Error(`Error while start round: ${error}`);
+    return apiErrorHandler(error, "Error while start round");
   }
 };
 
