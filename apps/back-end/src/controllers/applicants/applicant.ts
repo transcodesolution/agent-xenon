@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import mongoose, { FilterQuery, QuerySelector } from "mongoose";
-import { IApplicant } from "@agent-xenon/interfaces";
-import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
+import mongoose, { FilterQuery, QuerySelector, RootFilterQuery, UpdateQuery } from "mongoose";
+import { IApplicant, IApplicantRound } from "@agent-xenon/interfaces";
+import { createApplicantByAgentSchema, createApplicantByUserSchema, deleteApplicantSchema, getApplicantByIdSchema, getApplicantInterviewDetailSchema, getApplicantSchema, updateApplicantSchema } from "../../validation/applicant";
 import Applicant from "../../database/models/applicant";
 import ApplicantRound from "../../database/models/applicant-round";
 import Job from "../../database/models/job";
 import { InterviewRoundStatus, JobStatus, RoleType } from "@agent-xenon/constants";
 import { Role } from "../../database";
 import { resumeExtractAgent } from "../../helper/queue";
-import { getApplicantRoundStatusCommonQuery } from "../../utils/applicant";
+import { getApplicantRoundStatusCommonQuery, updateApplicantToDatabase } from "../../utils/applicant";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -19,7 +19,7 @@ export const createApplicantByUser = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkApplicantExist = await Applicant.findOne({ jobId: value.jobId, deletedAt: null, "contactInfo.email": value.contactInfo.email });
+        const checkApplicantExist = await Applicant.findOne({ appliedJobIds: { $elemMatch: { $eq: value.jobId } }, deletedAt: null, "contactInfo.email": value.contactInfo.email });
 
         if (checkApplicantExist) return res.badRequest("alreadyEmail", {});
 
@@ -27,7 +27,7 @@ export const createApplicantByUser = async (req: Request, res: Response) => {
 
         value.organizationId = user.organizationId;
         value.roleId = roleData._id.toString();
-        const data = await Applicant.create(value);
+        const data = await updateApplicantToDatabase(value.contactInfo.email, value, value.jobId);
 
         return res.ok("applicant", data, "addDataSuccess")
     } catch (error) {
@@ -77,7 +77,7 @@ export const updateApplicant = async (req: Request, res: Response) => {
 
         if (!checkApplicantExist) return res.badRequest("applicant", {}, "getDataNotFound");
 
-        const checkApplicantEmailExist = await Applicant.findOne({ _id: { $ne: value.applicantId }, jobId: value.jobId, deletedAt: null, "contactInfo.email": value.contactInfo.email });
+        const checkApplicantEmailExist = await Applicant.findOne({ _id: { $ne: value.applicantId }, appliedJobIds: { $elemMatch: { $eq: value.jobId } }, deletedAt: null, "contactInfo.email": value.contactInfo.email });
 
         if (checkApplicantEmailExist) return res.badRequest("alreadyEmail", {});
 
@@ -100,18 +100,33 @@ export const deleteApplicant = async (req: Request, res: Response) => {
 
         const condition: QuerySelector<IApplicant> = { $in: value.applicantIds };
 
-        const match: FilterQuery<IApplicant> = { _id: condition, deletedAt: null };
+        const match: FilterQuery<IApplicant> = { _id: condition, organizationId: user.organizationId, deletedAt: null, ...(value.jobId && { appliedJobIds: { $elemMatch: { $eq: value.jobId } } }) };
 
         const checkApplicantsExist = await Applicant.find(match);
 
         if (checkApplicantsExist.length !== value.applicantIds.length) return res.badRequest("applicant", {}, "getDataNotFound");
 
-        value.organizationId = user.organizationId;
-        const deletedApplicants = await Applicant.findOneAndUpdate(match, { $set: { deletedAt: new Date() } }, { new: true });
+        const applicantRoundQuery: RootFilterQuery<IApplicantRound> = { applicantId: condition, deletedAt: null };
 
-        await ApplicantRound.updateMany({ applicantId: condition, jobId: checkApplicantsExist[0].jobId }, { $set: { deletedAt: new Date() } });
+        const updateApplicantQuery: UpdateQuery<IApplicant> = {};
 
-        return res.ok("applicants", deletedApplicants, "deleteDataSuccess")
+        if (value.jobId) {
+            updateApplicantQuery.$pull = { appliedJobIds: value.jobId };
+            applicantRoundQuery.jobId = value.jobId;
+        } else {
+            updateApplicantQuery.$set = { deletedAt: new Date() };
+        }
+
+        const softDeleteUpdate: UpdateQuery<IApplicant> = { $set: { deletedAt: new Date() } };
+
+        await Promise.all([
+            Applicant.updateMany(match, updateApplicantQuery, { new: true }),
+            ApplicantRound.updateMany(applicantRoundQuery, softDeleteUpdate)
+        ]);
+
+        await Applicant.updateOne({ appliedJobIds: { $size: 0 } }, softDeleteUpdate);
+
+        return res.ok("applicants", {}, "deleteDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -138,14 +153,7 @@ export const getApplicants = async (req: Request, res: Response) => {
         }
 
         if (value.jobId) {
-            match.jobId = value.jobId;
-        }
-
-        const selectRejectQuery = value.isSelectedByAgent || value.isSelectedByAgent === false;
-
-        if (value.roundId || selectRejectQuery) {
-            const applicantIds = await ApplicantRound.distinct("applicantId", { ...(value.roundId && { roundIds: { $elemMatch: { $eq: value.roundId } } }), ...(selectRejectQuery && { isSelected: value.isSelectedByAgent }), deletedAt: null, status: InterviewRoundStatus.COMPLETED });
-            match._id = { $in: applicantIds };
+            match.appliedJobIds = { $in: value.jobId };
         }
 
         const [totalData, applicants] = await Promise.all([
@@ -170,7 +178,7 @@ export const getApplicantById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IApplicant> = { deletedAt: null, organizationId: user.organizationId, _id: value.applicantId };
 
-        const applicantData = await Applicant.findOne<IApplicant>(match);
+        const applicantData = await Applicant.findOne<IApplicant>(match, "firstName lastName contactInfo skills hobbies strengths education projects experienceDetails socialLinks password").lean();
 
         return res.ok("applicant", applicantData ?? {}, "getDataSuccess");
     } catch (error) {
@@ -178,7 +186,7 @@ export const getApplicantById = async (req: Request, res: Response) => {
     }
 }
 
-export const getApplicantInterviewDetail = async (req: Request, res: Response) => {
+export const getApplicantJobs = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
         const { error, value } = getApplicantByIdSchema.validate(req.params);
@@ -187,19 +195,42 @@ export const getApplicantInterviewDetail = async (req: Request, res: Response) =
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
+        const match: FilterQuery<IApplicant> = { deletedAt: null, organizationId: user.organizationId, _id: value.applicantId };
+
+        const applicantData = await Applicant.findOne(match).populate({ path: "appliedJobs", select: "title description status role designation", populate: [{ path: "role", select: "name" }, { path: "designation", select: "name" }] }).lean();
+
+        return res.ok("applicant", applicantData?.appliedJobs ?? [], "getDataSuccess");
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getApplicantInterviewDetail = async (req: Request, res: Response) => {
+    try {
+        const { error, value } = getApplicantInterviewDetailSchema.validate(req.params);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        value.applicantId = new mongoose.Types.ObjectId(value.applicantId);
+
         const applicantInterviewRounds = await Applicant.aggregate([
             {
                 $match: {
-                    _id: new mongoose.Types.ObjectId(value.applicantId)
+                    _id: value.applicantId,
+                    deletedAt: null,
+                    appliedJobIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.jobId) } },
                 }
             },
             {
                 $lookup: {
                     from: "interviewrounds",
-                    localField: "jobId",
+                    localField: "appliedJobIds",
                     foreignField: "jobId",
                     as: "interviewRound",
                     pipeline: [
+                        { $match: { deletedAt: null } },
                         {
                             $sort: {
                                 roundNumber: 1
@@ -235,7 +266,7 @@ export const getApplicantInterviewDetail = async (req: Request, res: Response) =
                     pipeline: [
                         {
                             $match: {
-                                applicantId: user._id
+                                applicantId: value.applicantId
                             }
                         },
                         {

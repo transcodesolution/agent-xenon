@@ -2,7 +2,6 @@ import { App, InterviewRoundStatus } from "@agent-xenon/constants";
 import filterCandidateAgent from "../agents/screening-candidate";
 import { IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import { getSelectedApplicantDetails } from "./applicant";
-import { createEncodedShortToken } from "./generate-token";
 import { config } from "../config";
 import { sendMail } from "../helper/mail";
 import InterviewRound from "../database/models/interview-round";
@@ -17,6 +16,9 @@ import ApplicantRound from "../database/models/applicant-round";
 import { socketIo } from "../helper/socket";
 import { checkGoogleTokenExpiry } from "./google-service";
 import AppModel from "../database/models/app";
+import { APPLICANT_EXAMINATION_TEMPLATE } from "../helper/email-templates/interview-round";
+import { updateFrontendDomainUrl } from "./technical-round";
+import { generateMailBody } from "./mail";
 
 export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, organizationId: string) => {
     const Query: RootFilterQuery<IInterviewRound> = { _id: roundData._id };
@@ -33,42 +35,27 @@ export const manageScreeningRound = async (roundData: IInterviewRound<IJob>, org
 
 export const manageTechnicalRound = async (roundData: IInterviewRound<IJob>) => {
     const applicants = await getSelectedApplicantDetails(roundData.jobId._id);
-    const domainUrl = config.FRONTEND_URL.replace(/(?<=\/\/)([^.]+)(?=\.)/, `${applicants[0]?.organizationId?.name.replace(/\s+/g, "")}`);
+    const organizationName = applicants[0]?.organizationId?.name;
+    const domainUrl = updateFrontendDomainUrl(organizationName);
     const roundId = roundData._id.toString();
-    const token = createEncodedShortToken(roundData.jobId._id.toString(), applicants[0].organizationId.name);
 
     const bulkOps = applicants.map(i => ({
         updateOne: {
-            filter: { jobId: i.jobId, applicantId: i._id },
-            update: { $set: { jobId: i.jobId, applicantId: i._id, status: InterviewRoundStatus.ONGOING }, $push: { roundIds: roundId } },
+            filter: { jobId: roundData.jobId._id, applicantId: i._id },
+            update: { $set: { jobId: roundData.jobId._id, applicantId: i._id, status: InterviewRoundStatus.ONGOING }, $push: { roundIds: roundId } },
             upsert: true
         }
     }));
 
     await ApplicantRound.bulkWrite(bulkOps);
 
+    const extraDataToCreateHtmlBody = { template: APPLICANT_EXAMINATION_TEMPLATE, organizationName, extraData: { roundType: roundData.type, applicantEmail: "", applicantPassword: "", examLink: `${domainUrl}/${config.EXAM_PAGE_FRONTEND_ROUTE_NAME}/${roundId}` } };
+
     await Promise.all(applicants.map((i) => {
-        return sendMail(i.contactInfo.email, `Technical Round Exam Link`, `
-            Dear candidate,
-
-            We have receive your inquiry in our organization as your are looking to collaborate in our team.
-
-            Get ready for your first ${roundData.type} round.
-
-            We are sending you a link to give examnication from your home.
-
-            Your credentials:
-            Email: ${i.contactInfo.email}
-            Password: ${i.contactInfo.password}
-
-            Please login with above credentials and start examination.
-
-            Here is your examincation link: ${domainUrl}/${roundId}?token=${token}
-
-            Best wishes and good luck.
-            Thank you.
-            HR ${i.organizationId.name}.
-        `)
+        extraDataToCreateHtmlBody.extraData.applicantEmail = i.contactInfo.email;
+        extraDataToCreateHtmlBody.extraData.applicantPassword = i.password;
+        const html = generateMailBody(extraDataToCreateHtmlBody);
+        return sendMail(i.contactInfo.email, `Exam Invitation Mail`, html);
     }));
 }
 
@@ -87,7 +74,7 @@ export const manageMeetingRound = async (roundData: IInterviewRound<IJob>, organ
         return res.expectationFailed(expiryResponse.message, {}, "customMessage");
     }
 
-    res.ok("meeting round is started successfully", {}, "customMessage");
+    res.ok("interview round is started successfully", {}, "customMessage");
     await manageMeetingScheduleWithCandidate(jobId, roundData.interviewerEmail, roundId);
 }
 
@@ -196,7 +183,7 @@ export const manageMeetingScheduleWithCandidate = async (jobId: string, intervie
                 const start = startDateTime.toISOString();
                 startDateTime.setMinutes(startDateTime.getMinutes() + 60);
                 const end = startDateTime.toISOString();
-                const eventData = await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
+                await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
                 // scheduledMeetings.push(eventData.data);
                 await ApplicantRound.updateOne({ jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundId } }, { upsert: true })
             } else {

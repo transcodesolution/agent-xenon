@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
 import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
-import { AnswerQuestionFormat, App, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, JobStatus, OverallResult } from "@agent-xenon/constants";
+import { AnswerQuestionFormat, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, OverallResult } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { createInterviewRoundSchema, deleteInterviewRoundSchema, getApplicantRoundByIdSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
 import InterviewRound from "../../database/models/interview-round";
@@ -15,6 +15,8 @@ import { getApplicantRoundStatusCommonQuery, getSelectedApplicantDetails } from 
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
 import InterviewQuestion from "../../database/models/interview-question";
 import ApplicantAnswer from "../../database/models/applicant-answer";
+import { APPLICANT_REJECTION_TEMPLATE, APPLICANT_SELECTION_TEMPLATE } from "../../helper/email-templates/interview-status";
+import { generateMailBody } from "../../utils/mail";
 
 export const createInterviewRound = async (req: Request, res: Response) => {
     try {
@@ -27,7 +29,6 @@ export const createInterviewRound = async (req: Request, res: Response) => {
         const checkJobExist = await Job.findOne({ _id: value.jobId, deletedAt: null });
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
-        if (checkJobExist.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can create round right now interview is already started!", {}, "getDataNotFound");
 
         const interviewRoundData = await InterviewRound.create(value);
 
@@ -55,8 +56,6 @@ export const updateInterviewRound = async (req: Request, res: Response) => {
         const checkRoundExist = await InterviewRound.findOne<IInterviewRound<IJob>>({ _id: value.roundId, deletedAt: null }).populate("jobId", "status");
 
         if (!checkRoundExist) return res.badRequest("interview round", {}, "getDataNotFound");
-
-        if (checkRoundExist.jobId.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can edit round right now interview is already started!", {}, "getDataNotFound");
 
         const interviewRoundData = await InterviewRound.findByIdAndUpdate(value.roundId, { $set: value }, { new: true });
 
@@ -109,8 +108,6 @@ export const deleteInterviewRound = async (req: Request, res: Response) => {
 
         const jobData = checkRoundsExist[0]?.jobId;
 
-        if (jobData?.status === JobStatus.INTERVIEW_STARTED) return res.badRequest("can delete round right now interview is already started!", {}, "getDataNotFound");
-
         const interviewRoundData = await InterviewRound.updateMany(roundIdQuery, { $set: { deletedAt: new Date() } }, { new: true });
 
         await RoundQuestionAssign.deleteMany({ roundId: Query, jobId: jobData._id });
@@ -122,6 +119,7 @@ export const deleteInterviewRound = async (req: Request, res: Response) => {
 }
 
 export const updateRoundStatus = async (req: Request, res: Response) => {
+    const { user } = req.headers;
     try {
         Object.assign(req.body, req.params);
         const { error, value } = updateRoundStatusSchema.validate(req.body);
@@ -129,6 +127,10 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
+
+        const interviewRoundData = await InterviewRound.findOne<IInterviewRound>({ _id: value.roundId, deletedAt: null }, "name type status");
+
+        if (!interviewRoundData) { return res.badRequest("interview round", {}, "getDataNotFound") };
 
         let message = "round status";
 
@@ -148,23 +150,22 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
 
             await ApplicantRound.updateOne(Query, { $set: value });
 
+
             const selectedApplicants = await getSelectedApplicantDetails(value.jobId);
             const applicantIds = await ApplicantRound.distinct("applicantId", jobWiseQuery);
             if (selectedApplicants.length <= applicantIds.length) {
-                await InterviewRound.updateOne({ _id: value.roundId }, { $set: { status: InterviewRoundStatus.COMPLETED } });
+                interviewRoundData.status = InterviewRoundStatus.COMPLETED;
+                await interviewRoundData.save();
             }
 
-            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", `Dear Candidate,  
+            const html = generateMailBody({ template: value.isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName: user.organization.name, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
 
-            We appreciate your time and effort in participating in the technical round for the applied position.  
-            
-            ${value.isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
-            
-            Thank you for your interest in our company.`)
+            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", html);
 
             message = "applicant round status";
         } else {
-            await InterviewRound.updateOne({ _id: value.roundId }, { $set: { status: value.roundStatus } });
+            interviewRoundData.status = value.roundStatus;
+            await interviewRoundData.save();
             if (value.status === InterviewRoundStatus.COMPLETED) {
                 await updateApplicantStatusOnRoundComplete<string>({ $eq: value.roundId });
             }
@@ -257,7 +258,6 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
 
         interviewRoundData.status = InterviewRoundStatus.ONGOING;
         interviewRoundData.startDate = currentDate;
-        await interviewRoundData.save();
 
         switch (interviewRoundData.type) {
             case InterviewRoundTypes.SCREENING:
@@ -269,10 +269,13 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
                 //     return res.badRequest("technical round already in progress", {}, "customMessage");
                 // }
                 await manageTechnicalRound(interviewRoundData);
-                return res.ok("interview round started successfully", {}, "customMessage");
+                res.ok("interview round started successfully", {}, "customMessage");
+                break;
             case InterviewRoundTypes.MEETING:
                 await manageMeetingRound(interviewRoundData, user.organizationId, res);
         }
+
+        await interviewRoundData.save();
 
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
@@ -323,7 +326,7 @@ export const submitExam = async (req: Request, res: Response) => {
 
         res.ok("exam submitted successfully", {}, "customMessage");
 
-        await handleCandidateExamSubmission(questions, value.questionAnswers, interviewRoundData.selectionMarginInPercentage, Query, applicantRoundData.applicantId.contactInfo.email, value.roundId, user._id.toString());
+        await handleCandidateExamSubmission(questions, value.questionAnswers, Query, applicantRoundData.applicantId.contactInfo.email, interviewRoundData, user._id.toString(), user.organization.name);
 
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
@@ -408,7 +411,7 @@ export const getRoundByIdAndApplicantId = async (req: Request, res: Response) =>
                 {
                     $lookup:
                     {
-                        from: "interviewquestionanswers",
+                        from: "interviewquestions",
                         localField: "questionId",
                         foreignField: "_id",
                         as: "question"
@@ -468,7 +471,7 @@ export const getRoundByIdAndApplicantId = async (req: Request, res: Response) =>
     }
 }
 
-export const handleCandidateExamSubmission = async (questions: questionAnswerType[], questionAnswers: submitExamAnswerPayloadType[], selectionMarginInPercentage: number, applicantRoundQuery: RootFilterQuery<IApplicantRound>, applicantEmail: string, roundId: string, applicantId: string) => {
+export const handleCandidateExamSubmission = async (questions: questionAnswerType[], questionAnswers: submitExamAnswerPayloadType[], applicantRoundQuery: RootFilterQuery<IApplicantRound>, applicantEmail: string, interviewRoundData: IInterviewRound, applicantId: string, organizationName: string) => {
     try {
         let correctAnswerCount = 0;
 
@@ -495,13 +498,15 @@ export const handleCandidateExamSubmission = async (questions: questionAnswerTyp
                 } case AnswerQuestionFormat.FILE:
                     break;
             }
-            const applicantAnswerQuery = { applicantId, roundId };
+            const applicantAnswerQuery = { applicantId, roundId: interviewRoundData._id };
             await ApplicantAnswer.updateOne(applicantAnswerQuery, { $push: { answers: answer }, $set: applicantAnswerQuery }, { upsert: true });
         }
 
         const applicantPercentage = Math.floor((correctAnswerCount / questions.length) * 100);
 
-        const isSelected = applicantPercentage >= selectionMarginInPercentage;
+        const isSelected = applicantPercentage >= interviewRoundData.selectionMarginInPercentage;
+
+        const html = generateMailBody({ template: isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
 
         await Promise.all([
             ApplicantRound.updateOne(applicantRoundQuery, {
@@ -510,13 +515,7 @@ export const handleCandidateExamSubmission = async (questions: questionAnswerTyp
                     status: InterviewRoundStatus.COMPLETED
                 }
             }),
-            sendMail(applicantEmail, "Candidate Interview Status Mail", `Dear Candidate,  
-
-                We appreciate your time and effort in participating in the technical round for the applied position.  
-
-                ${isSelected ? "Congratulations! You have successfully cleared the technical assessment and have been selected for the next stage of the hiring process. Our team will reach out to you with further details soon." : "We regret to inform you that you have not been selected to proceed further at this time. However, we appreciate your effort and encourage you to apply for future opportunities with us."}  
-
-                Thank you for your interest in our company.`)
+            sendMail(applicantEmail, "Candidate Interview Status Mail", html),
         ]);
     } catch (error) {
         console.error("submitExam: ", error.message);

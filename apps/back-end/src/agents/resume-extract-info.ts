@@ -4,6 +4,7 @@ import { IResumeExtractResponse } from "../types/agent";
 import Applicant from "../database/models/applicant";
 import { Job } from "bullmq";
 import createOpenAIClient from "../helper/openai";
+import { updateApplicantToDatabase } from "../utils/applicant";
 
 const client = createOpenAIClient();
 
@@ -12,12 +13,12 @@ export interface IApplicant extends Document {
     lastName: string;
     contactInfo: {
         email: string;
-        password: string;
         phoneNumber: string;
         address: String;
         city: String;
         state: String;
     };
+    password: string;
     firstName: string;
     socialLinks: object;
     summary: string;
@@ -67,7 +68,7 @@ Tools:
 
 2. **Mandatory Fields**:
    - If \`contactInfo.email\` is missing, empty, or null, **ignore** that applicant.
-   - \`contactInfo.password\` must be **generated**, 8 characters long, and strong. Please generate according to schema fields, name, birthdate.
+   - \`password\` must be **generated**, 8 characters long, and strong. Please generate according to schema fields, name, birthdate.
 
 3. Step-by-Step Resume Processing Flow
     1.) You have string which contains pdf text.
@@ -95,15 +96,14 @@ Tools:
 { "type": "OUTPUT", "message": "<Put object (json) here>" }`;
 
 async function checkApplicantEmailInJob(jobId: string, email: string) {
-    const checkApplicantEmailExist = await Applicant.findOne({ jobId, "contactInfo.email": email, deletedAt: null });
+    const checkApplicantEmailExist = await Applicant.findOne({ appliedJobIds: { $elemMatch: { $eq: jobId } }, "contactInfo.email": email, deletedAt: null });
     return !!checkApplicantEmailExist;
 }
 
 async function resumeExtractAgentJobHandler(job: Job) {
     try {
         const value = job.data;
-        const data = await saveResumesExtractInfoAgent(value.resumeUrls, value.organizationId, value.jobId, value.roleId);
-        await Applicant.insertMany(data);
+        await saveResumesExtractInfoAgent(value.resumeUrls, value.organizationId, value.jobId, value.roleId);
     } catch (error) {
         console.error("resumeExtractAgentJobHandler => ", error)
     }
@@ -111,8 +111,6 @@ async function resumeExtractAgentJobHandler(job: Job) {
 
 async function saveResumesExtractInfoAgent(resumeUrls: string[], organizationId: string, jobId: string, roleId: string) {
     const pdfTexts = await Promise.all(resumeUrls.map((i) => (getResumeParsedText(i))));
-
-    const finalResumes = [];
 
     const tools: Array<ChatCompletionTool> = [
         {
@@ -191,10 +189,10 @@ async function saveResumesExtractInfoAgent(resumeUrls: string[], organizationId:
 
         const resumeData: IResumeExtractResponse = JSON.parse(aiResponse.choices[0].message?.content ?? '{}');
 
-        finalResumes.push(resumeData?.message);
-    }
+        const email = resumeData?.message?.contactInfo?.email;
 
-    return finalResumes.filter(Boolean);
+        await updateApplicantToDatabase(email, resumeData?.message, jobId);
+    }
 }
 
 export default resumeExtractAgentJobHandler;

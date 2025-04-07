@@ -1,0 +1,5 @@
+export * from './useGetDesignation'
+export * from './useCreateDesignation'
+export * from './useDeleteDesignation'
+export * from './useGetDesignationById'
+export * from './useUpdateDesignation'

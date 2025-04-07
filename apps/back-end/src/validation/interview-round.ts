@@ -9,7 +9,7 @@ export const createInterviewRoundSchema = Joi.object().keys({
     interviewerEmail: Joi.string().allow("").optional(),
     endDate: Joi.date().iso().optional(),
     qualificationCriteria: Joi.string().allow("").optional(),
-    selectionMarginInPercentage: Joi.number().required(),
+    selectionMarginInPercentage: Joi.number().optional(),
     questions: Joi.array().items(Joi.string()).required(),
     jobId: Joi.string().required(),
     roundNumber: Joi.number().required(),

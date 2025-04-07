@@ -1,4 +1,4 @@
-import { ActionIcon, Button, Combobox, Flex, Select, Stack, Text, Textarea, TextInput, useCombobox } from '@mantine/core';
+import { ActionIcon, Button, Combobox, Group, Paper, Select, Stack, Text, Textarea, TextInput, useCombobox } from '@mantine/core';
 import { useState, useEffect } from 'react';
 import { InterviewRoundTypes } from '@agent-xenon/constants';
 import { useGetInterviewRoundsById, useGetAllMCQQuestions } from '@agent-xenon/react-query-hooks';
@@ -16,10 +16,8 @@ interface IInterviewRoundForm {
 
 export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterviewRoundForm) => {
   const { jobId } = useParams<{ jobId: string }>();
-
   const [searchQuestion, setSearchQuestion] = useState('');
   const [debouncedSearch] = useDebouncedValue(searchQuestion, 600);
-
   const { data: mcqQuestionsData } = useGetAllMCQQuestions({
     searchString: debouncedSearch,
     enabled: debouncedSearch.length > 0,
@@ -48,14 +46,10 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
       const round = roundData.data;
       setFormState({
         name: round.name || '',
-        type: round.type || undefined,
+        type: round.type || InterviewRoundTypes.ASSESSMENT,
         qualificationCriteria: round.qualificationCriteria || '',
         selectionMarginInPercentage: round.selectionMarginInPercentage ?? undefined,
-        questions: Array.isArray(round.questions)
-          ? round.questions.map((q) =>
-            typeof q === 'string' ? { _id: q, question: '' } : q
-          )
-          : [],
+        questions: round.questions ? round.questions.map((q) => (typeof q === 'string' ? { _id: q, question: '' } : q)) : [],
         endDate: round.endDate ? new Date(round.endDate) : new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       });
     }
@@ -74,7 +68,6 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
       selectionMarginInPercentage: formState.selectionMarginInPercentage ?? undefined,
       endDate: formState.endDate ? new Date(formState.endDate) : new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
     };
-
     if (!roundId) {
       interviewRound.jobId = jobId;
       interviewRound.roundNumber = roundNumber;
@@ -85,7 +78,7 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
     onAddRound?.(interviewRound);
     setFormState({
       name: '',
-      type: undefined,
+      type: InterviewRoundTypes.ASSESSMENT,
       qualificationCriteria: '',
       selectionMarginInPercentage: undefined,
       questions: [],
@@ -97,11 +90,9 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
     onDropdownClose: () => combobox.resetSelectedOption(),
   });
 
-  const validatePercentageInput = (value: string) => {
-    return /^\d{0,3}$/.test(value) && Number(value) <= 100;
-  };
+  const validatePercentageInput = (value: string) => /^\d{0,3}$/.test(value) && Number(value) <= 100;
 
-  const selectedQuestionIds = formState.questions.map((q) => q._id);
+  const selectedQuestionIds = formState.questions?.map((q) => q._id) || [];
 
   return (
     <Stack>
@@ -114,95 +105,101 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
         onChange={(value) => handleChange('type', value as InterviewRoundTypes)}
       />
 
-      <Combobox
-        store={combobox}
-        onOptionSubmit={(val) => {
-          const question = mcqQuestionsData?.data?.find((q) => q._id === val);
-          if (question) {
-            setFormState((prev) => ({
-              ...prev,
-              questions: [...prev.questions, question],
-            }));
-          }
-          combobox.closeDropdown();
-          setSearchQuestion('');
-        }}
-      >
-        <Combobox.Target>
+      {formState.type === InterviewRoundTypes.ASSESSMENT && (
+        <Stack >
+          <Combobox
+            store={combobox}
+            onOptionSubmit={(val) => {
+              const question = mcqQuestionsData?.data?.find((q) => q._id === val);
+              if (question) {
+                setFormState((prev) => ({
+                  ...prev,
+                  questions: [...prev.questions, question],
+                }));
+              }
+              combobox.closeDropdown();
+              setSearchQuestion('');
+            }}
+          >
+            <Combobox.Target>
+              <TextInput
+                label="Pick a question"
+                placeholder="Search or select a question"
+                value={searchQuestion}
+                onChange={(e) => {
+                  setSearchQuestion(e.target.value);
+                  combobox.resetSelectedOption();
+                  if (e.currentTarget.value.trim() === '') {
+                    combobox.closeDropdown();
+                  } else {
+                    combobox.openDropdown();
+                  }
+                }}
+              />
+            </Combobox.Target>
+            <Combobox.Dropdown>
+              <Combobox.Options>
+                {mcqQuestionsData?.data?.length === 0 ? (
+                  <Combobox.Empty>Nothing found</Combobox.Empty>
+                ) : (
+                  mcqQuestionsData?.data?.filter((question) => !selectedQuestionIds.includes(question._id))
+                    .map((question) => (
+                      <Combobox.Option key={question._id} value={question._id}>
+                        {question.question}
+                      </Combobox.Option>
+                    ))
+                )}
+              </Combobox.Options>
+            </Combobox.Dropdown>
+          </Combobox>
+
+          <Paper withBorder styles={{ root: { maxHeight: '200px', overflowY: 'auto' } }}>
+            {formState.questions?.map((question) => (
+              <Group key={question._id} p='xs'>
+                <Text size="sm" style={{ flex: 1 }}>{question.question}</Text>
+                <ActionIcon
+                  variant="light"
+                  color="red"
+                  onClick={() =>
+                    setFormState((prev) => ({
+                      ...prev,
+                      questions: prev.questions?.filter((q) => q._id !== question._id),
+                    }))
+                  }
+                >
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Group>
+            ))}
+          </Paper>
+
           <TextInput
-            label="Pick a question"
-            placeholder="Search or select a question"
-            value={searchQuestion}
+            label="Passing Criteria"
+            placeholder="Enter passing percentage"
+            value={formState.selectionMarginInPercentage?.toString() || ''}
             onChange={(e) => {
-              setSearchQuestion(e.target.value);
-              combobox.resetSelectedOption();
-              if (e.currentTarget.value.trim() === '') {
-                combobox.closeDropdown();
-              } else {
-                combobox.openDropdown();
+              const value = e.currentTarget.value;
+              if (validatePercentageInput(value)) {
+                handleChange('selectionMarginInPercentage', value ? parseInt(value, 10) : undefined);
               }
             }}
+            type="number"
+            rightSection="%"
           />
-        </Combobox.Target>
-        <Combobox.Dropdown>
-          <Combobox.Options>
-            {mcqQuestionsData?.data?.length === 0 ? (
-              <Combobox.Empty>Nothing found</Combobox.Empty>
-            ) : (
-              mcqQuestionsData?.data?.filter((question) => !selectedQuestionIds.includes(question._id))
-                .map((question) => (
-                  <Combobox.Option key={question._id} value={question._id}>
-                    {question.question}
-                  </Combobox.Option>
-                ))
-            )}
-          </Combobox.Options>
-        </Combobox.Dropdown>
-      </Combobox>
-
-      {formState.questions.map((question) => (
-        <Flex key={question._id} justify="space-between">
-          <Text>{question.question}</Text>
-          <ActionIcon
-            variant="light"
-            aria-label="Delete"
-            onClick={() =>
-              setFormState((prev) => ({
-                ...prev,
-                questions: prev.questions.filter((q) => q._id !== question._id),
-              }))
-            }
-            color="red"
-          >
-            <IconTrash />
-          </ActionIcon>
-        </Flex>
-      ))}
-
-      <TextInput
-        label="Passing Criteria"
-        placeholder="Enter passing percentage"
-        value={formState.selectionMarginInPercentage || ""}
-        onChange={(event) => {
-          const value = event.currentTarget.value;
-          if (validatePercentageInput(value)) {
-            handleChange("selectionMarginInPercentage", value);
-          }
-        }}
-        type="number"
-        rightSection="%"
-      />
+        </Stack>
+      )}
 
       <DateTimePicker
-        label="Round Expiration Date and Time"
-        placeholder="Pick date and time"
+        label="Round Expiration"
         value={formState.endDate}
-        onChange={(date) => setFormState((prev) => ({ ...prev, endDate: date }))}
+        onChange={(date) => handleChange('endDate', date)}
         minDate={new Date()}
+        clearable={false}
       />
 
       <Textarea
         label="Qualification Criteria"
+        placeholder="Describe the criteria..."
         value={formState.qualificationCriteria}
         onChange={(e) => handleChange('qualificationCriteria', e.target.value)}
       />

@@ -8,6 +8,7 @@ import {
   Group,
   Paper,
   PasswordInput,
+  Select,
   Text,
   TextInput,
   Title,
@@ -19,67 +20,78 @@ import { PATH_AUTH } from '@/libs/routes';
 import classes from './signin.module.scss';
 import { nextServerSignIn } from '@/libs/web-apis/src';
 import { showNotification } from '@mantine/notifications';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { getOrganizationName } from '@/libs/utils/getConfig';
+import { UserType } from '@agent-xenon/constants';
+
+const ROLE_OPTIONS = [
+  { value: UserType.APPLICANT, label: 'Applicant' },
+  { value: UserType.MEMBER, label: 'Member' },
+  { value: UserType.EMPLOYEE, label: 'Employee' }
+];
 
 export const SignInForm = () => {
-  const searchParams = useSearchParams()
-  const token = searchParams.get('token');
   const router = useRouter();
   const organizationName = getOrganizationName();
 
   const form = useForm({
-    initialValues: { email: '', password: '' },
-
+    initialValues: { email: '', password: '', role: '' },
     validate: {
       email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
       password: (value) =>
-        value && value?.length < 8
-          ? 'Password must include at least 8 characters'
-          : null,
+        value?.length < 8 ? 'Password must include at least 8 characters' : null,
+      role: (value) => (value ? null : 'Please select a role'),
     },
   });
 
-  const handleSignInFormSubmit = form.onSubmit(async ({ email, password }) => {
+  const handleSignInFormSubmit = form.onSubmit(async ({ email, password, role }) => {
     try {
       const previousURL = document.referrer;
-      const redirectUrl = token ? new URL(previousURL).pathname : "/";
-
       await nextServerSignIn({
         email,
         password,
         name: organizationName,
-        candidateToken: token || '',
+        userType: role as UserType,
       });
-      router.push(redirectUrl)
+
+      const redirectMap: Record<string, string> = {
+        applicant: previousURL ? new URL(previousURL).pathname : "/applicant/dashboard",
+        member: '/dashboard',
+        employee: '/employee/dashboard',
+      };
+
+      router.push(redirectMap[role] || '/');
     } catch (error: any) {
       showNotification({
-        message: error?.message
-      })
+        message: error?.message || 'Login failed',
+        color: 'red',
+      });
     }
-  })
+  });
 
   return (
     <>
       <title>Sign in | Agent Xenon</title>
-      <meta
-        name="description"
-        content="Your Daily Work Partner | Now Do Less and Delegate More"
-      />
-      <Center h='100vh'>
+      <meta name="description" content="Your Daily Work Partner | Now Do Less and Delegate More" />
+      <Center h="100vh">
         <Box>
           <Title ta="center">Welcome back!</Title>
           <Text ta="center">Sign in to your account to continue</Text>
 
           <Surface component={Paper} className={classes.card}>
-            <form
-              onSubmit={handleSignInFormSubmit}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  handleSignInFormSubmit();
-                }
-              }}
-            >
+            <form onSubmit={handleSignInFormSubmit} onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSignInFormSubmit();
+              }
+            }}>
+              <Select
+                label="Select Role"
+                placeholder="Choose your role"
+                data={ROLE_OPTIONS}
+                required
+                {...form.getInputProps('role')}
+                mb="md"
+              />
               <TextInput
                 label="Email"
                 placeholder="you@agentxenon.com"
@@ -118,4 +130,4 @@ export const SignInForm = () => {
       </Center>
     </>
   );
-}
+};

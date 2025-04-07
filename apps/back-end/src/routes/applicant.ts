@@ -1,5 +1,5 @@
 import express from 'express';
-import { createApplicantByAgent, createApplicantByUser, deleteApplicant, getApplicantById, getApplicantInterviewDetail, getApplicants, updateApplicant } from '../controllers/applicants/applicant';
+import { createApplicantByAgent, createApplicantByUser, deleteApplicant, getApplicantById, getApplicantInterviewDetail, getApplicantJobs, getApplicants, updateApplicant } from '../controllers/applicants/applicant';
 import { validateRoleAndPermissions } from '../helper/middleware';
 import { Permission } from '@agent-xenon/constants';
 const router = express.Router();
@@ -11,7 +11,8 @@ router.post("/createByAgent", validateRoleAndPermissions(commonPermissions), cre
 router.put("/:applicantId", validateRoleAndPermissions(commonPermissions), updateApplicant);
 router.delete("/", validateRoleAndPermissions(commonPermissions), deleteApplicant);
 router.get("/", validateRoleAndPermissions([Permission.APPLICANT_READ, ...commonPermissions]), getApplicants);
-router.get("/interview-detail/:applicantId", validateRoleAndPermissions([Permission.APPLICANT_INTERVIEW_DETAIL]), getApplicantInterviewDetail);
+router.get("/interview-detail/:applicantId/job/:jobId", validateRoleAndPermissions([Permission.APPLICANT_INTERVIEW_DETAIL]), getApplicantInterviewDetail);
 router.get("/:applicantId", validateRoleAndPermissions(commonPermissions), getApplicantById);
+router.get("/applied-job/:applicantId", validateRoleAndPermissions([Permission.APPLICANT_READ]), getApplicantJobs);
 
 export const applicantRouter = router;

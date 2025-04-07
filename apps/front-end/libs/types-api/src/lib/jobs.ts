@@ -6,7 +6,7 @@ export interface IGetJobsParams {
   designation?: string;
 };
 
-interface IRoleDesignation {
+export interface IRoleDesignation {
   _id: string;
   name: string;
 }
@@ -25,3 +25,7 @@ export interface IUpdateInterviewRoundStatusRequest {
   roundStatus: string
   applicantId?: string
 };
+
+export interface IInterviewRoundUpdateOrder {
+  roundOrderIds: string[]
+}

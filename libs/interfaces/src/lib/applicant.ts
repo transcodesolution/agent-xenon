@@ -1,3 +1,5 @@
+import { IMCQOptions } from "./interview-question";
+import { IOrganization } from "./organization";
 import { IRole } from "./role";
 import { ITimestamp } from "./timestamp";
 
@@ -32,9 +34,9 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
         city: string;
         state: string;
         email: string;
-        password: string;
         phoneNumber: string;
     };
+    password: string;
     firstName: string;
     socialLinks: object;
     summary: string;
@@ -45,8 +47,9 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     feedback: string;
     roleId: U;
     role: IRole;
-    jobId: string;
+    appliedJobIds: string[];
     organizationId: T;
+    organization: IOrganization;
     experienceDetails: IExperienceDetail[];
     education: IEducation[];
     projects: IProject[];
@@ -54,3 +57,43 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     isSelectedByAgent: boolean;
     _doc?: IApplicant;
 }
+
+export interface IApplicantInterviewRounds {
+    applicantInterviewRounds: IApplicantInterviewRound[]
+}
+export interface IApplicantInterviewRound {
+    applicantStatus: string;
+    endDate: Date;
+    name: string;
+    selectionMarginInPercentage: number;
+    startDate: Date;
+    status: string;
+    type: string;
+    _id: string;
+};
+
+
+export interface IApplicantInterviewRoundDetail {
+    interviewRound: IApplicantInterviewRound,
+    applicantRoundAndQuestionAnswers: IApplicantQuestionAnswer
+}
+export interface IApplicantQuestionAnswer {
+    _id: string;
+    type: string;
+    tags: string[];
+    organizationId: string;
+    questionFormat: string;
+    deletedAt: string | null;
+    options: IMCQOptions[];
+    createdAt: string;
+    updatedAt: string;
+    description: string;
+    difficulty: string;
+    evaluationCriteria: string;
+    question: string;
+    timeLimitInMinutes: number;
+    questionId: string;
+    answer: string;
+    overallResult: string;
+    isMultiSelectOption?: boolean;
+};

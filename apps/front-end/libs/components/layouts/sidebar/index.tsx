@@ -28,8 +28,10 @@ const mockData = [
     permissions: [Permission.JOB_READ, Permission.QUESTION_ANSWER_READ],
     links: [
       { label: 'Jobs', link: '/jobs', permissions: [Permission.JOB_READ] },
-      { label: 'Candidates', link: '/candidates', permissions: [Permission.JOB_READ] },
-      { label: 'Q&A', link: '/questions', permissions: [Permission.QUESTION_ANSWER_READ] },
+      { label: 'Applicants', link: '/applicants', permissions: [Permission.JOB_READ] },
+      { label: 'Interview Questions', link: '/interview-questions', permissions: [Permission.QUESTION_ANSWER_READ] },
+      { label: 'Job Roles', link: '/job-roles', permissions: [Permission.ROLE_READ] },
+      { label: 'Designation', link: '/designation', permissions: [Permission.DESIGNATION_READ] },
     ],
   },
   {
@@ -41,7 +43,7 @@ const mockData = [
   {
     label: 'Users',
     icon: IconUser,
-    permissions: [Permission.ROLE_READ],
+    permissions: [Permission.USER_READ],
     link: '/users',
   },
 ];

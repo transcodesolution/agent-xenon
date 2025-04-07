@@ -9,12 +9,12 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-export const sendMail = (targetMail: string, subject: string, text: string) => {
+export const sendMail = async (targetMail: string, subject: string, html: string) => {
     const mailConfigurations: SendMailOptions = {
         from: config.MAIL,
         to: targetMail,
         subject,
-        text,
+        html,
     };
 
     return transporter.sendMail(mailConfigurations);
