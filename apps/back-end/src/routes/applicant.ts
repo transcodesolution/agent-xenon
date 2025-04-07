@@ -13,6 +13,6 @@ router.delete("/", validateRoleAndPermissions(commonPermissions), deleteApplican
 router.get("/", validateRoleAndPermissions([Permission.APPLICANT_READ, ...commonPermissions]), getApplicants);
 router.get("/interview-detail/:applicantId/job/:jobId", validateRoleAndPermissions([Permission.APPLICANT_INTERVIEW_DETAIL]), getApplicantInterviewDetail);
 router.get("/:applicantId", validateRoleAndPermissions(commonPermissions), getApplicantById);
-router.get("/apply-job/:applicantId", validateRoleAndPermissions([Permission.APPLICANT_READ]), getApplicantJobs);
+router.get("/applied-job/:applicantId", validateRoleAndPermissions([Permission.APPLICANT_READ]), getApplicantJobs);
 
 export const applicantRouter = router;
