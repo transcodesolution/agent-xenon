@@ -61,7 +61,7 @@ export function ApplicantList() {
   const handleDeleteSelected = () => {
     const applicantIds = selectedApplicants.map((applicant) => String(applicant._id));
     deleteApplicantsMutation.mutate(
-      { applicantIds },
+      { jobId, applicantIds },
       {
         onSuccess: () => {
           refetch();

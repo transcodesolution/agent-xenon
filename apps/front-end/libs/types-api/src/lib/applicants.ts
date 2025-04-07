@@ -5,3 +5,8 @@ export interface IGetApplicantsRequest {
   search?: string;
   isSelectedByAgent?: boolean;
 }
+
+export interface IDeleteApplicantsRequest {
+  applicantIds: string[];
+  jobId?: string;
+}
