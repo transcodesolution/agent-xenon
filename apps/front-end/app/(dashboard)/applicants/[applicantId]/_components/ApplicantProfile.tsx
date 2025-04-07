@@ -24,12 +24,7 @@ export const ApplicantProfile = ({ applicant }: IApplicantProfile) => {
           <Avatar color="blue" radius="xl" size="lg">
             {applicant.firstName.charAt(0)}
           </Avatar>
-          <div>
-            <Text fw={700} size="lg">{`${applicant.firstName} ${applicant.lastName}`}</Text>
-            <Text c="dimmed" size="sm">
-              {applicant.role?.name || "Role not specified"}
-            </Text>
-          </div>
+          <Text fw={700} size="lg">{`${applicant.firstName} ${applicant.lastName}`}</Text>
         </Group>
       </Group>
 

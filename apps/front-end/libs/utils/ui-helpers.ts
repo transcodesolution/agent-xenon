@@ -1,4 +1,4 @@
-import { Difficulty, InterviewRoundStatus, InterviewRoundTypes } from "@agent-xenon/constants";
+import { Difficulty, InterviewRoundStatus, InterviewRoundTypes, JobStatus } from "@agent-xenon/constants";
 
 export const getStatusColor = (status: string): string => {
   switch (status) {
@@ -57,3 +57,16 @@ export const getDifficultyColor = (difficulty: string) => {
       return 'gray';
   }
 };
+
+export const getJobStatusColor = (status?: string) => {
+  switch (status?.toLowerCase()) {
+    case JobStatus.OPEN:
+      return 'blue';
+    case JobStatus.CLOSE:
+      return 'red';
+    case JobStatus.PAUSED:
+      return 'orange';
+    default:
+      return 'gray';
+  }
+}

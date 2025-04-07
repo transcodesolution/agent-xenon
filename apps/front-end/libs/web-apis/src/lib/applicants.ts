@@ -1,4 +1,4 @@
-import { IApiResponse, IApplicant, IApplicantInterviewRoundDetail, IApplicantInterviewRounds, PaginationApiResponseType } from "@agent-xenon/interfaces";
+import { IApiResponse, IApplicant, IApplicantInterviewRoundDetail, IApplicantInterviewRounds, IJob, PaginationApiResponseType } from "@agent-xenon/interfaces";
 import http from './http-common'
 import { IDeleteApplicantsRequest, IGetApplicantsRequest } from "@agent-xenon/types-api";
 import { apiErrorHandler } from "@/libs/utils/apiErrorHandler";
@@ -59,9 +59,9 @@ export const updateJobApplicant = async (params: Partial<IApplicant>): Promise<I
 };
 
 
-export const getApplicantInterviewRounds = async (applicantId: string): Promise<IApiResponse<IApplicantInterviewRounds>> => {
+export const getApplicantInterviewRounds = async ({ jobId, applicantId }: { jobId: string; applicantId: string }): Promise<IApiResponse<IApplicantInterviewRounds>> => {
   try {
-    const result = await http.get<IApiResponse<IApplicantInterviewRounds>>(`applicant/interview-detail/${applicantId}`);
+    const result = await http.get<IApiResponse<IApplicantInterviewRounds>>(`applicant/interview-detail/${applicantId}/job/${jobId}`);
     return result.data;
   } catch (error) {
     throw new Error(`Error while fetching applicant interview rounds: ${error}`);
@@ -75,5 +75,14 @@ export const getApplicantInterviewRoundDetails = async ({ roundId, applicantId }
     return result.data;
   } catch (error) {
     throw new Error(`Error while fetching interview round details: ${error}`);
+  }
+};
+
+export const getApplicantAppliedJobsById = async (applicantId: string): Promise<IApiResponse<IJob[]>> => {
+  try {
+    const result = await http.get<IApiResponse<IJob[]>>(`/applicant/applied-job/${applicantId}`);
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while fetching applicant by ID: ${error}`);
   }
 };

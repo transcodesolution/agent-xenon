@@ -23,8 +23,8 @@ export const ApplicantDetailTabs = ({ applicantId }: IApplicantDetailTabs) => {
 
   const onTabChange = (tab: string | null) => {
     switch (tab) {
-      case 'interview':
-        router.push(`/applicants/${applicantId}/interview`)
+      case 'jobs':
+        router.push(`/applicants/${applicantId}/jobs`);
         break;
       case 'details':
         router.push(`/applicants/${applicantId}`)
@@ -37,8 +37,8 @@ export const ApplicantDetailTabs = ({ applicantId }: IApplicantDetailTabs) => {
         <Tabs.Tab value="details" ref={setControlRef('details')} className={classes.tab}>
           Details
         </Tabs.Tab>
-        <Tabs.Tab value="interview" ref={setControlRef('interview')} className={classes.tab}>
-          Interview Rounds
+        <Tabs.Tab value="jobs" ref={setControlRef('jobs')} className={classes.tab}>
+          Jobs
         </Tabs.Tab>
         <FloatingIndicator
           target={value ? controlsRefs[value] : null}

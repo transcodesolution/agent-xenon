@@ -35,7 +35,7 @@ export const RoundDetails = () => {
   return (
     <Card withBorder radius="md" p="md" shadow="sm">
       <Title order={3} mb="md">{interviewRound?.name}</Title>
-      <Group mb="md">
+      <Group mb="md" justify='space-between'>
         <Group>
           <IconCalendar size={16} />
           <Text size="sm">
