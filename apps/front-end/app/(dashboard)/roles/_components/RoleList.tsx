@@ -23,7 +23,8 @@ export const RoleList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading, refetch } = useGetRoles({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getRolesResponse, isLoading, refetch } = useGetRoles({ page, limit: pageSize, search });
+  const rolesData = getRolesResponse?.data?.roles;
   const [selectedRoles, setSelectedRoles] = useState<IRole[]>([]);
   const { deleteRolesMutation } = useDeleteRoles();
   const permission = usePermissions()
@@ -106,7 +107,7 @@ export const RoleList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.roles}
+        records={rolesData}
         fetching={isLoading}
         selectedRecords={selectedRoles}
         onSelectedRecordsChange={setSelectedRoles}

@@ -1,12 +1,13 @@
 'use client';
 import { useGetApplicantAppliedJobsById } from '@/libs/react-query-hooks/src/lib/applicant/useGetApplicantAppliedJobsById';
-import { LoadingOverlay, SimpleGrid, Skeleton } from '@mantine/core';
+import { LoadingOverlay, SimpleGrid } from '@mantine/core';
 import { useParams } from 'next/navigation';
 import { JobsCard } from './JobsCard';
 
 export const JobList = () => {
   const { applicantId } = useParams<{ applicantId: string }>();
-  const { data: jobs, isFetching } = useGetApplicantAppliedJobsById({ applicantId: applicantId });
+  const { data: getJobResponse, isFetching } = useGetApplicantAppliedJobsById({ applicantId: applicantId });
+  const jobs = getJobResponse?.data ?? [];
 
   if (isFetching) {
     return <LoadingOverlay visible />
@@ -18,11 +19,7 @@ export const JobList = () => {
       spacing={{ base: 10, sm: 'xl' }}
       verticalSpacing={{ base: 'md', sm: 'xl' }}
     >
-      {isFetching
-        ? Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} visible={true} height={300} />
-        ))
-        : jobs?.data?.map((job) => <JobsCard key={job._id} job={job} />)}
+      {jobs?.map((job) => <JobsCard key={job._id} job={job} />)}
     </SimpleGrid>
   );
 };

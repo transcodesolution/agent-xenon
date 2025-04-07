@@ -9,13 +9,13 @@ import { useGetApplicantInterviewRoundDetails } from '@/libs/react-query-hooks/s
 
 export const RoundDetails = () => {
   const { roundId, applicantId } = useParams<{ roundId: string; applicantId: string }>();
-  const { data: interviewRoundDetails, isLoading } = useGetApplicantInterviewRoundDetails({
+  const { data: getRoundDetailsResponse, isLoading } = useGetApplicantInterviewRoundDetails({
     roundId: roundId ?? "",
     applicantId: applicantId,
     enabled: !!roundId,
   });
-  const roundDetails = interviewRoundDetails?.data?.applicantRoundAndQuestionAnswers || []
-  const interviewRound = interviewRoundDetails?.data?.interviewRound
+  const roundDetails = getRoundDetailsResponse?.data?.applicantRoundAndQuestionAnswers ?? [];
+  const interviewRound = getRoundDetailsResponse?.data?.interviewRound;
 
 
   if (!interviewRound || Array.isArray(interviewRound)) {

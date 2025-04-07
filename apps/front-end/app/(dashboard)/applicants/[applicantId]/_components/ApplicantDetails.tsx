@@ -6,9 +6,10 @@ import { ApplicantProfile } from './ApplicantProfile';
 
 export const ApplicantDetails = () => {
   const { applicantId } = useParams<{ applicantId: string }>();
-  const { data: applicant } = useGetApplicantById({ applicantId: applicantId });
+  const { data: getApplicantResponse } = useGetApplicantById({ applicantId });
+  const applicant = getApplicantResponse?.data;
 
   return (
-    <ApplicantProfile applicant={applicant?.data} />
+    <ApplicantProfile applicant={applicant} />
   );
 };

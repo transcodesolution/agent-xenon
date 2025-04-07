@@ -21,7 +21,7 @@ import { usePermissions } from '@/libs/hooks/usePermissions';
 export const JobForm = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const { jobId } = useParams<{ jobId: string }>();
-  const { data: jobData, isLoading, refetch } = useGetJobById({ jobId });
+  const { data: getJobByIdResponse, isLoading, refetch } = useGetJobById({ jobId });
   const [rounds, setRounds] = useState<IInterviewRound[]>([]);
   const [formState, setFormState] = useState({
     title: '',
@@ -38,18 +38,19 @@ export const JobForm = () => {
   const { deleteInterviewRoundMutation } = useDeleteInterviewRounds();
   const [selectedRoundId, setSelectedRoundId] = useState<string | null>(null);
   const permission = usePermissions();
+  const job = getJobByIdResponse?.data;
 
   useEffect(() => {
-    if (jobData) {
-      setRounds(jobData?.data?.rounds as IInterviewRound[]);
+    if (job) {
+      setRounds(job?.rounds as IInterviewRound[]);
       setFormState({
-        title: jobData?.data?.title || '',
-        description: jobData?.data?.description || '',
-        designation: jobData?.data?.designation || '',
-        role: jobData?.data?.role || '',
+        title: job?.title || '',
+        description: job?.description || '',
+        designation: job?.designation || '',
+        role: job?.role || '',
       });
     }
-  }, [jobData]);
+  }, [job]);
 
   const designationsOptions =
     jobRoleAndDesignation?.data?.designations.map((designation) => ({

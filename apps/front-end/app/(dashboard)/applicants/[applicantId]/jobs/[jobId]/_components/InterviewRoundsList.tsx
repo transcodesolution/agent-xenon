@@ -6,8 +6,8 @@ import { useParams, useRouter } from 'next/navigation';
 
 export const InterviewRoundsList = () => {
   const { applicantId, roundId, jobId } = useParams<{ applicantId: string, roundId: string, jobId: string }>();
-  const { data: applicantInterviewRounds } = useGetApplicantInterviewRounds({ applicantId: applicantId, jobId: jobId });
-  const rounds = applicantInterviewRounds?.data?.applicantInterviewRounds || []
+  const { data: getInterviewRoundsResponse } = useGetApplicantInterviewRounds({ applicantId: applicantId, jobId: jobId });
+  const interviewRounds = getInterviewRoundsResponse?.data?.applicantInterviewRounds ?? [];
   const router = useRouter();
 
   const handleSelectRound = (roundId: string) => {
@@ -16,7 +16,7 @@ export const InterviewRoundsList = () => {
 
   return (
     <Stack h='calc(100vh - 190px)' styles={{ root: { overflowY: 'auto' } }}>
-      {rounds.map((round) => {
+      {interviewRounds.map((round) => {
         const isRoundSelected = roundId === round._id;
         return (
           <Paper

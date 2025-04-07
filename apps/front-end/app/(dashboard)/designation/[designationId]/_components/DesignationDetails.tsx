@@ -15,9 +15,10 @@ import { useDebouncedCallback } from "@mantine/hooks";
 
 export const DesignationDetails = () => {
   const { designationId } = useParams<{ designationId: string }>();
-  const { data: designation, isLoading } = useGetDesignationById({ designationId: designationId });
+  const { data: getDesignationResponse, isLoading } = useGetDesignationById({ designationId: designationId });
   const { mutate: updateDesignation } = useUpdateDesignation();
   const permission = usePermissions();
+  const designation = getDesignationResponse?.data;
 
   const debouncedUpdate = useDebouncedCallback((field: string, value: string | Permission[]) => {
     updateDesignation(
@@ -56,13 +57,13 @@ export const DesignationDetails = () => {
       <TextInput
         label="Name"
         placeholder="Enter designation name"
-        defaultValue={designation?.data?.name ?? ""}
+        defaultValue={designation?.name ?? ""}
         onChange={(e) => handleChange("name", e.target.value)}
       />
       <Textarea
         label="Description"
         placeholder="Enter description"
-        defaultValue={designation?.data?.description ?? ""}
+        defaultValue={designation?.description ?? ""}
         onChange={(e) => handleChange("description", e.target.value)}
       />
     </Stack>

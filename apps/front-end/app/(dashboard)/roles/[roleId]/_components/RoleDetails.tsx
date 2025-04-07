@@ -20,16 +20,17 @@ let timeOut: string | number | NodeJS.Timeout | undefined;
 
 export const RoleDetails = () => {
   const { roleId } = useParams<{ roleId: string }>();
-  const { data: roles, isLoading } = useGetRoleById({ roleId: roleId });
+  const { data: getRoleResponse, isLoading } = useGetRoleById({ roleId });
+  const roleData = getRoleResponse?.data;
   const [selectedPermissions, setSelectedPermissions] = useState<Permission[]>([]);
   const { mutate: updateRole } = useUpdateRole();
   const permission = usePermissions()
 
   useEffect(() => {
-    if (roles?.data?.permissions) {
-      setSelectedPermissions(roles.data.permissions);
+    if (roleData?.permissions) {
+      setSelectedPermissions(roleData.permissions);
     }
-  }, [roles]);
+  }, [roleData]);
 
   const handleChange = (field: string, value: string | Permission[]) => {
     if (!permission?.hasRoleUpdate) {
@@ -82,7 +83,7 @@ export const RoleDetails = () => {
               label="Role Name"
               placeholder="Enter role name"
               leftSection={<IconUsers size='18' />}
-              defaultValue={roles?.data?.name ?? ""}
+              defaultValue={roleData?.name ?? ""}
               onChange={(e) => handleChange("name", e.target.value)}
               required
             />

@@ -22,10 +22,11 @@ export const JobRoleList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading, refetch } = useGetJobRoles({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getJobRolesResponse, isLoading, refetch } = useGetJobRoles({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedJobRoles, setSelectedJobRoles] = useState<IJobRole[]>([]);
   const { deleteJobRolesMutation } = useDeleteJobRoles();
   const permission = usePermissions()
+  const jobRoles = getJobRolesResponse?.data?.jobRoles;
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IJobRole>>({
     columnAccessor: sortColumn,
@@ -94,7 +95,7 @@ export const JobRoleList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.jobRoles}
+        records={jobRoles}
         fetching={isLoading}
         selectedRecords={selectedJobRoles}
         onSelectedRecordsChange={setSelectedJobRoles}

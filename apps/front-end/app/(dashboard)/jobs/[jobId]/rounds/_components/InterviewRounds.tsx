@@ -17,9 +17,11 @@ import { showNotification } from '@mantine/notifications';
 
 export const InterviewRounds = () => {
   const { jobId } = useParams<{ jobId: string }>();
-  const { data: rounds, isLoading, refetch } = useGetInterviewRoundsByJobId({ jobId });
+  const { data: getInterviewRoundsResponse, isLoading, refetch } = useGetInterviewRoundsByJobId({ jobId });
   const [selectedRoundId, setSelectedRoundId] = useState<string>('');
-  const { data: roundData } = useGetInterviewRoundsById({ roundId: selectedRoundId });
+  const { data: getSelectedRoundResponse } = useGetInterviewRoundsById({ roundId: selectedRoundId });
+  const interviewRounds = getInterviewRoundsResponse?.data || [];
+  const selectedRoundApplicants = getSelectedRoundResponse?.data?.applicants || [];
 
   const { mutate: startInterviewRound } = useInterviewRoundStart();
   const { mutate: updateRoundStatus } = useInterviewRoundUpdateStatus();
@@ -58,8 +60,8 @@ export const InterviewRounds = () => {
   return (
     <Stack>
       <LoadingOverlay visible={isLoading} zIndex={1000} overlayProps={{ radius: 'sm', blur: 2 }} />
-      {rounds?.data?.map((round: IInterviewRound, index: number) => {
-        const isPreviousRoundsCompleted = rounds?.data?.slice(0, index)
+      {interviewRounds?.map((round: IInterviewRound, index: number) => {
+        const isPreviousRoundsCompleted = interviewRounds?.slice(0, index)
           .every((prevRound) => prevRound.status === InterviewRoundStatus.COMPLETED);
 
         return (
@@ -77,7 +79,7 @@ export const InterviewRounds = () => {
       <JobApplicantListModal
         isOpen={!!selectedRoundId}
         onClose={() => setSelectedRoundId("")}
-        Applicants={roundData?.data?.applicants || []}
+        Applicants={selectedRoundApplicants}
         roundId={selectedRoundId || ''}
         onUpdateStatus={handleUpdateRoundStatus}
       />

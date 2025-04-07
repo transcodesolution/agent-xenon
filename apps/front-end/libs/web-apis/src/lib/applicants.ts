@@ -78,11 +78,11 @@ export const getApplicantInterviewRoundDetails = async ({ roundId, applicantId }
   }
 };
 
-export const getApplicantAppliedJobsById = async (applicantId: string): Promise<IApiResponse<IJob[]>> => {
+export const getAppliedJobsByApplicantId = async (applicantId: string): Promise<IApiResponse<IJob[]>> => {
   try {
     const result = await http.get<IApiResponse<IJob[]>>(`/applicant/applied-job/${applicantId}`);
     return result.data;
   } catch (error) {
-    throw new Error(`Error while fetching applicant by ID: ${error}`);
+    throw new Error(`Error while fetching applied jobs applicant by ID: ${error}`);
   }
 };

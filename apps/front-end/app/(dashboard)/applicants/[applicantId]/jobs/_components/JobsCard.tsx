@@ -5,12 +5,12 @@ import {
   Card,
   Group,
   Title,
+  Anchor,
 } from '@mantine/core';
 import { IJob } from '@agent-xenon/interfaces';
-import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import classes from '../../applicantdetails.module.scss'
 import { getJobStatusColor } from '@/libs/utils/ui-helpers';
+import Link from 'next/link';
 
 interface IJobCard {
   job: IJob;
@@ -21,11 +21,15 @@ export const JobsCard = ({ job }: IJobCard) => {
   return (
     <Card key={job._id} shadow="sm" radius="md" withBorder mb="md">
       <Group mb="xs" justify='space-between'>
-        <Link
-          href={`/applicants/${applicantId}/jobs/${job._id}`} className={classes.link}
+        <Anchor
+          component={Link}
+          href={`/applicants/${applicantId}/jobs/${job._id}`}
+          underline="never"
         >
-          <Title order={4} lineClamp={2} maw={250}>{job.title}</Title>
-        </Link>
+          <Title order={4} lineClamp={2} maw={250}>
+            {job.title}
+          </Title>
+        </Anchor>
         <Badge color={getJobStatusColor(job.status)} variant="light">
           {job.status ?? "-"}
         </Badge>

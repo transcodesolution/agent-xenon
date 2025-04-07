@@ -28,11 +28,14 @@ export function ApplicantList() {
     direction: sortOrder as "asc" | "desc",
   });
 
-  const { data, isLoading, refetch } = useGetApplicants({
+  const { data: getApplicantsResponse, isLoading, refetch } = useGetApplicants({
     page,
     limit: pageSize,
     search: searchText
   });
+
+  const applicants = getApplicantsResponse?.data?.applicants ?? [];
+  const totalData = getApplicantsResponse?.data?.totalData ?? 0;
 
   const { deleteApplicantsMutation } = useDeleteApplicants();
 
@@ -81,7 +84,7 @@ export function ApplicantList() {
         <DataTable
           idAccessor="_id"
           highlightOnHover
-          records={data?.data?.applicants || []}
+          records={applicants || []}
           fetching={isLoading}
           selectedRecords={selectedApplicants}
           onSelectedRecordsChange={setSelectedApplicants}
@@ -95,7 +98,7 @@ export function ApplicantList() {
           sortStatus={sortStatus}
           onSortStatusChange={handleSortStatusChange}
           columns={columns}
-          totalRecords={data?.data?.totalData}
+          totalRecords={totalData}
         />
       </Paper>
     </React.Fragment>

@@ -22,9 +22,10 @@ export const QuestionList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading, refetch } = useGetMCQQuestions({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getMCQResponse, isLoading, refetch } = useGetMCQQuestions({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedQuestions, setSelectedQuestions] = useState<IInterviewQuestionAnswer[]>([]);
   const { deleteQuestionsMutation } = useDeleteQuestions();
+  const questions = getMCQResponse?.data?.questions;
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IInterviewQuestionAnswer>>({
     columnAccessor: sortColumn,
@@ -103,7 +104,7 @@ export const QuestionList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.questions}
+        records={questions}
         fetching={isLoading}
         selectedRecords={selectedQuestions}
         onSelectedRecordsChange={setSelectedQuestions}

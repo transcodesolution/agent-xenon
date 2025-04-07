@@ -1,4 +1,4 @@
-import { Loader, SimpleGrid, Skeleton } from '@mantine/core';
+import { Loader, SimpleGrid } from '@mantine/core';
 import React from 'react';
 import JobCard from './JobCard';
 import { IJob } from '@agent-xenon/interfaces';
@@ -19,11 +19,7 @@ export const JobGrid = ({ data, isFetching }: IJobGrid) => {
       spacing={{ base: 10, sm: 'xl' }}
       verticalSpacing={{ base: 'md', sm: 'xl' }}
     >
-      {isFetching
-        ? Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={`project-loading-${i}`} visible={true} height={300} />
-        ))
-        : data?.map((job) => <JobCard key={job._id} job={job} />)}
+      {data?.map((job) => <JobCard key={job._id} job={job} />)}
     </SimpleGrid>
   );
 }
