@@ -178,7 +178,7 @@ export const getApplicantById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IApplicant> = { deletedAt: null, organizationId: user.organizationId, _id: value.applicantId };
 
-        const applicantData = await Applicant.findOne<IApplicant>(match).populate("appliedJobIds");
+        const applicantData = await Applicant.findOne<IApplicant>(match).populate("appliedJobs");
 
         return res.ok("applicant", applicantData ?? {}, "getDataSuccess");
     } catch (error) {
