@@ -55,8 +55,8 @@ export const SignInForm = () => {
       });
 
       const redirectMap: Record<string, string> = {
-        applicant: new URL(previousURL).pathname,
-        user: '/dashboard',
+        applicant: previousURL ? new URL(previousURL).pathname : "/applicant/dashboard",
+        member: '/dashboard',
         employee: '/employee/dashboard',
       };
 
