@@ -8,6 +8,7 @@ import { JobGrid } from './_components/JobGrid';
 import { useCreateJob, useDeleteJobs, useGetJobs } from '@agent-xenon/react-query-hooks'
 import { IApiResponse, IJob } from '@agent-xenon/interfaces'
 import { usePermissions } from '@/libs/hooks/usePermissions'
+import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete'
 
 export default function Page() {
   const searchParams = useSearchParams();
@@ -21,16 +22,22 @@ export default function Page() {
   const { deleteJobsMutation } = useDeleteJobs();
   const permission = usePermissions()
   const jobs = getJobResponse?.data?.jobs ?? [];
+  const confirmDelete = useConfirmDelete();
 
   const onDelete = (jobIds: string[]) => {
-    deleteJobsMutation.mutate(
-      { jobIds },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
+    confirmDelete({
+      itemName: jobIds.length > 1 ? 'these jobs' : 'this job',
+      onConfirm: () => {
+        deleteJobsMutation.mutate(
+          { jobIds },
+          {
+            onSuccess: () => {
+              refetch();
+            },
+          }
+        );
+      },
+    });
   };
 
   const handleCreateJob = () => {

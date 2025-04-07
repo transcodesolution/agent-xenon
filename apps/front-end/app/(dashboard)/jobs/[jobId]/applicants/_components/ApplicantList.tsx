@@ -9,6 +9,7 @@ import { IconTrash } from "@tabler/icons-react";
 import { FilterParams, updateUrlParams } from "@/libs/utils/updateUrlParams";
 import { useGetApplicants, useDeleteApplicants } from "@agent-xenon/react-query-hooks";
 import ApplicantModal from "./ApplicantModal";
+import { useConfirmDelete } from "@/libs/hooks/useConfirmDelete";
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ["asc", "desc"];
@@ -25,6 +26,7 @@ export function ApplicantList() {
   const sortColumn = searchParams.get("sortColumn") || "appliedDate";
   const sortOrder = SORT_ORDER.includes(searchParams.get("sortOrder") || "") ? searchParams.get("sortOrder") : "desc";
   const [editingApplicantId, setEditingApplicantId] = useState<string>('');
+  const confirmDelete = useConfirmDelete();
 
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IApplicant>>({
@@ -61,16 +63,22 @@ export function ApplicantList() {
   };
 
   const handleDeleteSelected = () => {
-    const applicantIds = selectedApplicants.map((applicant) => String(applicant._id));
-    deleteApplicantsMutation.mutate(
-      { jobId, applicantIds },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-    setSelectedApplicants([]);
+    const applicantIds = selectedApplicants.map((a) => String(a._id));
+
+    confirmDelete({
+      itemName: applicantIds.length > 1 ? 'these applicants' : 'this applicant',
+      onConfirm: () => {
+        deleteApplicantsMutation.mutate(
+          { jobId, applicantIds },
+          {
+            onSuccess: () => {
+              refetch();
+              setSelectedApplicants([]);
+            },
+          }
+        );
+      },
+    });
   };
 
   const handleEditApplicant = (applicantId: string) => {
