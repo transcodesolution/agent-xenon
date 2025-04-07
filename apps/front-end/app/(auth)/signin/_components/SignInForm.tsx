@@ -26,8 +26,8 @@ import { UserType } from '@agent-xenon/constants';
 
 const ROLE_OPTIONS = [
   { value: UserType.APPLICANT, label: 'Applicant' },
-  { value: UserType.MEMBER, label: 'User' },
-  { value: 'employee', label: 'Employee' },
+  { value: UserType.MEMBER, label: 'Member' },
+  { value: UserType.EMPLOYEE, label: 'Employee' }
 ];
 
 export const SignInForm = () => {
@@ -46,6 +46,7 @@ export const SignInForm = () => {
 
   const handleSignInFormSubmit = form.onSubmit(async ({ email, password, role }) => {
     try {
+      const previousURL = document.referrer;
       await nextServerSignIn({
         email,
         password,
@@ -53,9 +54,8 @@ export const SignInForm = () => {
         userType: role as UserType,
       });
 
-      // Handle role-based redirection
       const redirectMap: Record<string, string> = {
-        applicant: '/applicant/dashboard',
+        applicant: new URL(previousURL).pathname,
         user: '/dashboard',
         employee: '/employee/dashboard',
       };
