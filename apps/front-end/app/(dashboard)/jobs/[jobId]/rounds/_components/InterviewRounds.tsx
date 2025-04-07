@@ -13,6 +13,7 @@ import { InterviewRoundStatus } from '@agent-xenon/constants';
 import { RoundCard } from './RoundCard';
 import { JobApplicantListModal } from './JobApplicantListModal';
 import { IUpdateInterviewRoundStatusRequest } from '@/libs/types-api/src';
+import { showNotification } from '@mantine/notifications';
 
 export const InterviewRounds = () => {
   const { jobId } = useParams<{ jobId: string }>();
@@ -27,6 +28,13 @@ export const InterviewRounds = () => {
     startInterviewRound({ roundId, jobId }, {
       onSuccess: () => {
         refetch();
+      },
+      onError: (error) => {
+        showNotification({
+          title: 'Google Login Required',
+          message: error.message,
+          color: 'red',
+        });
       }
     });
   };
