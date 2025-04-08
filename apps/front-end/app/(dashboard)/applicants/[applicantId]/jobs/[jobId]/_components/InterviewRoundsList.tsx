@@ -5,18 +5,18 @@ import dayjs from 'dayjs';
 import { useParams, useRouter } from 'next/navigation';
 
 export const InterviewRoundsList = () => {
-  const { applicantId, roundId } = useParams<{ applicantId: string, roundId: string }>();
-  const { data: applicantInterviewRounds } = useGetApplicantInterviewRounds({ applicantId: applicantId });
-  const rounds = applicantInterviewRounds?.data?.applicantInterviewRounds || []
+  const { applicantId, roundId, jobId } = useParams<{ applicantId: string, roundId: string, jobId: string }>();
+  const { data: getInterviewRoundsResponse } = useGetApplicantInterviewRounds({ applicantId: applicantId, jobId: jobId });
+  const interviewRounds = getInterviewRoundsResponse?.data?.applicantInterviewRounds ?? [];
   const router = useRouter();
 
   const handleSelectRound = (roundId: string) => {
-    router.push(`/applicants/${applicantId}/interview/${roundId}`);
+    router.push(`/applicants/${applicantId}/jobs/${jobId}/${roundId}`);
   };
 
   return (
     <Stack h='calc(100vh - 190px)' styles={{ root: { overflowY: 'auto' } }}>
-      {rounds.map((round) => {
+      {interviewRounds.map((round) => {
         const isRoundSelected = roundId === round._id;
         return (
           <Paper
@@ -30,7 +30,7 @@ export const InterviewRoundsList = () => {
             }}
             onClick={() => handleSelectRound(round._id)}
           >
-            <Group mb='xs'>
+            <Group mb='xs' justify='space-between'>
               <Text fw={600}>{round.name}</Text>
               <Badge color={getStatusColor(round.status)} variant='light'>
                 {round.status}
@@ -41,7 +41,7 @@ export const InterviewRoundsList = () => {
               {round.type}
             </Text>
 
-            <Group>
+            <Group justify='space-between'>
               <Text size='sm'>
                 {dayjs(round.startDate).format('DD-MM-YYYY | HH:mm')} - {dayjs(round.endDate).format('DD-MM-YYYY | HH:mm')}
               </Text>

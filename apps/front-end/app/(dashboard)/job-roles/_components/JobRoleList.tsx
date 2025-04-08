@@ -9,6 +9,7 @@ import React, { useState } from 'react'
 import { usePermissions } from '@/libs/hooks/usePermissions';
 import { useGetJobRoles, useDeleteJobRoles } from '@agent-xenon/react-query-hooks';
 import { IJobRole } from '@agent-xenon/interfaces';
+import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -22,10 +23,12 @@ export const JobRoleList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading, refetch } = useGetJobRoles({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getJobRolesResponse, isLoading, refetch } = useGetJobRoles({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedJobRoles, setSelectedJobRoles] = useState<IJobRole[]>([]);
   const { deleteJobRolesMutation } = useDeleteJobRoles();
   const permission = usePermissions()
+  const jobRoles = getJobRolesResponse?.data?.jobRoles;
+  const confirmDelete = useConfirmDelete();
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IJobRole>>({
     columnAccessor: sortColumn,
@@ -72,16 +75,23 @@ export const JobRoleList = () => {
 
   const handleDeleteSelected = () => {
     const jobRoleIds = selectedJobRoles.map((role) => String(role._id));
-    deleteJobRolesMutation.mutate(
-      { jobRoleIds },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-    setSelectedJobRoles([])
+
+    confirmDelete({
+      itemName: jobRoleIds.length > 1 ? 'these job roles' : 'this job role',
+      onConfirm: () => {
+        deleteJobRolesMutation.mutate(
+          { jobRoleIds },
+          {
+            onSuccess: () => {
+              refetch();
+              setSelectedJobRoles([]);
+            },
+          }
+        );
+      },
+    });
   };
+
 
   return (
     <React.Fragment>
@@ -94,7 +104,7 @@ export const JobRoleList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.jobRoles}
+        records={jobRoles}
         fetching={isLoading}
         selectedRecords={selectedJobRoles}
         onSelectedRecordsChange={setSelectedJobRoles}

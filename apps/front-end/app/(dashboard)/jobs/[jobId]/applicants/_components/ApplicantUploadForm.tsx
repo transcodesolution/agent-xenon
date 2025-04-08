@@ -10,14 +10,14 @@ export function ApplicantUploadForm({ refetch, onClose }: { refetch: () => void,
   const [resumeUrls, setResumeUrls] = useState<string[]>([]);
   const { jobId } = useParams<{ jobId: string }>();
   const { mutate: createJobApplicantByAgent } = useCreateJobApplicantByAgent();
-  const { data } = useGetResumeUrls({
+  const { data: getResumeUrlsResponse } = useGetResumeUrls({
     jobId,
   });
+  const initialResumeUrls = getResumeUrlsResponse?.data?.resumeUrls || [];
 
   useEffect(() => {
-    const resumeUrls = data?.data?.resumeUrls || [];
-    setResumeUrls(resumeUrls);
-  }, [data]);
+    setResumeUrls(initialResumeUrls);
+  }, [resumeUrls]);
 
   const handleDrop = async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {

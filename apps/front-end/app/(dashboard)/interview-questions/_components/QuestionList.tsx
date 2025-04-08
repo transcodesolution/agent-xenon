@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react'
 import { IconTrash } from '@tabler/icons-react';
+import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -22,9 +23,11 @@ export const QuestionList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading, refetch } = useGetMCQQuestions({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getMCQResponse, isLoading, refetch } = useGetMCQQuestions({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedQuestions, setSelectedQuestions] = useState<IInterviewQuestionAnswer[]>([]);
   const { deleteQuestionsMutation } = useDeleteQuestions();
+  const questions = getMCQResponse?.data?.questions;
+  const confirmDelete = useConfirmDelete();
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IInterviewQuestionAnswer>>({
     columnAccessor: sortColumn,
@@ -82,15 +85,21 @@ export const QuestionList = () => {
 
   const handleDeleteSelected = () => {
     const questionIds = selectedQuestions.map((question) => String(question._id));
-    deleteQuestionsMutation.mutate(
-      { questionIds },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-    setSelectedQuestions([])
+
+    confirmDelete({
+      itemName: questionIds.length > 1 ? 'these questions' : 'this question',
+      onConfirm: () => {
+        deleteQuestionsMutation.mutate(
+          { questionIds },
+          {
+            onSuccess: () => {
+              refetch();
+              setSelectedQuestions([]);
+            },
+          }
+        );
+      },
+    });
   };
 
   return (
@@ -103,7 +112,7 @@ export const QuestionList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.questions}
+        records={questions}
         fetching={isLoading}
         selectedRecords={selectedQuestions}
         onSelectedRecordsChange={setSelectedQuestions}

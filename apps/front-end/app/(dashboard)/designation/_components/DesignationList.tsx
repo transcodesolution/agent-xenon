@@ -9,6 +9,7 @@ import React, { useState } from 'react'
 import { usePermissions } from '@/libs/hooks/usePermissions';
 import { useGetDesignations, useDeleteDesignations } from '@agent-xenon/react-query-hooks';
 import { IDesignation } from '@agent-xenon/interfaces';
+import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -22,10 +23,12 @@ export const DesignationList = () => {
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
-  const { data, isLoading, refetch } = useGetDesignations({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getDesignationsResponse, isLoading, refetch } = useGetDesignations({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedDesignations, setSelectedDesignations] = useState<IDesignation[]>([]);
   const { deleteDesignationsMutation } = useDeleteDesignations();
   const permission = usePermissions()
+  const designations = getDesignationsResponse?.data?.designations || [];
+  const confirmDelete = useConfirmDelete();
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IDesignation>>({
     columnAccessor: sortColumn,
@@ -72,16 +75,23 @@ export const DesignationList = () => {
 
   const handleDeleteSelected = () => {
     const designationIds = selectedDesignations.map((role) => String(role._id));
-    deleteDesignationsMutation.mutate(
-      { designationIds },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-    setSelectedDesignations([])
+
+    confirmDelete({
+      itemName: designationIds.length > 1 ? 'these designations' : 'this designation',
+      onConfirm: () => {
+        deleteDesignationsMutation.mutate(
+          { designationIds },
+          {
+            onSuccess: () => {
+              refetch();
+              setSelectedDesignations([]);
+            },
+          }
+        );
+      },
+    });
   };
+
 
   return (
     <React.Fragment>
@@ -94,7 +104,7 @@ export const DesignationList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.designations}
+        records={designations}
         fetching={isLoading}
         selectedRecords={selectedDesignations}
         onSelectedRecordsChange={setSelectedDesignations}

@@ -17,11 +17,12 @@ export default function Page() {
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const { data, isLoading, refetch } = useGetInterviewQuestions({ roundId: id });
+  const { data: getInterviewRoundResponse, isLoading, refetch } = useGetInterviewQuestions({ roundId: id });
   const { mutate: submitInterviewQuestions, } = useSubmitInterviewQuestions();
 
-  const questions = data?.data?.questions || []
-  const examStatus = data?.data?.status;
+  const questions = getInterviewRoundResponse?.data?.questions || []
+  const examStatus = getInterviewRoundResponse?.data?.status;
+  const roundName = getInterviewRoundResponse?.data?.roundName || "Technical Interview"
   const currentIndex = questions?.findIndex(q => q._id === currentQuestion?._id);
   const isLastQuestion = currentIndex === questions?.length - 1;
 
@@ -92,7 +93,7 @@ export default function Page() {
         <ExamSubmissionStatus
           totalQuestions={questions.length}
           answeredQuestions={Object.keys(answers).length}
-          roundName={data?.data?.roundName ?? "Technical Interview"}
+          roundName={roundName}
         />
       }
       {

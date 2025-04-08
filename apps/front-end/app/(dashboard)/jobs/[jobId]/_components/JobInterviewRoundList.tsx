@@ -4,7 +4,7 @@ import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors, } from 
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { IJob } from '@agent-xenon/interfaces';
 import SortableRoundItem from './SortableRoundItem';
-import { modals } from '@mantine/modals';
+import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete';
 
 interface IJobInterviewRoundList {
   rounds?: IJob['rounds'];
@@ -24,6 +24,7 @@ export const JobInterviewRoundList = ({
       activationConstraint: { delay: 100, tolerance: 5 },
     })
   );
+  const confirmDelete = useConfirmDelete();
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
@@ -38,17 +39,8 @@ export const JobInterviewRoundList = ({
   };
 
   const handleDelete = (roundId: string) => {
-    modals.openConfirmModal({
-      title: 'Confirm Delete',
-      centered: true,
-      children: (
-        <Text size="sm">
-          Are you sure you want to delete this interview round? This action
-          cannot be undone.
-        </Text>
-      ),
-      labels: { confirm: 'Delete', cancel: 'Cancel' },
-      confirmProps: { color: 'red' },
+    confirmDelete({
+      itemName: 'this interview round',
       onConfirm: () => onDeleteRound([roundId]),
     });
   };

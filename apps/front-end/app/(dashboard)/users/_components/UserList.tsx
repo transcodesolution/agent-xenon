@@ -8,6 +8,7 @@ import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatab
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react'
+import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -21,9 +22,11 @@ export const UserList = () => {
   const search = searchParams.get('search') || ''
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
-  const { data, isLoading, refetch } = useGetUsers({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getUserResponse, isLoading, refetch } = useGetUsers({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedUsers, setSelectedUsers] = useState<IUser[]>([]);
   const { deleteUsersMutation } = useDeleteUsers()
+  const userData = getUserResponse?.data?.users;
+  const confirmDelete = useConfirmDelete();
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IUser>>({
     columnAccessor: sortColumn,
@@ -86,15 +89,21 @@ export const UserList = () => {
 
   const handleDeleteSelected = () => {
     const ids = selectedUsers.map((user) => String(user._id));
-    deleteUsersMutation.mutate(
-      { ids },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-    setSelectedUsers([])
+
+    confirmDelete({
+      itemName: ids.length > 1 ? 'these users' : 'this user',
+      onConfirm: () => {
+        deleteUsersMutation.mutate(
+          { ids },
+          {
+            onSuccess: () => {
+              refetch();
+              setSelectedUsers([]);
+            },
+          }
+        );
+      },
+    });
   };
 
   return (
@@ -107,7 +116,7 @@ export const UserList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.users}
+        records={userData}
         fetching={isLoading}
         selectedRecords={selectedUsers}
         onSelectedRecordsChange={setSelectedUsers}

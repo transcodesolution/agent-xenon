@@ -8,6 +8,7 @@ import { IconTrash } from "@tabler/icons-react";
 import { FilterParams, updateUrlParams } from "@/libs/utils/updateUrlParams";
 import { useGetApplicants, useDeleteApplicants } from "@agent-xenon/react-query-hooks";
 import getApplicantColumns from "./ApplicantColumns";
+import { useConfirmDelete } from "@/libs/hooks/useConfirmDelete";
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ["asc", "desc"];
@@ -21,6 +22,7 @@ export function ApplicantList() {
   const sortColumn = searchParams.get("sortColumn") || "appliedDate";
   const searchText = searchParams.get("search") || "";
   const sortOrder = SORT_ORDER.includes(searchParams.get("sortOrder") || "") ? searchParams.get("sortOrder") : "desc";
+  const confirmDelete = useConfirmDelete();
 
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IApplicant>>({
@@ -28,11 +30,14 @@ export function ApplicantList() {
     direction: sortOrder as "asc" | "desc",
   });
 
-  const { data, isLoading, refetch } = useGetApplicants({
+  const { data: getApplicantsResponse, isLoading, refetch } = useGetApplicants({
     page,
     limit: pageSize,
     search: searchText
   });
+
+  const applicants = getApplicantsResponse?.data?.applicants ?? [];
+  const totalData = getApplicantsResponse?.data?.totalData ?? 0;
 
   const { deleteApplicantsMutation } = useDeleteApplicants();
 
@@ -56,15 +61,21 @@ export function ApplicantList() {
 
   const handleDeleteSelected = () => {
     const applicantIds = selectedApplicants.map((applicant) => String(applicant._id));
-    deleteApplicantsMutation.mutate(
-      { applicantIds },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-    setSelectedApplicants([]);
+
+    confirmDelete({
+      itemName: applicantIds.length > 1 ? 'these applicants' : 'this applicant',
+      onConfirm: () => {
+        deleteApplicantsMutation.mutate(
+          { applicantIds },
+          {
+            onSuccess: () => {
+              refetch();
+              setSelectedApplicants([]);
+            },
+          }
+        );
+      },
+    });
   };
 
 
@@ -81,7 +92,7 @@ export function ApplicantList() {
         <DataTable
           idAccessor="_id"
           highlightOnHover
-          records={data?.data?.applicants || []}
+          records={applicants || []}
           fetching={isLoading}
           selectedRecords={selectedApplicants}
           onSelectedRecordsChange={setSelectedApplicants}
@@ -95,7 +106,7 @@ export function ApplicantList() {
           sortStatus={sortStatus}
           onSortStatusChange={handleSortStatusChange}
           columns={columns}
-          totalRecords={data?.data?.totalData}
+          totalRecords={totalData}
         />
       </Paper>
     </React.Fragment>
