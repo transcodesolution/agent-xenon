@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import React, { useState } from 'react'
 import { usePermissions } from '@/libs/hooks/usePermissions';
+import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -28,6 +29,7 @@ export const RoleList = () => {
   const [selectedRoles, setSelectedRoles] = useState<IRole[]>([]);
   const { deleteRolesMutation } = useDeleteRoles();
   const permission = usePermissions()
+  const confirmDelete = useConfirmDelete();
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IRole>>({
     columnAccessor: sortColumn,
@@ -85,16 +87,21 @@ export const RoleList = () => {
 
   const handleDeleteSelected = () => {
     const roleIds = selectedRoles.map((role) => String(role._id));
-    deleteRolesMutation.mutate(
-      { roleIds },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-    setSelectedRoles([])
-  };
+    confirmDelete({
+      itemName: roleIds.length > 1 ? 'these roles' : 'this role',
+      onConfirm: () => {
+        deleteRolesMutation.mutate(
+          { roleIds },
+          {
+            onSuccess: () => {
+              refetch();
+              setSelectedRoles([]);
+            },
+          }
+        );
+      },
+    });
+  }
 
   return (
     <React.Fragment>

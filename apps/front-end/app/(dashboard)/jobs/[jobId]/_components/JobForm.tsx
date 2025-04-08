@@ -87,7 +87,7 @@ export const JobForm = () => {
     };
 
     setFormState(updatedFormState);
-    debouncedUpdateJob(field, value); // Debounced update
+    debouncedUpdateJob(field, value);
   };
 
   const handleAddRound = (params: Partial<IInterviewRound>) => {

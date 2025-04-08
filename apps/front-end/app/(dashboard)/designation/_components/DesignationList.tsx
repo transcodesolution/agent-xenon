@@ -9,6 +9,7 @@ import React, { useState } from 'react'
 import { usePermissions } from '@/libs/hooks/usePermissions';
 import { useGetDesignations, useDeleteDesignations } from '@agent-xenon/react-query-hooks';
 import { IDesignation } from '@agent-xenon/interfaces';
+import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete';
 
 const PAGE_SIZES = [50, 100, 200, 500, 1000];
 const SORT_ORDER = ['asc', 'desc'];
@@ -27,6 +28,7 @@ export const DesignationList = () => {
   const { deleteDesignationsMutation } = useDeleteDesignations();
   const permission = usePermissions()
   const designations = getDesignationsResponse?.data?.designations || [];
+  const confirmDelete = useConfirmDelete();
 
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IDesignation>>({
     columnAccessor: sortColumn,
@@ -73,16 +75,23 @@ export const DesignationList = () => {
 
   const handleDeleteSelected = () => {
     const designationIds = selectedDesignations.map((role) => String(role._id));
-    deleteDesignationsMutation.mutate(
-      { designationIds },
-      {
-        onSuccess: () => {
-          refetch();
-        },
-      }
-    );
-    setSelectedDesignations([])
+
+    confirmDelete({
+      itemName: designationIds.length > 1 ? 'these designations' : 'this designation',
+      onConfirm: () => {
+        deleteDesignationsMutation.mutate(
+          { designationIds },
+          {
+            onSuccess: () => {
+              refetch();
+              setSelectedDesignations([]);
+            },
+          }
+        );
+      },
+    });
   };
+
 
   return (
     <React.Fragment>
