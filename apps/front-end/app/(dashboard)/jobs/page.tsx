@@ -15,11 +15,12 @@ export default function Page() {
   const page = searchParams.get('page') || 1
   const pageSize = searchParams.get('pageSize') || 50
   const search = searchParams.get('search') || ''
-  const { data, isLoading, refetch } = useGetJobs({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getJobResponse, isLoading, refetch } = useGetJobs({ page: Number(page), limit: Number(pageSize), search: search });
   const router = useRouter()
   const { mutate: createJob, isPending: isCreating } = useCreateJob();
   const { deleteJobsMutation } = useDeleteJobs();
   const permission = usePermissions()
+  const jobs = getJobResponse?.data?.jobs ?? [];
 
   const onDelete = (jobIds: string[]) => {
     deleteJobsMutation.mutate(
@@ -57,8 +58,8 @@ export default function Page() {
         <Button component='a' disabled={isCreating} onClick={handleCreateJob} styles={{ root: { width: 'fit-content' } }} loading={isCreating}>Create +</Button>
       }
       <JobFilter />
-      {view === 'list' && <JobLists data={data?.data?.jobs ?? []} isFetching={isLoading} onDelete={onDelete} />}
-      {view === 'grid' && <JobGrid data={data?.data?.jobs ?? []} isFetching={isLoading} />}
+      {view === 'list' && <JobLists data={jobs ?? []} isFetching={isLoading} onDelete={onDelete} />}
+      {view === 'grid' && <JobGrid data={jobs ?? []} isFetching={isLoading} />}
     </Stack>
   )
 }

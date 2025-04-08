@@ -18,12 +18,14 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
   const { jobId } = useParams<{ jobId: string }>();
   const [searchQuestion, setSearchQuestion] = useState('');
   const [debouncedSearch] = useDebouncedValue(searchQuestion, 600);
-  const { data: mcqQuestionsData } = useGetAllMCQQuestions({
+  const { data: getAllMCQQuestionsResponse } = useGetAllMCQQuestions({
     searchString: debouncedSearch,
     enabled: debouncedSearch.length > 0,
   });
+  const mcqQuestions = getAllMCQQuestionsResponse?.data;
 
-  const { data: roundData } = useGetInterviewRoundsById({ roundId });
+  const { data: getInterviewRoundByIdResponse } = useGetInterviewRoundsById({ roundId });
+  const round = getInterviewRoundByIdResponse?.data;
 
   const [formState, setFormState] = useState<{
     name: string;
@@ -42,8 +44,7 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
   });
 
   useEffect(() => {
-    if (roundData?.data) {
-      const round = roundData.data;
+    if (round) {
       setFormState({
         name: round.name || '',
         type: round.type || InterviewRoundTypes.ASSESSMENT,
@@ -53,7 +54,7 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
         endDate: round.endDate ? new Date(round.endDate) : new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
       });
     }
-  }, [roundData]);
+  }, [round]);
 
   const handleChange = (field: keyof typeof formState, value: any) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
@@ -110,7 +111,7 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
           <Combobox
             store={combobox}
             onOptionSubmit={(val) => {
-              const question = mcqQuestionsData?.data?.find((q) => q._id === val);
+              const question = mcqQuestions?.find((q) => q._id === val);
               if (question) {
                 setFormState((prev) => ({
                   ...prev,
@@ -139,10 +140,10 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
             </Combobox.Target>
             <Combobox.Dropdown>
               <Combobox.Options>
-                {mcqQuestionsData?.data?.length === 0 ? (
+                {mcqQuestions?.length === 0 ? (
                   <Combobox.Empty>Nothing found</Combobox.Empty>
                 ) : (
-                  mcqQuestionsData?.data?.filter((question) => !selectedQuestionIds.includes(question._id))
+                  mcqQuestions?.filter((question) => !selectedQuestionIds.includes(question._id))
                     .map((question) => (
                       <Combobox.Option key={question._id} value={question._id}>
                         {question.question}

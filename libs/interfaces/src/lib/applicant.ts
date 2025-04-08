@@ -56,6 +56,7 @@ export interface IApplicant<T = string, U = string> extends ITimestamp {
     resumeLink: string;
     isSelectedByAgent: boolean;
     _doc?: IApplicant;
+    appliedJobs: string[]
 }
 
 export interface IApplicantInterviewRounds {

@@ -8,7 +8,9 @@ import { ConnectSlack } from './ConnectSlack';
 
 export const AppList = () => {
 
-  const { data, isLoading } = useGetApps({ refetchOnWindowFocus: false });
+  const { data: getAppsResponse, isLoading } = useGetApps({ refetchOnWindowFocus: false });
+  const appData = getAppsResponse?.data?.appData || [];
+
   const handleRenderApp = (app: IApp) => {
     switch (app.name) {
       case 'google':
@@ -19,8 +21,6 @@ export const AppList = () => {
         return null;
     }
   };
-
-  const appData = data?.data?.appData || [];
 
   if (isLoading) {
     return <Loader />

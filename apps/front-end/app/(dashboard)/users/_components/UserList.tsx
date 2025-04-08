@@ -21,10 +21,10 @@ export const UserList = () => {
   const search = searchParams.get('search') || ''
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
-  const { data, isLoading, refetch } = useGetUsers({ page: Number(page), limit: Number(pageSize), search: search });
+  const { data: getUserResponse, isLoading, refetch } = useGetUsers({ page: Number(page), limit: Number(pageSize), search: search });
   const [selectedUsers, setSelectedUsers] = useState<IUser[]>([]);
   const { deleteUsersMutation } = useDeleteUsers()
-
+  const userData = getUserResponse?.data?.users;
   const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IUser>>({
     columnAccessor: sortColumn,
     direction: sortOrder as 'asc' | 'desc',
@@ -107,7 +107,7 @@ export const UserList = () => {
       <DataTable
         idAccessor='_id'
         highlightOnHover
-        records={data?.data?.users}
+        records={userData}
         fetching={isLoading}
         selectedRecords={selectedUsers}
         onSelectedRecordsChange={setSelectedUsers}

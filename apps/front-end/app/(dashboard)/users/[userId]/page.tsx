@@ -11,9 +11,9 @@ import { LoadingOverlay, Stack } from '@mantine/core';
 
 export default function page() {
   const { userId } = useParams<{ userId: string }>();
-  const { data, isLoading } = useGetUserById({ id: userId });
+  const { data: getUserByIdResponse, isLoading } = useGetUserById({ id: userId });
   const { mutate: updateUser, isPending: isUpdating } = useUpdateUser();
-  const user = data?.data?.user;
+  const user = getUserByIdResponse?.data?.user;
 
   const handleUpdateUser = (user: Partial<IUser>) => {
     updateUser(

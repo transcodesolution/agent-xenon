@@ -57,8 +57,8 @@ export const QuestionDetails = () => {
     isMultiSelectOption: false,
   });
 
-  const { data, isLoading } = useGetQuestionById({ questionId });
-  const questionData = data?.data;
+  const { data: getQuestionByIdResponse, isLoading } = useGetQuestionById({ questionId });
+  const questionData = getQuestionByIdResponse?.data;
   const { mutate: updateQuestion } = useUpdateQuestion();
   const editor = useEditor({
     extensions: [StarterKit, Link],

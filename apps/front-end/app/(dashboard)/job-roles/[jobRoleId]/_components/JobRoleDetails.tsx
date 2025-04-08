@@ -15,9 +15,10 @@ import { useDebouncedCallback } from "@mantine/hooks";
 
 export const JobRoleDetails = () => {
   const { jobRoleId } = useParams<{ jobRoleId: string }>();
-  const { data: jobRoles, isLoading } = useGetJobRoleById({ jobRoleId });
+  const { data: getJobRoleByIdResponse, isLoading } = useGetJobRoleById({ jobRoleId });
   const { mutate: updateRole } = useUpdateJobRole();
   const permission = usePermissions();
+  const jobRole = getJobRoleByIdResponse?.data;
 
   const debouncedUpdate = useDebouncedCallback((field: string, value: string | Permission[]) => {
     updateRole(
@@ -57,13 +58,13 @@ export const JobRoleDetails = () => {
         label="Name"
         placeholder="Enter jobRole name"
         leftSection={<IconUsers size='18' />}
-        defaultValue={jobRoles?.data?.name ?? ""}
+        defaultValue={jobRole?.name ?? ""}
         onChange={(e) => handleChange("name", e.target.value)}
       />
       <Textarea
         label="Description"
         placeholder="Enter description"
-        defaultValue={jobRoles?.data?.description ?? ""}
+        defaultValue={jobRole?.description ?? ""}
         onChange={(e) => handleChange("description", e.target.value)}
       />
     </Stack>

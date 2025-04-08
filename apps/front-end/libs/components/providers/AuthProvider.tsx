@@ -17,15 +17,15 @@ export const AuthProvider = ({
   //the reason why i am not putting below function in useEffect is because of the order of execution of the function is necessary. it need to call out first somehow before any other http request has been made
   setupAxiosInterceptors({ token })
 
-  const { data } = useGetUser({ enabled: !!token });
+  const { data: getUserResponse } = useGetUser({ enabled: !!token });
+  const { user, organization } = getUserResponse?.data || {};
+  const permissions = user?.role?.permissions || [];
 
   useEffect(() => {
-    if (data?.data) {
-      setUser(data.data.user);
-      setOrganization(data.data.organization);
-      setPermissions(data?.data?.user?.role?.permissions)
-    }
-  }, [data]);
+    if (user) setUser(user);
+    if (organization) setOrganization(organization);
+    setPermissions(permissions);
+  }, [user, organization, permissions]);
 
   return children;
 };

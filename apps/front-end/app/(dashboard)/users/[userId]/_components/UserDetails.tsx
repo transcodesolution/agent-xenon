@@ -18,11 +18,11 @@ type EditableUserFields = Pick<IUser, "firstName" | "lastName" | "email" | "pass
 
 export const UserDetail = ({ userId }: IUserDetail) => {
   const { mutate: updateUser } = useUpdateUser();
-  const { data: rolesResponse } = useGetRoles({ page: 1, limit: 10, search: '' });
-  const { data } = useGetUserById({ id: userId });
+  const { data: getRolesResponse } = useGetRoles({ page: 1, limit: 10, search: '' });
+  const { data: getUserByIdResponse } = useGetUserById({ id: userId });
 
-  const user = data?.data?.user;
-  const roles = rolesResponse?.data?.roles || [];
+  const user = getUserByIdResponse?.data?.user;
+  const roles = getRolesResponse?.data?.roles || [];
 
   const handleUpdate = useDebouncedCallback((values: EditableUserFields) => {
     const dirtyFields = form.getDirty();
@@ -96,7 +96,6 @@ export const UserDetail = ({ userId }: IUserDetail) => {
         password: user.password || '',
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   return (

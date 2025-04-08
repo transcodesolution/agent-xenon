@@ -14,7 +14,8 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
   const { jobId } = useParams<{ jobId: string }>();
   const { mutate: createJobApplicant } = useCreateJobApplicant();
   const { mutate: updateJobApplicant } = useUpdateJobApplicant();
-  const { data: applicantData } = useGetApplicantById({ applicantId: applicantId });
+  const { data: getApplicantByIdResponse } = useGetApplicantById({ applicantId });
+  const applicant = getApplicantByIdResponse?.data;
 
   const form = useForm({
     initialValues: {
@@ -53,37 +54,37 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
   });
 
   useEffect(() => {
-    if (applicantData?.data) {
-      const socialLinksObj = applicantData?.data?.socialLinks as Record<string, string> || {};
+    if (applicant) {
+      const socialLinksObj = applicant?.socialLinks as Record<string, string> || {};
       const socialLinkName = socialLinksObj ? Object.keys(socialLinksObj)[0] || '' : '';
       const socialLinkValue = socialLinksObj ? socialLinksObj[socialLinkName] || '' : '';
 
       form.setValues({
-        firstName: applicantData?.data?.firstName || '',
-        lastName: applicantData?.data?.lastName || '',
-        password: applicantData?.data?.password || '',
+        firstName: applicant?.firstName || '',
+        lastName: applicant?.lastName || '',
+        password: applicant?.password || '',
         contactInfo: {
-          address: applicantData?.data?.contactInfo?.address || '',
-          city: applicantData?.data?.contactInfo?.city || '',
-          state: applicantData?.data?.contactInfo?.state || '',
-          email: applicantData?.data?.contactInfo?.email || '',
-          phoneNumber: applicantData?.data?.contactInfo?.phoneNumber || '',
+          address: applicant?.contactInfo?.address || '',
+          city: applicant?.contactInfo?.city || '',
+          state: applicant?.contactInfo?.state || '',
+          email: applicant?.contactInfo?.email || '',
+          phoneNumber: applicant?.contactInfo?.phoneNumber || '',
         },
-        skills: Array.isArray(applicantData?.data?.skills) ? applicantData.data.skills : [],
-        hobbies: Array.isArray(applicantData?.data?.hobbies) ? applicantData.data.hobbies : [],
-        strengths: Array.isArray(applicantData?.data?.strengths) ? applicantData.data.strengths : [],
-        experienceDetails: Array.isArray(applicantData?.data?.experienceDetails)
-          ? applicantData.data.experienceDetails.map(experience => ({
+        skills: Array.isArray(applicant?.skills) ? applicant.skills : [],
+        hobbies: Array.isArray(applicant?.hobbies) ? applicant.hobbies : [],
+        strengths: Array.isArray(applicant?.strengths) ? applicant.strengths : [],
+        experienceDetails: Array.isArray(applicant?.experienceDetails)
+          ? applicant.experienceDetails.map(experience => ({
             ...experience,
             durationStart: experience.durationStart ? new Date(experience.durationStart) : new Date(),
             durationEnd: experience.durationEnd ? new Date(experience.durationEnd) : new Date(),
           }))
           : [{ durationStart: new Date(), durationEnd: new Date(), responsibilities: '', role: '', organization: '' }],
-        education: Array.isArray(applicantData?.data?.education)
-          ? applicantData.data.education
+        education: Array.isArray(applicant?.education)
+          ? applicant.education
           : [{ degree: '', institution: '', yearOfGraduation: '', description: '' }],
-        projects: Array.isArray(applicantData?.data?.projects) && applicantData.data.projects.length > 0
-          ? applicantData.data.projects.map(project => ({
+        projects: Array.isArray(applicant?.projects) && applicant.projects.length > 0
+          ? applicant.projects.map(project => ({
             ...project,
             durationStart: project.durationStart ? new Date(project.durationStart) : new Date(),
             durationEnd: project.durationEnd ? new Date(project.durationEnd) : new Date(),
@@ -95,7 +96,7 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
           : { name: '', link: '' },
       });
     }
-  }, [applicantData]);
+  }, [applicant]);
 
   const handleAddProject = (index: number) => {
     const newProject = {
