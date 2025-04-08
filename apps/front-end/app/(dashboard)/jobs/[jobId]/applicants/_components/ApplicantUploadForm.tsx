@@ -13,11 +13,11 @@ export function ApplicantUploadForm({ refetch, onClose }: { refetch: () => void,
   const { data: getResumeUrlsResponse } = useGetResumeUrls({
     jobId,
   });
-  const initialResumeUrls = getResumeUrlsResponse?.data?.resumeUrls || [];
 
   useEffect(() => {
-    setResumeUrls(initialResumeUrls);
-  }, [resumeUrls]);
+    const resumeUrls = getResumeUrlsResponse?.data?.resumeUrls || [];
+    setResumeUrls(resumeUrls);
+  }, [getResumeUrlsResponse]);
 
   const handleDrop = async (acceptedFiles: File[]) => {
     for (const file of acceptedFiles) {
