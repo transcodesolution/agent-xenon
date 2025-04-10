@@ -1,6 +1,6 @@
 import Joi from "joi";
 import { paginationSchema } from "./pagination";
-import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty, InterviewRoundTypes } from "@agent-xenon/constants";
+import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty } from "@agent-xenon/constants";
 
 const questionAnswerSchema = {
     description: Joi.string().allow("").optional(),
@@ -10,7 +10,6 @@ const questionAnswerSchema = {
     timeLimitInMinutes: Joi.number().optional(),
     evaluationCriteria: Joi.string().allow("").optional(),
     isMultiSelectOption: Joi.boolean().optional(),
-    type: Joi.string().valid(...Object.values(InterviewRoundTypes)).optional(),
     questionFormat: Joi.string().valid(AnswerQuestionFormat.MCQ, AnswerQuestionFormat.CODE, AnswerQuestionFormat.FILE, AnswerQuestionFormat.TEXT).optional(),
 }
 

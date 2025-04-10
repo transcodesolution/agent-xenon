@@ -1,10 +1,9 @@
-import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty, InterviewRoundTypes } from '@agent-xenon/constants';
+import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty } from '@agent-xenon/constants';
 import { IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
 import mongoose, { HydratedDocument, Schema } from 'mongoose';
 
 const InterviewQuestionSchema: Schema = new Schema({
     description: { type: String },
-    type: { type: String, enum: InterviewRoundTypes, default: InterviewRoundTypes.ASSESSMENT },
     question: { type: String },
     options: [{ type: { text: String, index: { type: String, enum: AnswerMcqOptionFormat }, isRightAnswer: { type: Boolean }, _id: false }, }],
     tags: [{ type: String }],
