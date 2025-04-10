@@ -4,7 +4,7 @@ import { useSearchParams, useRouter, useParams } from "next/navigation";
 import React, { useState } from "react";
 import { IApplicant } from "@agent-xenon/interfaces";
 import { getApplicantColumns } from "./ApplicantColumns";
-import { ActionIcon, Button, Flex, Modal, Paper } from "@mantine/core";
+import { ActionIcon, Badge, Button, Flex, Group, Modal, Paper, Text } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { FilterParams, updateUrlParams } from "@/libs/utils/updateUrlParams";
 import { useGetApplicants, useDeleteApplicants } from "@agent-xenon/react-query-hooks";
@@ -41,6 +41,7 @@ export function ApplicantList() {
   });
   const applicants = getApplicantsResponse?.data?.applicants || [];
   const totalApplicants = getApplicantsResponse?.data?.totalData;
+  const resumeProcessByJobCount = getApplicantsResponse?.data?.state?.resumeProcessByJobCount || 0;
 
   const { deleteApplicantsMutation } = useDeleteApplicants();
 
@@ -98,37 +99,44 @@ export function ApplicantList() {
 
   return (
     <>
-      <Flex gap='md' align="center">
-        <Button onClick={() => setModalOpen(true)}>
-          + Add
-        </Button>
-        {selectedApplicants.length > 0 && (
-          <ActionIcon color="red" onClick={handleDeleteSelected}>
-            <IconTrash size="1.5rem" />
-          </ActionIcon>
+      <Flex gap='md' align="center" justify='space-between'>
+        <Group>
+          <Button onClick={() => setModalOpen(true)}>
+            + Add
+          </Button>
+          {selectedApplicants.length > 0 && (
+            <ActionIcon color="red" onClick={handleDeleteSelected}>
+              <IconTrash size="1.5rem" />
+            </ActionIcon>
+          )}
+        </Group>
+        {resumeProcessByJobCount > 0 && (
+          <Badge variant="light" color='orange'>
+            <Text size="sm">
+              {resumeProcessByJobCount} applicants pending to be processed.
+            </Text>
+          </Badge>
         )}
       </Flex>
-      <Paper withBorder shadow="md" p="md">
-        <DataTable
-          idAccessor="_id"
-          highlightOnHover
-          records={applicants}
-          fetching={isLoading}
-          selectedRecords={selectedApplicants}
-          onSelectedRecordsChange={setSelectedApplicants}
-          page={page}
-          onPageChange={handleChangePage}
-          recordsPerPage={pageSize}
-          recordsPerPageOptions={PAGE_SIZES}
-          onRecordsPerPageChange={handleChangePageSize}
-          noRecordsText="No Applicants Found"
-          recordsPerPageLabel=""
-          sortStatus={sortStatus}
-          onSortStatusChange={handleSortStatusChange}
-          columns={columns}
-          totalRecords={totalApplicants}
-        />
-      </Paper>
+      <DataTable
+        idAccessor="_id"
+        highlightOnHover
+        records={applicants}
+        fetching={isLoading}
+        selectedRecords={selectedApplicants}
+        onSelectedRecordsChange={setSelectedApplicants}
+        page={page}
+        onPageChange={handleChangePage}
+        recordsPerPage={pageSize}
+        recordsPerPageOptions={PAGE_SIZES}
+        onRecordsPerPageChange={handleChangePageSize}
+        noRecordsText="No Applicants Found"
+        recordsPerPageLabel=""
+        sortStatus={sortStatus}
+        onSortStatusChange={handleSortStatusChange}
+        columns={columns}
+        totalRecords={totalApplicants}
+      />
 
       <Modal opened={isModalOpen} size='100%' onClose={closeModal} title={editingApplicantId ? "Update" : "Add"}>
         <ApplicantModal refetch={refetch} onClose={closeModal} applicantId={editingApplicantId} />

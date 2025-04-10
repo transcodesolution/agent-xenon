@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  IconApps,
   IconHome,
   IconNotes,
   IconUser,
@@ -45,6 +46,12 @@ const mockData = [
     icon: IconUser,
     permissions: [Permission.USER_READ],
     link: '/users',
+  },
+  {
+    label: 'App',
+    icon: IconApps,
+    permissions: [Permission.READ_APP_INFO],
+    link: '/apps',
   },
 ];
 

@@ -59,8 +59,8 @@ export const getApplicantColumns = (
       title: "Actions",
       width: 100,
       render: (applicant) => (
-        <ActionIcon bg='var(--mantine-color-teal-filled-hover)' onClick={() => onEdit(applicant._id)}>
-          <IconEdit size="1.5rem" />
+        <ActionIcon w={35} variant="light" color="blue" onClick={() => onEdit(applicant._id)} aria-label="Edit">
+          <IconEdit size={18} />
         </ActionIcon>
       ),
     },

@@ -6,6 +6,6 @@ export interface IApiResponse<T = object> {
 }
 
 export type PaginationApiResponseType<T> = {
-    state: { page: number, limit: number, page_limit: number }
+    state: { page: number, limit: number, page_limit: number, resumeProcessByJobCount?: number }
     totalData: number,
 } & { [key: string]: T }

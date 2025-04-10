@@ -19,7 +19,6 @@ import {
   AnswerQuestionFormat,
   AnswerMcqOptionFormat,
   Difficulty,
-  InterviewRoundTypes,
 } from "@agent-xenon/constants";
 import {
   useGetQuestionById,
@@ -41,7 +40,6 @@ export const QuestionDetails = () => {
   const [questionFormState, setQuestionFormState] = useState({
     _id: "",
     description: "",
-    type: InterviewRoundTypes.ASSESSMENT,
     question: "",
     options: [
       { index: AnswerMcqOptionFormat.A, text: "", isRightAnswer: false },
@@ -176,18 +174,6 @@ export const QuestionDetails = () => {
               placeholder="Add tags"
               value={questionFormState.tags}
               onChange={(value: string[]) => handleChange("tags", value)}
-            />
-          </Grid.Col>
-
-          <Grid.Col span={6}>
-            <Select
-              label="Round Type"
-              data={Object.values(InterviewRoundTypes).map((type) => ({
-                value: type,
-                label: type,
-              }))}
-              value={questionFormState.type}
-              onChange={(value) => handleChange("type", value)}
             />
           </Grid.Col>
 
