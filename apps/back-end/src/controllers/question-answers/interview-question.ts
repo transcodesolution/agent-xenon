@@ -4,7 +4,7 @@ import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getAllQuestionSchema, getQuestionAnswerSchema, getQuestionByIdSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
 import InterviewQuestion from "../../database/models/interview-question";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { AnswerQuestionFormat, InterviewRoundTypes } from "@agent-xenon/constants";
+import { AnswerQuestionFormat } from "@agent-xenon/constants";
 
 export const createQuestionAnswer = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -38,7 +38,7 @@ export const updateQuestionAnswer = async (req: Request, res: Response) => {
 
         if (!checkQuestionExist) return res.badRequest("question", {}, "getDataNotFound");
 
-        const checkQuestionNameExist = await InterviewQuestion.findOne({ _id: { $ne: value.questionId }, organizationId: user.organizationId, type: InterviewRoundTypes.ASSESSMENT, questionFormat: AnswerQuestionFormat.MCQ, question: value.question, deletedAt: null });
+        const checkQuestionNameExist = await InterviewQuestion.findOne({ _id: { $ne: value.questionId }, organizationId: user.organizationId, questionFormat: AnswerQuestionFormat.MCQ, question: value.question, deletedAt: null });
 
         if (checkQuestionNameExist) return res.badRequest("question", {}, "dataAlreadyExist");
 
@@ -113,7 +113,6 @@ export const getQuestions = async (req: Request, res: Response) => {
             const searchRegex = new RegExp(value.search, "i")
             match.$or = [
                 { question: searchRegex },
-                { type: searchRegex },
                 { difficulty: searchRegex },
             ]
         }

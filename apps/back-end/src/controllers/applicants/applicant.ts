@@ -9,6 +9,8 @@ import { InterviewRoundStatus, JobStatus, RoleType } from "@agent-xenon/constant
 import { Role } from "../../database";
 import { resumeExtractAgent } from "../../helper/queue";
 import { getApplicantRoundStatusCommonQuery, updateApplicantToDatabase } from "../../utils/applicant";
+import { REDIS_KEY_PREFIX } from "../../utils/constants";
+import { getValue, setValue } from "../../utils/redis";
 
 export const createApplicantByUser = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -47,6 +49,12 @@ export const createApplicantByAgent = async (req: Request, res: Response) => {
         const checkJobExist = await Job.findOne({ _id: value.jobId, deletedAt: null, status: JobStatus.OPEN });
 
         if (!checkJobExist) return res.badRequest("job", {}, "getDataNotFound");
+
+        const redisKeyName = `${REDIS_KEY_PREFIX.Job}${value.jobId}`;
+
+        const resumeProcessByJob = await getValue(redisKeyName);
+
+        setValue(redisKeyName, resumeProcessByJob + checkJobExist.resumeUrls.length);
 
         const roleData = await Role.findOne({ type: RoleType.CANDIDATE, deletedAt: null, organizationId: user.organizationId });
         value.resumeUrls = checkJobExist.resumeUrls;
@@ -152,6 +160,7 @@ export const getApplicants = async (req: Request, res: Response) => {
             ]
         }
 
+
         if (value.jobId) {
             match.appliedJobIds = { $in: value.jobId };
         }
@@ -159,9 +168,17 @@ export const getApplicants = async (req: Request, res: Response) => {
         const [totalData, applicants] = await Promise.all([
             Applicant.countDocuments(match),
             Applicant.find(match).sort({ _id: -1 }).skip((value.page - 1) * value.limit).limit(value.limit)
-        ])
+        ]);
 
-        return res.ok("applicant", { applicants, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+        const apiResponse = { applicants, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1, resumeProcessByJobCount: 0 } };
+
+        if (value.jobId) {
+            const redisKeyName = `${REDIS_KEY_PREFIX.Job}${value.jobId}`;
+            const resumeProcessByJob = await getValue(redisKeyName);
+            apiResponse.state.resumeProcessByJobCount = resumeProcessByJob;
+        }
+
+        return res.ok("applicant", apiResponse, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -217,10 +234,13 @@ export const getApplicantInterviewDetail = async (req: Request, res: Response) =
 
         const applicantInterviewRounds = await Applicant.aggregate([
             {
+                $unwind: "$appliedJobIds",
+            },
+            {
                 $match: {
                     _id: value.applicantId,
                     deletedAt: null,
-                    appliedJobIds: { $elemMatch: { $eq: new mongoose.Types.ObjectId(value.jobId) } },
+                    appliedJobIds: new mongoose.Types.ObjectId(value.jobId),
                 }
             },
             {
@@ -274,15 +294,12 @@ export const getApplicantInterviewDetail = async (req: Request, res: Response) =
                                 _id: 0,
                                 applicantStatus: getApplicantRoundStatusCommonQuery("$$roundId")
                             }
-                        }
+                        },
                     ]
                 }
             },
             {
-                $unwind: {
-                    path: "$applicantRound",
-                    preserveNullAndEmptyArrays: true
-                }
+                $unwind: "$applicantRound"
             },
             {
                 $addFields: {

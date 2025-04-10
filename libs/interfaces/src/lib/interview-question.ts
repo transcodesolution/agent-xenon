@@ -4,7 +4,6 @@ import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty, InterviewRound
 export interface IInterviewQuestionAnswer extends ITimestamp {
     _id: string;
     description: string;
-    type: InterviewRoundTypes;
     question: string;
     options: IMCQOptions[];
     tags: string[];
