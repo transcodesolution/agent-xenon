@@ -5,12 +5,12 @@ export interface IApiResponse<T = object> {
     error?: { message?: string, stack?: string }
 }
 
-export type PaginationApiResponseType<T, U = PaginationApiResponseState> = {
+export type PaginationApiResponseType<T, U = IPaginationApiResponseState> = {
     state: U
     totalData: number,
 } & { [key: string]: T }
 
-export type PaginationApiResponseState = {
+export interface IPaginationApiResponseState {
     page: number;
     limit: number;
     page_limit: number;

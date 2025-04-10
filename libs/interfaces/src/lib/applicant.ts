@@ -1,4 +1,4 @@
-import { PaginationApiResponseState } from "./api-response";
+import { IPaginationApiResponseState } from "./api-response";
 import { IMCQOptions } from "./interview-question";
 import { IOrganization } from "./organization";
 import { IRole } from "./role";
@@ -27,7 +27,7 @@ export interface IExperienceDetail {
     organization: string;
 }
 
-export interface IApplicantApiResponseState extends PaginationApiResponseState {
+export interface IApplicantApiResponseState extends IPaginationApiResponseState {
     resumeProcessByJobCount?: number;
 }
 
