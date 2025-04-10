@@ -1,12 +1,19 @@
-'use client'
-import { useDeleteQuestions, useGetMCQQuestions } from '@agent-xenon/react-query-hooks';
+'use client';
+import {
+  useDeleteQuestions,
+  useGetMCQQuestions,
+} from '@agent-xenon/react-query-hooks';
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
-import { IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
+import { IInterviewQuestion } from '@agent-xenon/interfaces';
 import { ActionIcon, Anchor, Text } from '@mantine/core';
-import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatable'
+import {
+  DataTable,
+  DataTableColumn,
+  DataTableSortStatus,
+} from 'mantine-datatable';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import { IconTrash } from '@tabler/icons-react';
 import { useConfirmDelete } from '@/libs/hooks/useConfirmDelete';
 
@@ -19,17 +26,31 @@ export const QuestionList = () => {
 
   const page = Number(searchParams.get('page')) || 1;
   const pageSize = Number(searchParams.get('pageSize')) || PAGE_SIZES[0];
-  const search = searchParams.get('search') || ''
+  const search = searchParams.get('search') || '';
   const sortColumn = searchParams.get('sortColumn') || 'lastUpdatedDate';
-  const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
+  const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '')
+    ? searchParams.get('sortOrder')
+    : 'desc';
 
-  const { data: getMCQResponse, isLoading, refetch } = useGetMCQQuestions({ page: Number(page), limit: Number(pageSize), search: search });
-  const [selectedQuestions, setSelectedQuestions] = useState<IInterviewQuestionAnswer[]>([]);
+  const {
+    data: getMCQResponse,
+    isLoading,
+    refetch,
+  } = useGetMCQQuestions({
+    page: Number(page),
+    limit: Number(pageSize),
+    search: search,
+  });
+  const [selectedQuestions, setSelectedQuestions] = useState<
+    IInterviewQuestion[]
+  >([]);
   const { deleteQuestionsMutation } = useDeleteQuestions();
   const questions = getMCQResponse?.data?.questions;
   const confirmDelete = useConfirmDelete();
 
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IInterviewQuestionAnswer>>({
+  const [sortStatus, setSortStatus] = useState<
+    DataTableSortStatus<IInterviewQuestion>
+  >({
     columnAccessor: sortColumn,
     direction: sortOrder as 'asc' | 'desc',
   });
@@ -39,19 +60,21 @@ export const QuestionList = () => {
   };
 
   const handleChangePage = (pageNumber: number) => {
-    handleApplyFilter({ 'page': pageNumber.toString() })
+    handleApplyFilter({ page: pageNumber.toString() });
   };
 
   const handleChangePageSize = (pageNumber: number) => {
-    handleApplyFilter({ 'pageSize': pageNumber.toString() })
+    handleApplyFilter({ pageSize: pageNumber.toString() });
   };
 
-  const handleSortStatusChange = (status: DataTableSortStatus<IInterviewQuestionAnswer>) => {
+  const handleSortStatusChange = (
+    status: DataTableSortStatus<IInterviewQuestion>
+  ) => {
     handleChangePage(1);
     setSortStatus?.(status);
   };
 
-  const columns: DataTableColumn<IInterviewQuestionAnswer>[] = [
+  const columns: DataTableColumn<IInterviewQuestion>[] = [
     {
       accessor: 'question',
       title: 'Questions',
@@ -59,7 +82,13 @@ export const QuestionList = () => {
       sortable: true,
       render: ({ question, _id }) => {
         return (
-          <Anchor component={Link} href={`/interview-questions/${_id}`} style={{ position: 'relative' }}>{question || '-'}</Anchor>
+          <Anchor
+            component={Link}
+            href={`/interview-questions/${_id}`}
+            style={{ position: 'relative' }}
+          >
+            {question || '-'}
+          </Anchor>
         );
       },
     },
@@ -69,10 +98,8 @@ export const QuestionList = () => {
       ellipsis: true,
       sortable: true,
       render: ({ type }) => {
-        return (
-          <Text c='primary'>{type || 'custom'}</Text>
-        );
-      }
+        return <Text c="primary">{type || 'custom'}</Text>;
+      },
     },
     {
       accessor: 'questionFormat',
@@ -80,11 +107,13 @@ export const QuestionList = () => {
       ellipsis: true,
       sortable: true,
       render: ({ questionFormat }) => <Text>{questionFormat || 'N/A'}</Text>,
-    }
-  ]
+    },
+  ];
 
   const handleDeleteSelected = () => {
-    const questionIds = selectedQuestions.map((question) => String(question._id));
+    const questionIds = selectedQuestions.map((question) =>
+      String(question._id)
+    );
 
     confirmDelete({
       itemName: questionIds.length > 1 ? 'these questions' : 'this question',
@@ -104,13 +133,13 @@ export const QuestionList = () => {
 
   return (
     <React.Fragment>
-      {selectedQuestions.length > 0 &&
-        <ActionIcon color='red' onClick={handleDeleteSelected}>
+      {selectedQuestions.length > 0 && (
+        <ActionIcon color="red" onClick={handleDeleteSelected}>
           <IconTrash size="1.5rem" />
         </ActionIcon>
-      }
+      )}
       <DataTable
-        idAccessor='_id'
+        idAccessor="_id"
         highlightOnHover
         records={questions}
         fetching={isLoading}
@@ -122,12 +151,12 @@ export const QuestionList = () => {
         recordsPerPage={pageSize}
         recordsPerPageOptions={PAGE_SIZES}
         onRecordsPerPageChange={handleChangePageSize}
-        noRecordsText='No Data To Show'
+        noRecordsText="No Data To Show"
         recordsPerPageLabel=""
         sortStatus={sortStatus}
         onSortStatusChange={handleSortStatusChange}
         columns={columns}
       />
     </React.Fragment>
-  )
-}
+  );
+};
