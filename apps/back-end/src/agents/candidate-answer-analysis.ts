@@ -1,6 +1,6 @@
 import { ChatCompletionMessageParam } from "openai/resources";
 import createOpenAIClient from "../helper/openai";
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 import { ICandidateAnswerAnalysisResponse } from "../types/technical-round";
 
 const client = createOpenAIClient();
@@ -37,7 +37,7 @@ json
   "overallStatus": "Pass/Fail"
 }`;
 
-async function candidateAnswerAnalysisAgent(question: Pick<IInterviewQuestionAnswer, "question" | "evaluationCriteria" | "questionFormat" | "description">, answer: string): Promise<ICandidateAnswerAnalysisResponse> {
+async function candidateAnswerAnalysisAgent(question: Pick<IInterviewQuestion, "question" | "evaluationCriteria" | "questionFormat" | "description">, answer: string): Promise<ICandidateAnswerAnalysisResponse> {
     const messages: ChatCompletionMessageParam[] = [
         { role: "system", content: SYSTEM_PROMPT },
         {

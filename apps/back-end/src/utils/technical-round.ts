@@ -1,4 +1,4 @@
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 import { submitExamAnswerPayloadType, submitExamType } from "../types/technical-round";
 import candidateAnswerAnalysisAgent from "../agents/candidate-answer-analysis";
 import { OverallResult } from "@agent-xenon/constants";
@@ -15,7 +15,7 @@ export const manageMCQAnswers = (question: submitExamType, answerObj: submitExam
     return Number(candidateCorrectAnswerCount === platformCorrectAnswerCount);
 }
 
-export const manageTextAndCodeAnswers = async (question: Pick<IInterviewQuestionAnswer, "question" | "evaluationCriteria" | "questionFormat" | "description">, answerObj: submitExamAnswerPayloadType) => {
+export const manageTextAndCodeAnswers = async (question: Pick<IInterviewQuestion, "question" | "evaluationCriteria" | "questionFormat" | "description">, answerObj: submitExamAnswerPayloadType) => {
     const agentResponse = await candidateAnswerAnalysisAgent(question, answerObj.answer);
 
     return Number(agentResponse.overallStatus === OverallResult.Pass);

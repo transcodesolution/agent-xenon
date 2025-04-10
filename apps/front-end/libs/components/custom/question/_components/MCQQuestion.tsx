@@ -1,9 +1,9 @@
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 import { Checkbox, Flex, Stack, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 
 interface IMCQQuestion {
-  question: IInterviewQuestionAnswer;
+  question: IInterviewQuestion;
   answer: string;
   onAnswer: (questionId: string, answer: string) => void;
 }

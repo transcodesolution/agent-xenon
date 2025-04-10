@@ -3,10 +3,10 @@ import { useEffect, useState } from 'react';
 import { Stack, Text, Group, Flex, Avatar, Anchor, ActionIcon, Grid } from '@mantine/core';
 import { IconUpload, IconPhoto, IconX, IconTrash } from '@tabler/icons-react';
 import { uploadFileToServiceViaHandler } from '@agent-xenon/web-apis';
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
+import { IInterviewQuestion } from '@agent-xenon/interfaces';
 
 interface IFileQuestion {
-  question: IInterviewQuestionAnswer;
+  question: IInterviewQuestion;
   answer: string[];
   onAnswer: (questionId: string, answer: string[]) => void;
 }

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import React from 'react';
 import { QuestionFilter } from './_components/QuestionFilter';
 import { QuestionList } from './_components/QuestionList';
@@ -7,7 +7,7 @@ import { useCreateQuestion } from '@agent-xenon/react-query-hooks';
 import { useRouter } from 'next/navigation';
 import { showNotification } from '@mantine/notifications';
 import { IconX } from '@tabler/icons-react';
-import { IApiResponse, IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
+import { IApiResponse, IInterviewQuestion } from '@agent-xenon/interfaces';
 import { usePermissions } from '@/libs/hooks/usePermissions';
 
 export default function Page() {
@@ -18,8 +18,8 @@ export default function Page() {
   const handleCreateQuestion = () => {
     createQuestion({},
       {
-        onSuccess: (newJob: IApiResponse<IInterviewQuestionAnswer>) => {
-          const QuestionId = newJob?.data?._id
+        onSuccess: (newJob: IApiResponse<IInterviewQuestion>) => {
+          const QuestionId = newJob?.data?._id;
           if (QuestionId) {
             router.push(`/interview-questions/${QuestionId}`);
           }

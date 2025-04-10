@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
-import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
+import { IApplicant, IApplicantRound, IInterviewQuestion, IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import { AnswerQuestionFormat, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, OverallResult } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { createInterviewRoundSchema, deleteInterviewRoundSchema, getApplicantRoundByIdSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
@@ -179,7 +179,7 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewRound> = { deletedAt: null, _id: value.roundId }
 
-        const interviewRoundData = await InterviewRound.findOne<IInterviewRound<IInterviewQuestionAnswer>>(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name");
+        const interviewRoundData = await InterviewRound.findOne<IInterviewRound<IInterviewQuestion>>(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name");
 
         value.roundId = new mongoose.Types.ObjectId(value.roundId);
 
@@ -189,7 +189,7 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
             "status": getApplicantRoundStatusCommonQuery(value.roundId),
         }).populate("applicantId");
 
-        const questions = await RoundQuestionAssign.find<IRoundQuestionAssign<IInterviewQuestionAnswer>>({ roundId: value.roundId, deletedAt: null }, "questionId").populate("questionId", "question description options tags difficulty timeLimitInMinutes questionFormat").sort({ _id: 1 });
+        const questions = await RoundQuestionAssign.find<IRoundQuestionAssign<IInterviewQuestion>>({ roundId: value.roundId, deletedAt: null }, "questionId").populate("questionId", "question description options tags difficulty timeLimitInMinutes questionFormat").sort({ _id: 1 });
 
         if (interviewRoundData) {
             interviewRoundData._doc.applicants = applicants;
@@ -352,7 +352,7 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
 
         const questionAssignId: string[] = await RoundQuestionAssign.distinct("questionId", { deletedAt: null, roundId: value.roundId }).sort({ _id: 1 });
 
-        const questions = await InterviewQuestion.find<IInterviewQuestionAnswer>(
+        const questions = await InterviewQuestion.find<IInterviewQuestion>(
             { _id: { $in: questionAssignId } },
             "question description options.text options.index tags difficulty timeLimitInMinutes questionFormat"
         );
