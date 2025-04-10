@@ -14,7 +14,6 @@ import { AuthProvider } from '@/libs/components/providers/AuthProvider';
 import { Notification } from '@/libs/components/custom/notification';
 import { redirect } from 'next/navigation';
 import { ModalsProvider } from '@mantine/modals';
-import ProgressBar from './_components/ProgressBar';
 
 export const metadata = {
   title: 'Agent Xenon',
@@ -42,7 +41,6 @@ export default async function RootLayout({
         />
       </head>
       <body>
-        <ProgressBar />
         <ReactQueryClientProvider>
           <AuthProvider token={bearerToken}>
             <MantineProvider>

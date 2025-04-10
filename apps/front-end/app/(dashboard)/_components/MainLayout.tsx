@@ -1,18 +1,11 @@
 'use client';
-
-import {
-  AppShell, Box, Burger, Flex
-} from '@mantine/core';
+import { AppShell, Box, Burger, Flex } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Sidebar } from '@/libs/components/layouts/sidebar';
 import { UserProfile } from '@/libs/components/layouts/header/UserProfile';
 import { OrganizationProfile } from '@/libs/components/layouts/header/OrganizationProfile';
 import { useOrganizationStore } from '../../../libs/store/src/lib/organization';
 import { useUserStore } from '../../../libs/store/src/lib/user';
-import { usePathname } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import PageLoader from './PageLoader';
-
 interface IMainLayout {
   children: React.ReactNode;
 }
@@ -21,15 +14,6 @@ export default function MainLayout({ children }: IMainLayout) {
   const [opened, { toggle }] = useDisclosure();
   const { organization } = useOrganizationStore();
   const { user } = useUserStore();
-  const pathname = usePathname();
-
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    setLoading(true);
-    const timeout = setTimeout(() => setLoading(false), 3000);
-    return () => clearTimeout(timeout);
-  }, [pathname]);
 
   return (
     <AppShell
@@ -59,10 +43,7 @@ export default function MainLayout({ children }: IMainLayout) {
       <AppShell.Navbar><Sidebar /></AppShell.Navbar>
 
       <AppShell.Main>
-        {loading && (
-          <PageLoader />
-        )}
-        {!loading && children}
+        {children}
       </AppShell.Main>
     </AppShell>
   );
