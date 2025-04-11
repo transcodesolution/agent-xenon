@@ -5,7 +5,6 @@ import Job from "../../database/models/job";
 import InterviewRound from "../../database/models/interview-round";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { IInterviewRound, IJob } from "@agent-xenon/interfaces";
-import Applicant from "../../database/models/applicant";
 import ApplicantRound from "../../database/models/applicant-round";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
 import { JobQueryType } from "../../types/job";
@@ -92,11 +91,10 @@ export const deleteJob = async (req: Request, res: Response) => {
         jobQuery = { jobId: jobQuery };
 
         await Promise.all([
-            Applicant.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
             ApplicantRound.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
             InterviewRound.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
             RoundQuestionAssign.updateMany(jobQuery, { $set: { deletedAt: new Date() } }),
-        ])
+        ]);
 
         return res.ok("job", jobsUpdateResult, "deleteDataSuccess");
     } catch (error) {
