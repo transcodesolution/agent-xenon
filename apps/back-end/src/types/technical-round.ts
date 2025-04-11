@@ -1,8 +1,8 @@
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 import { IRoundQuestionAssign } from "./round-question-assign";
 import { OverallResult } from "@agent-xenon/constants";
 
-export type questionAnswerType = Pick<IRoundQuestionAssign<IInterviewQuestionAnswer>, "questionId">;
+export type questionAnswerType = Pick<IRoundQuestionAssign<IInterviewQuestion>, "questionId">;
 
 export type submitExamType = questionAnswerType;
 

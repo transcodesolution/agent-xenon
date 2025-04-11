@@ -1,12 +1,12 @@
 import { ExamStatus } from "@agent-xenon/constants";
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 
 export interface IGetInterviewMCQQuestionsRequest {
   roundId: string;
 }
 
 export interface IGetInterviewMCQQuestionsResponse {
-  questions: IInterviewQuestionAnswer[]
+  questions: IInterviewQuestion[]
   roundId: string;
   status?: ExamStatus
   roundName?: string

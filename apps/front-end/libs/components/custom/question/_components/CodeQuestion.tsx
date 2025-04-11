@@ -1,29 +1,29 @@
-import { useState, useRef, useEffect } from "react";
-import { Group, Stack, Button, Grid, Flex, Text } from "@mantine/core";
-import { IconPlayerPlay, IconRefresh } from "@tabler/icons-react";
-import Editor, { OnMount } from "@monaco-editor/react";
-import { Terminal } from "./Terminal";
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
-import { LanguageSelector } from "./LanguageSelector";
-import { useCodeExecute } from "@agent-xenon/react-query-hooks";
-import { compilerVersionAndLanguages } from "@agent-xenon/resources";
+import { useState, useRef, useEffect } from 'react';
+import { Group, Stack, Button, Grid, Flex, Text } from '@mantine/core';
+import { IconPlayerPlay, IconRefresh } from '@tabler/icons-react';
+import Editor, { OnMount } from '@monaco-editor/react';
+import { Terminal } from './Terminal';
+import { IInterviewQuestion } from '@agent-xenon/interfaces';
+import { LanguageSelector } from './LanguageSelector';
+import { useCodeExecute } from '@agent-xenon/react-query-hooks';
+import { compilerVersionAndLanguages } from '@agent-xenon/resources';
 
 interface ICodeQuestion {
-  question: IInterviewQuestionAnswer;
+  question: IInterviewQuestion;
   answer: string;
   onAnswer: (questionId: string, answer: string) => void;
 }
 
 export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
-  const [codeValue, setCodeValue] = useState("");
-  const [language, setLanguage] = useState("javascript");
-  const [editorTheme, setEditorTheme] = useState("vs-dark");
+  const [codeValue, setCodeValue] = useState('');
+  const [language, setLanguage] = useState('javascript');
+  const [editorTheme, setEditorTheme] = useState('vs-dark');
   const [terminalOutput, setTerminalOutput] = useState<string[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const { mutate: codeExecute } = useCodeExecute()
+  const { mutate: codeExecute } = useCodeExecute();
 
   useEffect(() => {
-    setCodeValue(answer || "");
+    setCodeValue(answer || '');
   }, [answer]);
 
   const handleRun = () => {
@@ -33,7 +33,7 @@ export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
     if (!languageConfig) return;
 
     setIsRunning(true);
-    setTerminalOutput((prevOutput) => [...prevOutput, "$ Running Code..."]);
+    setTerminalOutput((prevOutput) => [...prevOutput, '$ Running Code...']);
     codeExecute(
       {
         code: codeValue,
@@ -44,22 +44,23 @@ export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
         onSuccess: (response) => {
           setIsRunning(false);
           if (response?.data?.output) {
-            const outputLines = response.data.output.split("\n").filter(line => line.trim() !== "");
-            setTerminalOutput((prevOutput) => [
-              ...prevOutput,
-              ...outputLines
-            ]);
+            const outputLines = response.data.output
+              .split('\n')
+              .filter((line) => line.trim() !== '');
+            setTerminalOutput((prevOutput) => [...prevOutput, ...outputLines]);
           } else {
             setTerminalOutput((prevOutput) => [
               ...prevOutput,
-              "$ No output received."
+              '$ No output received.',
             ]);
           }
         },
         onError: (error) => {
           setTerminalOutput((prevOutput) => [
             ...prevOutput,
-            `✗ Error: ${error instanceof Error ? error.message : String(error)}`
+            `✗ Error: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
           ]);
           setIsRunning(false);
         },
@@ -67,9 +68,8 @@ export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
     );
   };
 
-
   const handleReset = () => {
-    setCodeValue(answer || "");
+    setCodeValue(answer || '');
     setTerminalOutput([]);
   };
 
@@ -79,23 +79,31 @@ export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
 
   const handleEditorChange = (value: string | undefined) => {
     if (value !== undefined) {
-      setCodeValue(value)
-      onAnswer?.(question._id, codeValue)
+      setCodeValue(value);
+      onAnswer?.(question._id, codeValue);
     }
-  }
+  };
 
   return (
-    <Grid >
+    <Grid>
       {question.description?.trim() && (
         <Grid.Col span={4}>
-          <Stack align="center" h="calc(100vh - 185px)" gap="md" styles={{ root: { overflow: "auto" } }}>
-            <Text c="gray" dangerouslySetInnerHTML={{ __html: question.description }} />
+          <Stack
+            align="center"
+            h="calc(100vh - 185px)"
+            gap="md"
+            styles={{ root: { overflow: 'auto' } }}
+          >
+            <Text
+              c="gray"
+              dangerouslySetInnerHTML={{ __html: question.description }}
+            />
           </Stack>
         </Grid.Col>
       )}
       <Grid.Col span={question.description?.trim() ? 8 : 12}>
         <Stack gap="sm">
-          <Flex justify="space-between" align='end' gap="md">
+          <Flex justify="space-between" align="end" gap="md">
             <LanguageSelector
               selectedLanguage={language}
               onLanguageChange={handleLanguageChange}

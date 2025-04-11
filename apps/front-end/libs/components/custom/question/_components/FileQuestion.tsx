@@ -1,12 +1,21 @@
 import { Dropzone, MIME_TYPES } from '@mantine/dropzone';
 import { useEffect, useState } from 'react';
-import { Stack, Text, Group, Flex, Avatar, Anchor, ActionIcon, Grid } from '@mantine/core';
+import {
+  Stack,
+  Text,
+  Group,
+  Flex,
+  Avatar,
+  Anchor,
+  ActionIcon,
+  Grid,
+} from '@mantine/core';
 import { IconUpload, IconPhoto, IconX, IconTrash } from '@tabler/icons-react';
 import { uploadFileToServiceViaHandler } from '@agent-xenon/web-apis';
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
+import { IInterviewQuestion } from '@agent-xenon/interfaces';
 
 interface IFileQuestion {
-  question: IInterviewQuestionAnswer;
+  question: IInterviewQuestion;
   answer: string[];
   onAnswer: (questionId: string, answer: string[]) => void;
 }
@@ -28,7 +37,9 @@ export const FileQuestion = ({ question, answer, onAnswer }: IFileQuestion) => {
       formData.append('document', file);
 
       try {
-        const uploadResponse = await uploadFileToServiceViaHandler({ formData });
+        const uploadResponse = await uploadFileToServiceViaHandler({
+          formData,
+        });
         const fileUrl = uploadResponse?.data?.files?.[0];
         if (fileUrl) {
           uploadedFiles.push(fileUrl);
@@ -55,28 +66,55 @@ export const FileQuestion = ({ question, answer, onAnswer }: IFileQuestion) => {
     <Grid>
       {question.description?.trim() && (
         <Grid.Col span={4}>
-          <Stack align="center" h="calc(100vh - 185px)" gap="md" styles={{ root: { overflow: "auto" } }}>
-            <Text c="gray" dangerouslySetInnerHTML={{ __html: question.description }} />
+          <Stack
+            align="center"
+            h="calc(100vh - 185px)"
+            gap="md"
+            styles={{ root: { overflow: 'auto' } }}
+          >
+            <Text
+              c="gray"
+              dangerouslySetInnerHTML={{ __html: question.description }}
+            />
           </Stack>
         </Grid.Col>
       )}
       <Grid.Col span={question.description?.trim() ? 8 : 12}>
         <Dropzone
           onDrop={handleDrop}
-          onReject={(rejectedFiles) => console.log('rejected files', rejectedFiles)}
+          onReject={(rejectedFiles) =>
+            console.log('rejected files', rejectedFiles)
+          }
           maxSize={5 * 1024 ** 2}
           accept={[MIME_TYPES.zip]}
           multiple
         >
-          <Group justify="center" gap="xl" mih={150} style={{ pointerEvents: 'none' }}>
+          <Group
+            justify="center"
+            gap="xl"
+            mih={150}
+            style={{ pointerEvents: 'none' }}
+          >
             <Dropzone.Accept>
-              <IconUpload size={52} color="var(--mantine-color-blue-6)" stroke={1.5} />
+              <IconUpload
+                size={52}
+                color="var(--mantine-color-blue-6)"
+                stroke={1.5}
+              />
             </Dropzone.Accept>
             <Dropzone.Reject>
-              <IconX size={52} color="var(--mantine-color-red-6)" stroke={1.5} />
+              <IconX
+                size={52}
+                color="var(--mantine-color-red-6)"
+                stroke={1.5}
+              />
             </Dropzone.Reject>
             <Dropzone.Idle>
-              <IconPhoto size={52} color="var(--mantine-color-dimmed)" stroke={1.5} />
+              <IconPhoto
+                size={52}
+                color="var(--mantine-color-dimmed)"
+                stroke={1.5}
+              />
             </Dropzone.Idle>
             <Text size="xl" inline>
               Drag ZIP files here or click to upload
@@ -89,11 +127,21 @@ export const FileQuestion = ({ question, answer, onAnswer }: IFileQuestion) => {
               <Flex key={index} align="center" gap={6}>
                 <Flex align="center" style={{ flex: 1, height: '100%' }}>
                   <Avatar src="/zip-icon.png" radius="xs" size="sm" />
-                  <Anchor href={url} target="_blank" ml="xs" c="primary" size="sm">
+                  <Anchor
+                    href={url}
+                    target="_blank"
+                    ml="xs"
+                    c="primary"
+                    size="sm"
+                  >
                     {url.split('/').pop()}
                   </Anchor>
                 </Flex>
-                <ActionIcon color="red" variant="light" onClick={() => handleRemoveFile(url)}>
+                <ActionIcon
+                  color="red"
+                  variant="light"
+                  onClick={() => handleRemoveFile(url)}
+                >
                   <IconTrash size={16} />
                 </ActionIcon>
               </Flex>
