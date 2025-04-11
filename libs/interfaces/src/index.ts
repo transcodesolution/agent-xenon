@@ -15,3 +15,4 @@ export * from "./lib/api-response";
 export * from "./lib/app";
 export * from "./lib/applicant-answer";
 export * from "./lib/training";
+export * from "./lib/employee";

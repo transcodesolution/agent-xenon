@@ -3,9 +3,10 @@ import { NextFunction, Request, Response } from 'express'
 import { config } from '../config'
 import { User } from '../database'
 import Applicant from '../database/models/applicant';
-import { IApplicant, IRole, IUser } from '@agent-xenon/interfaces';
+import { IApplicant, IEmployee, IRole, IUser } from '@agent-xenon/interfaces';
 import { RoleType } from '@agent-xenon/constants';
 import { Socket } from 'socket.io';
+import Employee from '../database/models/employee';
 
 const jwt_token_secret = config.JWT_TOKEN_SECRET;
 
@@ -39,10 +40,12 @@ export const JWT = async (req: Request, res: Response, next: NextFunction) => {
 
             if (checkToken) {
                 const Query = { _id: isVerifyToken?._id, deletedAt: null };
-                let result: IUser | IApplicant;
+                let result: IUser | IApplicant | IEmployee;
 
                 if (isVerifyToken.type === RoleType.CANDIDATE) {
                     result = await Applicant.findOne(Query).populate(roleName).populate(organizationName);
+                } else if (isVerifyToken.type === RoleType.EMPLOYEE) {
+                    result = await Employee.findOne(Query).populate(roleName).populate(organizationName);
                 } else {
                     result = await User.findOne(Query).populate(roleName).populate(organizationName);
                 }

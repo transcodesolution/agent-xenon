@@ -1,5 +1,5 @@
 import { ITimestamp } from "./timestamp";
-import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty, InterviewRoundTypes } from "@agent-xenon/constants"
+import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty } from "@agent-xenon/constants"
 
 export interface IInterviewQuestionAnswer extends ITimestamp {
     _id: string;

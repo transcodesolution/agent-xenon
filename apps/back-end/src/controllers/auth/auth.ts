@@ -2,13 +2,14 @@
 import { Request, Response } from 'express'
 import { User } from '../../database'
 import { loginSchema } from "../../validation/auth"
-import { IApplicant, ILoginResponse, IRole, IUser } from '@agent-xenon/interfaces'
+import { IApplicant, IEmployee, ILoginResponse, IRole, IUser } from '@agent-xenon/interfaces'
 import Organization from '../../database/models/organization'
 import { generateToken } from '../../utils/generate-token'
 import { compareHash } from '../../utils/password-hashing'
 import Applicant from '../../database/models/applicant'
 import { UserType } from '@agent-xenon/constants'
 import { RootFilterQuery } from 'mongoose'
+import Employee from '../../database/models/employee'
 
 export const login = async (req: Request, res: Response) => {
     try {
@@ -24,6 +25,8 @@ export const login = async (req: Request, res: Response) => {
 
         const isApplicantLogin = value.userType === UserType.APPLICANT;
 
+        const isEmployeeLogin = value.userType === UserType.EMPLOYEE;
+
         const loginQuery: RootFilterQuery<IApplicant | IUser> = { organizationId: checkOrganizationExist._id, deletedAt: null };
 
         let response;
@@ -36,6 +39,15 @@ export const login = async (req: Request, res: Response) => {
                 password: applicantData?.password,
                 role: applicantData?.role,
             } as Pick<IApplicant, "firstName" | "lastName" | "password" | "contactInfo" | "role">;
+        } else if (isEmployeeLogin) {
+            loginQuery["contactInfo.email"] = value.email;
+            const employeeData = await Employee.findOne(loginQuery, "firstName lastName contactInfo password role roleId").populate<{ role: IRole }>("role")
+            response = {
+                ...employeeData?._doc,
+                email: employeeData?.contactInfo.email,
+                password: employeeData?.password,
+                role: employeeData?.role,
+            } as Pick<IEmployee, "firstName" | "lastName" | "password" | "contactInfo" | "role">;
         } else {
             loginQuery.email = value.email;
             response = await User.findOne(loginQuery).populate<{ role: IRole }>("role")
@@ -45,7 +57,7 @@ export const login = async (req: Request, res: Response) => {
         if (!response.role) return res.badRequest("user have not valid permissions", {}, "customMessage")
 
         let passwordMatch: boolean;
-        if (isApplicantLogin) {
+        if (isApplicantLogin || isEmployeeLogin) {
             passwordMatch = value.password === response.password;
         } else {
             passwordMatch = await compareHash(value.password, response.password);

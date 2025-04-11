@@ -36,6 +36,10 @@ export enum Permission {
   USER_READ = 'user_read',
   USER_DELETE = 'user_delete',
   APPLICANT_INTERVIEW_DETAIL = 'applicant_interview_detail',
+  EMPLOYEE_CREATE = 'employee_create',
+  EMPLOYEE_UPDATE = 'employee_update',
+  EMPLOYEE_READ = 'employee_read',
+  EMPLOYEE_DELETE = 'employee_delete',
 }
 
 export const permissionsListByModuleWise: Record<string, { label: string, permissions: { label: string, value: Permission }[] }> = {

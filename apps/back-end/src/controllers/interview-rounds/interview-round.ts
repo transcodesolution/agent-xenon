@@ -17,6 +17,7 @@ import InterviewQuestion from "../../database/models/interview-question";
 import ApplicantAnswer from "../../database/models/applicant-answer";
 import { APPLICANT_REJECTION_TEMPLATE, APPLICANT_SELECTION_TEMPLATE } from "../../helper/email-templates/interview-status";
 import { generateMailBody } from "../../utils/mail";
+import { checkOutApplicantToEmployee } from "../../utils/employee";
 
 export const createInterviewRound = async (req: Request, res: Response) => {
     try {
@@ -148,11 +149,13 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
                 value.status = InterviewRoundStatus.COMPLETED;
             }
 
-            await ApplicantRound.updateOne(Query, { $set: value });
-
             const html = generateMailBody({ template: value.isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName: user.organization.name, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
 
-            await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", html);
+            await Promise.all([
+                ApplicantRound.updateOne(Query, { $set: value }),
+                sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", html),
+                checkOutApplicantToEmployee(value.applicantId, value.jobId),
+            ]);
 
             message = "applicant round status";
         } else {
@@ -504,6 +507,7 @@ export const handleCandidateExamSubmission = async (questions: questionAnswerTyp
                 }
             }),
             sendMail(applicantEmail, "Candidate Interview Status Mail", html),
+            checkOutApplicantToEmployee(applicantId, interviewRoundData.jobId.toString()),
         ]);
     } catch (error) {
         console.error("submitExam: ", error.message);
