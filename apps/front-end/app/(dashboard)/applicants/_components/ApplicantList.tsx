@@ -88,27 +88,25 @@ export function ApplicantList() {
           <IconTrash size="1.5rem" />
         </ActionIcon>
       )}
-      <Paper withBorder shadow="md" p="md">
-        <DataTable
-          idAccessor="_id"
-          highlightOnHover
-          records={applicants || []}
-          fetching={isLoading}
-          selectedRecords={selectedApplicants}
-          onSelectedRecordsChange={setSelectedApplicants}
-          page={page}
-          onPageChange={handleChangePage}
-          recordsPerPage={pageSize}
-          recordsPerPageOptions={PAGE_SIZES}
-          onRecordsPerPageChange={handleChangePageSize}
-          noRecordsText="No Applicants Found"
-          recordsPerPageLabel=""
-          sortStatus={sortStatus}
-          onSortStatusChange={handleSortStatusChange}
-          columns={columns}
-          totalRecords={totalData}
-        />
-      </Paper>
+      <DataTable
+        idAccessor="_id"
+        highlightOnHover
+        records={applicants || []}
+        fetching={isLoading}
+        selectedRecords={selectedApplicants}
+        onSelectedRecordsChange={setSelectedApplicants}
+        page={page}
+        onPageChange={handleChangePage}
+        recordsPerPage={pageSize}
+        recordsPerPageOptions={PAGE_SIZES}
+        onRecordsPerPageChange={handleChangePageSize}
+        noRecordsText="No Applicants Found"
+        recordsPerPageLabel=""
+        sortStatus={sortStatus}
+        onSortStatusChange={handleSortStatusChange}
+        columns={columns}
+        totalRecords={totalData}
+      />
     </React.Fragment>
   );
 }

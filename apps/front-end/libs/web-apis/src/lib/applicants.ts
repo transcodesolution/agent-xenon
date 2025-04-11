@@ -1,11 +1,11 @@
-import { IApiResponse, IApplicant, IApplicantInterviewRoundDetail, IApplicantInterviewRounds, IJob, PaginationApiResponseType } from "@agent-xenon/interfaces";
+import { IApiResponse, IApplicant, IApplicantApiResponseState, IApplicantInterviewRoundDetail, IApplicantInterviewRounds, IJob, PaginationApiResponseType } from "@agent-xenon/interfaces";
 import http from './http-common'
 import { IDeleteApplicantsRequest, IGetApplicantsRequest } from "@agent-xenon/types-api";
 import { apiErrorHandler } from "@/libs/utils/apiErrorHandler";
 
-export const getApplicants = async (params: IGetApplicantsRequest): Promise<IApiResponse<PaginationApiResponseType<IApplicant[]>>> => {
+export const getApplicants = async (params: IGetApplicantsRequest): Promise<IApiResponse<PaginationApiResponseType<IApplicant[], IApplicantApiResponseState>>> => {
   try {
-    const result = await http.get<IApiResponse<PaginationApiResponseType<IApplicant[]>>>('/applicant', { params });
+    const result = await http.get<IApiResponse<PaginationApiResponseType<IApplicant[], IApplicantApiResponseState>>>('/applicant', { params });
     return result.data;
   } catch (error) {
     throw new Error(`Error while fetching applicants: ${error}`);

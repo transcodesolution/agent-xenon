@@ -9,7 +9,7 @@ import { ConnectSlack } from './ConnectSlack';
 export const AppList = () => {
 
   const { data: getAppsResponse, isLoading } = useGetApps({ refetchOnWindowFocus: false });
-  const appData = getAppsResponse?.data?.appData || [];
+  const appData = getAppsResponse?.data?.apps || [];
 
   const handleRenderApp = (app: IApp) => {
     switch (app.name) {

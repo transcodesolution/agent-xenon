@@ -64,17 +64,6 @@ export const QuestionList = () => {
       },
     },
     {
-      accessor: 'type',
-      title: 'Type',
-      ellipsis: true,
-      sortable: true,
-      render: ({ type }) => {
-        return (
-          <Text c='primary'>{type || 'custom'}</Text>
-        );
-      }
-    },
-    {
       accessor: 'questionFormat',
       title: 'Answer Format',
       ellipsis: true,

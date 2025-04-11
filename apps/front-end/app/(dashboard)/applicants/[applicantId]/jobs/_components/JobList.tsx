@@ -1,6 +1,6 @@
 'use client';
 import { useGetApplicantAppliedJobsById } from '@/libs/react-query-hooks/src/lib/applicant/useGetApplicantAppliedJobsById';
-import { LoadingOverlay, SimpleGrid } from '@mantine/core';
+import { Card, LoadingOverlay, SimpleGrid, Text } from '@mantine/core';
 import { useParams } from 'next/navigation';
 import { JobsCard } from './JobsCard';
 
@@ -11,6 +11,16 @@ export const JobList = () => {
 
   if (isFetching) {
     return <LoadingOverlay visible />
+  }
+
+  if (jobs.length > 0) {
+    return (
+      <Card withBorder radius="md" p="xl" shadow="sm">
+        <Text ta="center" fs="italic" c="dimmed">
+          No jobs found for this applicant.
+        </Text>
+      </Card>
+    );
   }
 
   return (

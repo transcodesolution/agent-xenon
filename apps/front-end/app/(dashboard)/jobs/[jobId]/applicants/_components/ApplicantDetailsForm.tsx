@@ -1,4 +1,4 @@
-import { TextInput, Button, Grid, Group, TagsInput, Flex, Text } from '@mantine/core';
+import { TextInput, Button, Grid, Group, TagsInput, Flex, Text, ActionIcon } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import classes from './ApplicantDetailsForm.module.css'
 import { IconPlus, IconTrash } from '@tabler/icons-react';
@@ -440,21 +440,13 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
               </Grid.Col>
               <Grid.Col span={1} >
                 <Flex gap='md' align='center'>
-                  <Button
-                    onClick={() => handleAddProject(index)}
-                    type="button"
-                    disabled={!isProjectComplete(project) || index !== form.values.projects.length - 1 || project.durationStart === null || project.durationEnd === null}
-                  >
-                    <IconPlus size={22} />
-                  </Button>
+                  <ActionIcon variant="light" w={30} color="blue" onClick={() => handleAddProject(index)} aria-label="Edit" disabled={!isProjectComplete(project) || index !== form.values.projects.length - 1 || project.durationStart === null || project.durationEnd === null}>
+                    <IconPlus size={18} />
+                  </ActionIcon>
                   {form.values.projects.length > 1 && (
-                    <Button
-                      onClick={() => handleDeleteProject(index)}
-                      type="button"
-                      color="red"
-                    >
-                      <IconTrash size={22} />
-                    </Button>
+                    <ActionIcon w={30} variant="light" color="red" onClick={() => handleDeleteProject(index)}>
+                      <IconTrash size={18} />
+                    </ActionIcon>
                   )}
                 </Flex>
               </Grid.Col>
@@ -502,21 +494,13 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
               </Grid.Col>
               <Grid.Col span={1} >
                 <Flex gap='md' align='center'>
-                  <Button
-                    onClick={() => handleAddEducation(index)}
-                    type="button"
-                    disabled={!isEducationComplete(education) || index !== form.values.education.length - 1}
-                  >
-                    <IconPlus size={22} />
-                  </Button>
+                  <ActionIcon w={30} variant="light" color="blue" disabled={!isEducationComplete(education) || index !== form.values.education.length - 1} onClick={() => handleAddEducation(index)}>
+                    <IconPlus size={18} />
+                  </ActionIcon>
                   {form.values.education.length > 1 && (
-                    <Button
-                      onClick={() => handleDeleteEducation(index)}
-                      type="button"
-                      color="red"
-                    >
-                      <IconTrash size={22} />
-                    </Button>
+                    <ActionIcon w={30} variant="light" color="red" onClick={() => handleDeleteEducation(index)}>
+                      <IconTrash size={18} />
+                    </ActionIcon>
                   )}
                 </Flex>
               </Grid.Col>
@@ -569,21 +553,14 @@ export function ApplicantDetailsForm({ refetch, onClose, applicantId }: { refetc
               </Grid.Col>
               <Grid.Col span={1} >
                 <Flex gap='md' align='center'>
-                  <Button
-                    onClick={() => handleAddExperience(index)}
-                    type="button"
-                    disabled={!isExperienceComplete(experience) || index !== form.values.experienceDetails.length - 1}
-                  >
-                    <IconPlus size={22} />
-                  </Button>
+                  <ActionIcon w={30} variant="light" color="blue" onClick={() => handleAddExperience(index)} disabled={!isExperienceComplete(experience) || index !== form.values.experienceDetails.length - 1}>
+                    <IconPlus size={18} />
+                  </ActionIcon>
                   {form.values.experienceDetails.length > 1 && (
-                    <Button
-                      onClick={() => handleDeleteExperience(index)}
-                      type="button"
-                      color="red"
-                    >
-                      <IconTrash size={22} />
-                    </Button>
+                    <ActionIcon w={30} variant="light" onClick={() => handleDeleteExperience(index)}
+                      color="red">
+                      <IconTrash size={18} />
+                    </ActionIcon>
                   )}
                 </Flex>
               </Grid.Col>
