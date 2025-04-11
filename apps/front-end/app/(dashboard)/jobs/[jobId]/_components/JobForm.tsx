@@ -47,8 +47,8 @@ export const JobForm = () => {
       setFormState({
         title: job.title || '',
         description: job.description || '',
-        designation: job.designation || '',
-        role: job.role || '',
+        designation: job.designation?._id || '',
+        role: job.role?._id || '',
       });
     }
   }, [job]);
@@ -183,12 +183,14 @@ export const JobForm = () => {
             data={designationsOptions}
             value={formState.designation}
             onChange={(val) => handleChange('designation', val)}
+            w='100%'
           />
           <Select
             label="Role"
             data={rolesOptions}
             value={formState.role}
             onChange={(val) => handleChange('role', val)}
+            w='100%'
           />
         </Flex>
         <Flex justify="space-between" align="center" mb="md">

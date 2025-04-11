@@ -1,14 +1,13 @@
-'use client'
+'use client';
 import { AppShell, Box, Burger, Flex } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Sidebar } from '@/libs/components/layouts/sidebar';
 import { UserProfile } from '@/libs/components/layouts/header/UserProfile';
+import { OrganizationProfile } from '@/libs/components/layouts/header/OrganizationProfile';
 import { useOrganizationStore } from '../../../libs/store/src/lib/organization';
 import { useUserStore } from '../../../libs/store/src/lib/user';
-import { OrganizationProfile } from '@/libs/components/layouts/header/OrganizationProfile';
-
 interface IMainLayout {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function MainLayout({ children }: IMainLayout) {
@@ -34,7 +33,7 @@ export default function MainLayout({ children }: IMainLayout) {
           size="sm"
         />
         <Flex justify="space-between" align="center" h='100%' p='sm'>
-          <Box w={272}> 
+          <Box w={272}>
             <OrganizationProfile organization={organization} />
           </Box>
           <UserProfile userData={user} />
@@ -43,7 +42,9 @@ export default function MainLayout({ children }: IMainLayout) {
 
       <AppShell.Navbar><Sidebar /></AppShell.Navbar>
 
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main>
+        {children}
+      </AppShell.Main>
     </AppShell>
-  )
+  );
 }

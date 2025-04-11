@@ -214,7 +214,7 @@ export const getApplicantJobs = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IApplicant> = { deletedAt: null, organizationId: user.organizationId, _id: value.applicantId };
 
-        const applicantData = await Applicant.findOne(match).populate({ path: "appliedJobs", select: "title description status role designation", populate: [{ path: "role", select: "name" }, { path: "designation", select: "name" }] }).lean();
+        const applicantData = await Applicant.findOne(match).populate({ path: "appliedJobs", select: "title description status role designation", populate: [{ path: "role", select: "name" }, { path: "designation", select: "name" }], match: { deletedAt: null } }).lean();
 
         return res.ok("applicant", applicantData?.appliedJobs ?? [], "getDataSuccess");
     } catch (error) {
