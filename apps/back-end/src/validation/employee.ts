@@ -7,7 +7,25 @@ export const updateEmployeeSchema = Joi.object().keys({
     firstName: Joi.string().optional(),
     lastName: Joi.string().optional(),
     password: Joi.string().optional(),
-    salary: Joi.number().optional(),
+    joinDate: Joi.date().iso().optional(),
+    salaryDetail: Joi.object().keys({
+        allowances: Joi.object().keys({
+            coreCompensation: Joi.number().optional(),
+            houseLivingBenefits: Joi.number().optional(),
+            incentivePerformanceBenefits: Joi.number().optional(),
+            retirementBenefits: Joi.number().optional(),
+            transportationMobilityBenefits: Joi.number().optional(),
+            workRelatedBenefits: Joi.number().optional(),
+        }).optional(),
+        deductions: Joi.object().keys({
+            mandatory: Joi.number().optional(),
+            optional: Joi.number().optional(),
+            voluntary: Joi.number().optional(),
+        }).optional(),
+        grossSalary: Joi.number().optional(),
+        netSalary: Joi.number().optional(),
+        totalCostToCompany: Joi.number().optional(),
+    }).optional(),
     jobRoleId: Joi.string().optional(),
     designationId: Joi.string().optional(),
     contactInfo: Joi.object().keys({

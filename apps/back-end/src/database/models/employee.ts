@@ -1,16 +1,40 @@
 import { IEmployee } from '@agent-xenon/interfaces';
 import mongoose, { Schema } from 'mongoose';
 
+const AllowanceSchema: Schema = new Schema({
+    coreCompensation: { type: Number },
+    houseLivingBenefits: { type: Number },
+    incentivePerformanceBenefits: { type: Number },
+    retirementBenefits: { type: Number },
+    transportationMobilityBenefits: { type: Number },
+    workRelatedBenefits: { type: Number },
+});
+
+const DeductionSchema: Schema = new Schema({
+    mandatory: { type: Number },
+    optional: { type: Number },
+    voluntary: { type: Number },
+});
+
+const SalarySchema: Schema = new Schema({
+    allowances: { type: AllowanceSchema },
+    deductions: { type: DeductionSchema },
+    grossSalary: { type: Number },
+    netSalary: { type: Number },
+    totalCostToCompany: { type: Number },
+});
+
 const EmployeeSchema: Schema = new Schema({
     firstName: { type: String },
     lastName: { type: String },
     password: { type: String },
     organizationId: { type: Schema.Types.ObjectId },
-    salary: { type: Number },
+    salaryDetail: { type: [SalarySchema], default: [] },
     applicantId: { type: Schema.Types.ObjectId },
     jobRoleId: { type: Schema.Types.ObjectId },
     designationId: { type: Schema.Types.ObjectId },
     roleId: { type: Schema.Types.ObjectId },
+    joinDate: { type: Date },
     contactInfo: {
         address: { type: String },
         city: { type: String },
