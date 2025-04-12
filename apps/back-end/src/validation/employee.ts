@@ -3,7 +3,7 @@ import { paginationSchema } from "./pagination";
 
 const employeeIdSchema = { employeeId: Joi.string().optional(), }
 
-export const updateEmployeeSchema = Joi.object().keys({
+const employeeSchema = {
     firstName: Joi.string().optional(),
     lastName: Joi.string().optional(),
     password: Joi.string().optional(),
@@ -35,6 +35,12 @@ export const updateEmployeeSchema = Joi.object().keys({
         phoneNumber: Joi.string().allow("").optional(),
         state: Joi.string().allow("").optional(),
     }).optional(),
+};
+
+export const createEmployeeSchema = Joi.object().keys(employeeSchema);
+
+export const updateEmployeeSchema = Joi.object().keys({
+    ...employeeSchema,
     ...employeeIdSchema,
 })
 

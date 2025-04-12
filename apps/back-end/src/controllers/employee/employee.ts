@@ -1,24 +1,20 @@
 import { Request, Response } from "express";
 import Employee from "../../database/models/employee";
-import { RoleType } from "@agent-xenon/constants";
-import { Role } from "../../database";
-import { deleteEmployeeSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
+import { createEmployeeSchema, deleteEmployeeSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
 import { FilterQuery, QuerySelector } from "mongoose";
 import { IEmployee } from "@agent-xenon/interfaces";
 
 export const createEmployee = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
-        const roleData = await Role.findOne({ type: RoleType.EMPLOYEE, deletedAt: null, organizationId: user.organizationId });
+        const { error, value } = createEmployeeSchema.validate(req.body);
 
-        const employeeCreateObject = { organizationId: user.organizationId, roleId: roleData?._id };
-
-        if (!roleData) {
-            const role = await Role.create({ type: RoleType.EMPLOYEE, name: RoleType.EMPLOYEE, permissions: [], organizationId: user.organizationId });
-            employeeCreateObject.roleId = role._id;
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const employee = await Employee.create(employeeCreateObject);
+        value.organizationId = user.organizationId;
+        const employee = await Employee.create(value);
 
         return res.ok("employee", employee, "addDataSuccess")
     } catch (error) {
