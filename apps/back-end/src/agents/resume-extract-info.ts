@@ -5,6 +5,8 @@ import Applicant from "../database/models/applicant";
 import { Job } from "bullmq";
 import createOpenAIClient from "../helper/openai";
 import { updateApplicantToDatabase } from "../utils/applicant";
+import { REDIS_KEY_PREFIX } from "../utils/constants";
+import { getValue, setValue } from "../utils/redis";
 
 const client = createOpenAIClient();
 
@@ -191,7 +193,13 @@ async function saveResumesExtractInfoAgent(resumeUrls: string[], organizationId:
 
         const email = resumeData?.message?.contactInfo?.email;
 
-        await updateApplicantToDatabase(email, resumeData?.message, jobId);
+        if (email) {
+            await updateApplicantToDatabase(email, resumeData?.message, jobId);
+        }
+
+        const redisKeyName = `${REDIS_KEY_PREFIX.Job}${jobId}`;
+        const resumeProcessByJob = await getValue(redisKeyName);
+        setValue(redisKeyName, resumeProcessByJob - 1);
     }
 }
 

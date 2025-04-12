@@ -15,12 +15,14 @@ interface ISortableRoundItem {
 }
 
 const SortableRoundItem: React.FC<ISortableRoundItem> = ({ round, onEdit, onDelete }) => {
-  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: round._id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: round._id });
   const permission = usePermissions();
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    zIndex: isDragging ? 999 : 'auto',
+    opacity: isDragging ? 0.8 : 1,
   };
 
   return (
@@ -28,17 +30,19 @@ const SortableRoundItem: React.FC<ISortableRoundItem> = ({ round, onEdit, onDele
       <Box p="xs" style={{ borderBottom: '1px solid var(--mantine-color-gray-2)' }}>
         <Group justify="space-between" wrap="nowrap">
           <Group gap="sm">
-            <Box {...attributes} {...listeners} >
-              <IconGripVertical size={20} cursor='grab' color='var(--mantine-color-gray-6)' />
-            </Box>
+            <Stack  {...attributes} {...listeners} styles={{ root: { cursor: 'grab' } }}>
+              <IconGripVertical size={20} color='var(--mantine-color-gray-6)' />
+            </Stack>
             <Stack gap={5}>
-              <Text fw={600} size="md">{round.name || 'Unnamed Round'}</Text>
+              <Text fw={600} size="md">
+                {round.name || '-'}
+              </Text>
               <Text size="xs" c="dimmed">
                 {round.endDate ? dayjs(round.endDate).format('DD-MM-YYYY | HH:mm') : 'No expiration date'}
               </Text>
             </Stack>
           </Group>
-          <Badge color={getRoundTypeColor(round.type)}>
+          <Badge variant="light" color={getRoundTypeColor(round.type)}>
             {round.type ? round.type.charAt(0).toUpperCase() + round.type.slice(1) : 'Unknown'}
           </Badge>
         </Group>

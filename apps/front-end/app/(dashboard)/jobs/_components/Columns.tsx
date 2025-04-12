@@ -3,6 +3,7 @@ import { IJob } from '@agent-xenon/interfaces';
 import { Anchor, Badge } from '@mantine/core';
 import Link from 'next/link';
 import dayjs from 'dayjs';
+import { getJobStatusColor } from '@/libs/utils/ui-helpers';
 
 export const getColumns = (
   sortStatus: {
@@ -37,7 +38,7 @@ export const getColumns = (
       sortable: true,
       width: 125,
       render: ({ status }) => {
-        return <Badge radius="sm" color={statusColors[status] || 'var(--mantine-gray-6)'}>{status}</Badge>;
+        return <Badge radius="sm" variant="light" color={getJobStatusColor(status)}>{status}</Badge>;
       },
     },
     {

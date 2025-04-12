@@ -1,7 +1,7 @@
 'use client'
 import { useDeleteQuestions, useGetMCQQuestions } from '@agent-xenon/react-query-hooks';
 import { FilterParams, updateUrlParams } from '@/libs/utils/updateUrlParams';
-import { IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
+import { IInterviewQuestion } from '@agent-xenon/interfaces';
 import { ActionIcon, Anchor, Text } from '@mantine/core';
 import { DataTable, DataTableColumn, DataTableSortStatus } from 'mantine-datatable'
 import Link from 'next/link';
@@ -24,12 +24,12 @@ export const QuestionList = () => {
   const sortOrder = SORT_ORDER.includes(searchParams.get('sortOrder') || '') ? searchParams.get('sortOrder') : 'desc';
 
   const { data: getMCQResponse, isLoading, refetch } = useGetMCQQuestions({ page: Number(page), limit: Number(pageSize), search: search });
-  const [selectedQuestions, setSelectedQuestions] = useState<IInterviewQuestionAnswer[]>([]);
+  const [selectedQuestions, setSelectedQuestions] = useState<IInterviewQuestion[]>([]);
   const { deleteQuestionsMutation } = useDeleteQuestions();
   const questions = getMCQResponse?.data?.questions;
   const confirmDelete = useConfirmDelete();
 
-  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IInterviewQuestionAnswer>>({
+  const [sortStatus, setSortStatus] = useState<DataTableSortStatus<IInterviewQuestion>>({
     columnAccessor: sortColumn,
     direction: sortOrder as 'asc' | 'desc',
   });
@@ -46,12 +46,12 @@ export const QuestionList = () => {
     handleApplyFilter({ 'pageSize': pageNumber.toString() })
   };
 
-  const handleSortStatusChange = (status: DataTableSortStatus<IInterviewQuestionAnswer>) => {
+  const handleSortStatusChange = (status: DataTableSortStatus<IInterviewQuestion>) => {
     handleChangePage(1);
     setSortStatus?.(status);
   };
 
-  const columns: DataTableColumn<IInterviewQuestionAnswer>[] = [
+  const columns: DataTableColumn<IInterviewQuestion>[] = [
     {
       accessor: 'question',
       title: 'Questions',
@@ -62,17 +62,6 @@ export const QuestionList = () => {
           <Anchor component={Link} href={`/interview-questions/${_id}`} style={{ position: 'relative' }}>{question || '-'}</Anchor>
         );
       },
-    },
-    {
-      accessor: 'type',
-      title: 'Type',
-      ellipsis: true,
-      sortable: true,
-      render: ({ type }) => {
-        return (
-          <Text c='primary'>{type || 'custom'}</Text>
-        );
-      }
     },
     {
       accessor: 'questionFormat',

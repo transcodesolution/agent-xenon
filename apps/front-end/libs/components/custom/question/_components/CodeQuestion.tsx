@@ -3,13 +3,13 @@ import { Group, Stack, Button, Grid, Flex, Text } from "@mantine/core";
 import { IconPlayerPlay, IconRefresh } from "@tabler/icons-react";
 import Editor, { OnMount } from "@monaco-editor/react";
 import { Terminal } from "./Terminal";
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { LanguageSelector } from "./LanguageSelector";
 import { useCodeExecute } from "@agent-xenon/react-query-hooks";
 import { compilerVersionAndLanguages } from "@agent-xenon/resources";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 
 interface ICodeQuestion {
-  question: IInterviewQuestionAnswer;
+  question: IInterviewQuestion;
   answer: string;
   onAnswer: (questionId: string, answer: string) => void;
 }
@@ -65,8 +65,7 @@ export function CodeQuestion({ question, answer, onAnswer }: ICodeQuestion) {
         },
       }
     );
-  };
-
+  };  
 
   const handleReset = () => {
     setCodeValue(answer || "");

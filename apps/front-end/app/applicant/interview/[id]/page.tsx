@@ -1,19 +1,19 @@
-'use client'
+'use client';
 
 import { Question } from "@/libs/components/custom/question";
 import { useGetInterviewQuestions, useSubmitInterviewQuestions } from "@agent-xenon/react-query-hooks";
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { Button, Container, Divider, Flex, Group, Stack, Title } from "@mantine/core";
 import { useParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { showNotification } from "@mantine/notifications";
 import { ExamSubmissionStatus } from "../../_components/ExamSubmissionStatus";
 import { ExamStatusAlert } from "../../_components/ExamStatusAlert";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 
 export default function Page() {
   const { id } = useParams<{ id: string }>();
 
-  const [currentQuestion, setCurrentQuestion] = useState<IInterviewQuestionAnswer | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<IInterviewQuestion | null>(null);
   const [answers, setAnswers] = useState<Record<string, string | string[]>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
 

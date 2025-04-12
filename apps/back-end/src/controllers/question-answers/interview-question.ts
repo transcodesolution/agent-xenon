@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
 import { FilterQuery, RootFilterQuery } from "mongoose";
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 import { createQuestionAnswerSchema, deleteQuestionAnswerSchema, getAllQuestionSchema, getQuestionAnswerSchema, getQuestionByIdSchema, updateQuestionAnswerSchema } from "../../validation/question-answer";
 import InterviewQuestion from "../../database/models/interview-question";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
-import { AnswerQuestionFormat, InterviewRoundTypes } from "@agent-xenon/constants";
+import { AnswerQuestionFormat } from "@agent-xenon/constants";
 
 export const createQuestionAnswer = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -38,7 +38,7 @@ export const updateQuestionAnswer = async (req: Request, res: Response) => {
 
         if (!checkQuestionExist) return res.badRequest("question", {}, "getDataNotFound");
 
-        const checkQuestionNameExist = await InterviewQuestion.findOne({ _id: { $ne: value.questionId }, organizationId: user.organizationId, type: InterviewRoundTypes.ASSESSMENT, questionFormat: AnswerQuestionFormat.MCQ, question: value.question, deletedAt: null });
+        const checkQuestionNameExist = await InterviewQuestion.findOne({ _id: { $ne: value.questionId }, organizationId: user.organizationId, questionFormat: AnswerQuestionFormat.MCQ, question: value.question, deletedAt: null });
 
         if (checkQuestionNameExist) return res.badRequest("question", {}, "dataAlreadyExist");
 
@@ -71,7 +71,7 @@ export const deleteQuestionAnswer = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const Query: RootFilterQuery<IInterviewQuestionAnswer> = { _id: { $in: value.questionIds }, deletedAt: null };
+        const Query: RootFilterQuery<IInterviewQuestion> = { _id: { $in: value.questionIds }, deletedAt: null };
 
         const checkQuestionExist = await InterviewQuestion.find(Query);
 
@@ -107,13 +107,12 @@ export const getQuestions = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId }
+        const match: FilterQuery<IInterviewQuestion> = { deletedAt: null, organizationId: user.organizationId }
 
         if (value.search) {
             const searchRegex = new RegExp(value.search, "i")
             match.$or = [
                 { question: searchRegex },
-                { type: searchRegex },
                 { difficulty: searchRegex },
             ]
         }
@@ -140,7 +139,7 @@ export const getAllQuestionList = async (req: Request, res: Response) => {
 
         const regexToFilterPriorityQuestionFirst = /^(text|mcq|file|code|coding)\b(\s*:)?/i;
 
-        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, organizationId: user.organizationId };
+        const match: FilterQuery<IInterviewQuestion> = { deletedAt: null, organizationId: user.organizationId };
 
         if (value.search) {
             const searchedString = value.search.match(regexToFilterPriorityQuestionFirst)?.[1];
@@ -168,7 +167,7 @@ export const getQuestionById = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const match: FilterQuery<IInterviewQuestionAnswer> = { deletedAt: null, _id: value.questionId }
+        const match: FilterQuery<IInterviewQuestion> = { deletedAt: null, _id: value.questionId }
 
         const questions = await InterviewQuestion.findOne(match);
 

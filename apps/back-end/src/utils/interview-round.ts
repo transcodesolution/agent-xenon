@@ -66,7 +66,6 @@ export const manageMeetingRound = async (roundData: IInterviewRound<IJob>, organ
     ]);
 
     const jobId = roundData.jobId._id.toString();
-    const roundId = roundData._id.toString();
 
     const expiryResponse = await checkGoogleTokenExpiry(organizationData.serviceProviders, appData._id.toString(), organizationId);
 
@@ -74,8 +73,15 @@ export const manageMeetingRound = async (roundData: IInterviewRound<IJob>, organ
         return res.expectationFailed(expiryResponse.message, {}, "customMessage");
     }
 
+    await updateInterviewRoundStatusAndStartDate(roundData, InterviewRoundStatus.ONGOING);
     res.ok("interview round is started successfully", {}, "customMessage");
-    await manageMeetingScheduleWithCandidate(jobId, roundData.interviewerEmail, roundId);
+    await manageMeetingScheduleWithCandidate(jobId, roundData.interviewerEmail, roundData);
+}
+
+export const updateInterviewRoundStatusAndStartDate = (roundData: IInterviewRound<IJob>, roundStatus: InterviewRoundStatus) => {
+    roundData.status = roundStatus;
+    roundData.startDate = new Date();
+    return roundData.save();
 }
 
 export const generateGoogleAuthUrl = (organizationId: string) => {
@@ -162,7 +168,7 @@ export const createEventInCalender = async (title: string, interviewerEmail: str
     return eventData;
 }
 
-export const manageMeetingScheduleWithCandidate = async (jobId: string, interviewerEmail: string, roundId: string) => {
+export const manageMeetingScheduleWithCandidate = async (jobId: string, interviewerEmail: string, roundData: IInterviewRound<IJob>) => {
     try {
         const daysInCurrentMonth = getDaysInCurrentMonth();
 
@@ -185,7 +191,7 @@ export const manageMeetingScheduleWithCandidate = async (jobId: string, intervie
                 const end = startDateTime.toISOString();
                 await createEventInCalender(jobData.title, interviewerEmail, applicant.contactInfo.email, start, end);
                 // scheduledMeetings.push(eventData.data);
-                await ApplicantRound.updateOne({ jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundId } }, { upsert: true })
+                await ApplicantRound.updateOne({ jobId, applicantId }, { $set: { jobId, applicantId, status: InterviewRoundStatus.ONGOING, }, $push: { roundIds: roundData._id } }, { upsert: true })
             } else {
                 console.error(`No available slots for ${applicant.contactInfo.email}`);
                 break;
@@ -198,6 +204,7 @@ export const manageMeetingScheduleWithCandidate = async (jobId: string, intervie
     } catch (error) {
         console.error("manageMeetingScheduleWithCandidate: ", error);
         console.error("dateTime: ", new Date());
+        await updateInterviewRoundStatusAndStartDate(roundData, InterviewRoundStatus.YET_TO_START);
     }
 }
 

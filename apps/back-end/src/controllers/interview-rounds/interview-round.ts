@@ -1,17 +1,17 @@
 import { Request, Response } from "express";
 import mongoose, { AnyBulkWriteOperation, FilterQuery, QuerySelector, RootFilterQuery } from "mongoose";
-import { IApplicant, IApplicantRound, IInterviewQuestionAnswer, IInterviewRound, IJob } from "@agent-xenon/interfaces";
+import { IApplicant, IApplicantRound, IInterviewQuestion, IInterviewRound, IJob } from "@agent-xenon/interfaces";
 import { AnswerQuestionFormat, ExamStatus, InterviewRoundStatus, InterviewRoundTypes, OverallResult } from "@agent-xenon/constants";
 import RoundQuestionAssign from "../../database/models/round-question-assign";
 import { createInterviewRoundSchema, deleteInterviewRoundSchema, getApplicantRoundByIdSchema, getExamQuestionSchema, getInterviewRoundByJobIdSchema, getInterviewRoundsByIdSchema, submitExamSchema, updateInterviewRoundSchema, updateRoundOrderSchema, updateRoundStatusSchema } from "../../validation/interview-round";
 import InterviewRound from "../../database/models/interview-round";
 import Job from "../../database/models/job";
-import { manageMeetingRound, manageScreeningRound, manageTechnicalRound, updateApplicantStatusOnRoundComplete } from "../../utils/interview-round";
+import { manageMeetingRound, manageScreeningRound, manageTechnicalRound, updateApplicantStatusOnRoundComplete, updateInterviewRoundStatusAndStartDate } from "../../utils/interview-round";
 import ApplicantRound from "../../database/models/applicant-round";
 import { questionAnswerType, submitExamAnswerPayloadType } from "../../types/technical-round";
 import { manageMCQAnswers, manageTextAndCodeAnswers } from "../../utils/technical-round";
 import { sendMail } from "../../helper/mail";
-import { getApplicantRoundStatusCommonQuery, getSelectedApplicantDetails } from "../../utils/applicant";
+import { getApplicantRoundStatusCommonQuery } from "../../utils/applicant";
 import { IRoundQuestionAssign } from "../../types/round-question-assign";
 import InterviewQuestion from "../../database/models/interview-question";
 import ApplicantAnswer from "../../database/models/applicant-answer";
@@ -150,14 +150,6 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
 
             await ApplicantRound.updateOne(Query, { $set: value });
 
-
-            const selectedApplicants = await getSelectedApplicantDetails(value.jobId);
-            const applicantIds = await ApplicantRound.distinct("applicantId", jobWiseQuery);
-            if (selectedApplicants.length <= applicantIds.length) {
-                interviewRoundData.status = InterviewRoundStatus.COMPLETED;
-                await interviewRoundData.save();
-            }
-
             const html = generateMailBody({ template: value.isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName: user.organization.name, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
 
             await sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", html);
@@ -166,7 +158,7 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
         } else {
             interviewRoundData.status = value.roundStatus;
             await interviewRoundData.save();
-            if (value.status === InterviewRoundStatus.COMPLETED) {
+            if (value.roundStatus === InterviewRoundStatus.COMPLETED) {
                 await updateApplicantStatusOnRoundComplete<string>({ $eq: value.roundId });
             }
         }
@@ -187,7 +179,7 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewRound> = { deletedAt: null, _id: value.roundId }
 
-        const interviewRoundData = await InterviewRound.findOne<IInterviewRound<IInterviewQuestionAnswer>>(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name");
+        const interviewRoundData = await InterviewRound.findOne<IInterviewRound<IInterviewQuestion>>(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name");
 
         value.roundId = new mongoose.Types.ObjectId(value.roundId);
 
@@ -197,7 +189,7 @@ export const getInterviewRoundsById = async (req: Request, res: Response) => {
             "status": getApplicantRoundStatusCommonQuery(value.roundId),
         }).populate("applicantId");
 
-        const questions = await RoundQuestionAssign.find<IRoundQuestionAssign<IInterviewQuestionAnswer>>({ roundId: value.roundId, deletedAt: null }, "questionId").populate("questionId", "type question description options tags difficulty timeLimitInMinutes questionFormat").sort({ _id: 1 });
+        const questions = await RoundQuestionAssign.find<IRoundQuestionAssign<IInterviewQuestion>>({ roundId: value.roundId, deletedAt: null }, "questionId").populate("questionId", "question description options tags difficulty timeLimitInMinutes questionFormat").sort({ _id: 1 });
 
         if (interviewRoundData) {
             interviewRoundData._doc.applicants = applicants;
@@ -254,13 +246,9 @@ export const updateRoundOrder = async (req: Request, res: Response) => {
 export const manageInterviewRound = async (req: Request, res: Response) => {
     const { user, interviewRoundData } = req.headers;
     try {
-        const currentDate = new Date();
-
-        interviewRoundData.status = InterviewRoundStatus.ONGOING;
-        interviewRoundData.startDate = currentDate;
-
         switch (interviewRoundData.type) {
             case InterviewRoundTypes.SCREENING:
+                await updateInterviewRoundStatusAndStartDate(interviewRoundData, InterviewRoundStatus.ONGOING);
                 res.ok("interview round is in progress. You will notify once it will complete", {}, "customMessage")
                 await manageScreeningRound(interviewRoundData, user.organizationId.toString());
                 break;
@@ -268,6 +256,7 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
                 // if (interviewRoundData?.startDate && interviewRoundData?.endDate && (interviewRoundData.startDate <= currentDate && currentDate < interviewRoundData.endDate)) {
                 //     return res.badRequest("technical round already in progress", {}, "customMessage");
                 // }
+                await updateInterviewRoundStatusAndStartDate(interviewRoundData, InterviewRoundStatus.ONGOING);
                 await manageTechnicalRound(interviewRoundData);
                 res.ok("interview round started successfully", {}, "customMessage");
                 break;
@@ -275,9 +264,8 @@ export const manageInterviewRound = async (req: Request, res: Response) => {
                 await manageMeetingRound(interviewRoundData, user.organizationId, res);
         }
 
-        await interviewRoundData.save();
-
     } catch (error) {
+        await updateInterviewRoundStatusAndStartDate(interviewRoundData, InterviewRoundStatus.YET_TO_START);
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
 }
@@ -364,9 +352,9 @@ export const getExamQuestionsByRoundId = async (req: Request, res: Response) => 
 
         const questionAssignId: string[] = await RoundQuestionAssign.distinct("questionId", { deletedAt: null, roundId: value.roundId }).sort({ _id: 1 });
 
-        const questions = await InterviewQuestion.find<IInterviewQuestionAnswer>(
+        const questions = await InterviewQuestion.find<IInterviewQuestion>(
             { _id: { $in: questionAssignId } },
-            "type question description options.text options.index tags difficulty timeLimitInMinutes questionFormat"
+            "question description options.text options.index tags difficulty timeLimitInMinutes questionFormat"
         );
 
         const queryFilter = {

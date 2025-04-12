@@ -1,7 +1,7 @@
 import { IApp } from "@agent-xenon/interfaces";
 
 export interface IGetAppsResponse {
-  appData: IApp[]
+  apps: IApp[]
 }
 
 export interface IConnectAppRequest {
