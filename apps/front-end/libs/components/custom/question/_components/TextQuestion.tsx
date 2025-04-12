@@ -1,9 +1,9 @@
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
-import { Grid, Stack, Text, Textarea } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { IInterviewQuestion } from '@agent-xenon/interfaces';
+import { Grid, Stack, Text, Textarea } from '@mantine/core';
+import { useEffect, useState } from 'react';
 
 interface ITextQuestion {
-  question: IInterviewQuestionAnswer;
+  question: IInterviewQuestion;
   answer: string;
   onAnswer: (questionId: string, answer: string) => void;
 }

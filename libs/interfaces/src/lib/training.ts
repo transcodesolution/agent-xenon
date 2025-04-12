@@ -1,5 +1,5 @@
 import { TopicSectionType } from "@agent-xenon/constants";
-import { IInterviewQuestionAnswer } from "./interview-question";
+import { IInterviewQuestion } from "./interview-question";
 
 export interface ITraining {
   title: string;  //react training
@@ -35,7 +35,7 @@ export interface ITopicSectionConfig {
     text: string;
   };
   [TopicSectionType.PRACTICAL]?: {
-    questions: IInterviewQuestionAnswer[]
+    questions: IInterviewQuestion[]
   };
   [TopicSectionType.ASSISTANT]?: {
     prompt: string

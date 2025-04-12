@@ -1,12 +1,12 @@
 import { AnswerQuestionFormat } from "@agent-xenon/constants";
-import { IInterviewQuestionAnswer } from "@agent-xenon/interfaces";
 import { MCQQuestion } from "./_components/MCQQuestion";
 import { TextQuestion } from "./_components/TextQuestion";
 import { FileQuestion } from "./_components/FileQuestion";
 import { CodeQuestion } from "./_components/CodeQuestion";
+import { IInterviewQuestion } from "@agent-xenon/interfaces";
 
 interface IQuestions {
-  question: IInterviewQuestionAnswer;
+  question: IInterviewQuestion;
   answers: string | string[];
   onAnswer: (questionId: string, answer: string | string[]) => void;
 }

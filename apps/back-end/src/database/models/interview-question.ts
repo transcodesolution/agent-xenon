@@ -1,5 +1,5 @@
 import { AnswerQuestionFormat, AnswerMcqOptionFormat, Difficulty } from '@agent-xenon/constants';
-import { IInterviewQuestionAnswer } from '@agent-xenon/interfaces';
+import { IInterviewQuestion } from '@agent-xenon/interfaces';
 import mongoose, { HydratedDocument, Schema } from 'mongoose';
 
 const InterviewQuestionSchema: Schema = new Schema({
@@ -16,7 +16,7 @@ const InterviewQuestionSchema: Schema = new Schema({
     deletedAt: { type: Date, default: null }
 }, { timestamps: true, versionKey: false });
 
-InterviewQuestionSchema.post("findOne", (question: HydratedDocument<IInterviewQuestionAnswer>) => {
+InterviewQuestionSchema.post("findOne", (question: HydratedDocument<IInterviewQuestion>) => {
     if (question) {
         question.set('updatedAt', undefined, { strict: false });
         question.set('deletedAt', undefined, { strict: false });
@@ -24,6 +24,6 @@ InterviewQuestionSchema.post("findOne", (question: HydratedDocument<IInterviewQu
     }
 })
 
-const InterviewQuestion = mongoose.model<IInterviewQuestionAnswer>('InterviewQuestion', InterviewQuestionSchema);
+const InterviewQuestion = mongoose.model<IInterviewQuestion>('InterviewQuestion', InterviewQuestionSchema);
 
 export default InterviewQuestion;
