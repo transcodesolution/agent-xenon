@@ -13,7 +13,7 @@ export const JobList = () => {
     return <LoadingOverlay visible />
   }
 
-  if (jobs.length > 0) {
+  if (jobs.length <= 0) {
     return (
       <Card withBorder radius="md" p="xl" shadow="sm">
         <Text ta="center" fs="italic" c="dimmed">
