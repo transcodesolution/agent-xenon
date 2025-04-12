@@ -1,3 +1,4 @@
+'use client'
 import { Box, Flex } from '@mantine/core'
 import React, { useState } from 'react'
 import { SelectedSectionList } from '../../_components/SelectedSectionList'
