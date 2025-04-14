@@ -4,8 +4,9 @@ import {
   IconApps,
   IconHome,
   IconNotes,
-  IconUser,
   IconUserCircle,
+  IconUsers,
+  IconUsersGroup,
 } from '@tabler/icons-react';
 import { Flex, Box, ThemeIcon } from '@mantine/core';
 import Link from 'next/link';
@@ -43,9 +44,15 @@ const mockData = [
   },
   {
     label: 'Users',
-    icon: IconUser,
+    icon: IconUsers,
     permissions: [Permission.USER_READ],
     link: '/users',
+  },
+  {
+    label: 'Employees',
+    icon: IconUsersGroup,
+    permissions: [Permission.EMPLOYEE_READ],
+    link: '/employee',
   },
   {
     label: 'App',
