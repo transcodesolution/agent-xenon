@@ -16,7 +16,7 @@ import { usePermissions } from "@/libs/hooks/usePermissions";
 import { useGetEmployeeById, useJobRoleAndDesignation, useUpdateEmployee } from "@agent-xenon/react-query-hooks";
 import { useDebouncedCallback } from "@mantine/hooks";
 import { DatePickerInput } from "@mantine/dates";
-import { EditableField } from "./EditableField";
+import { EditableInput } from "@/libs/components/custom/input/EditableInput";
 
 export const EmployeeDetails = () => {
   const { employeeId } = useParams<{ employeeId: string }>();
@@ -119,7 +119,7 @@ export const EmployeeDetails = () => {
           />
         </Grid.Col>
         <Grid.Col span={6}>
-          <EditableField
+          <EditableInput
             label="Password"
             currentValue={employee?.password || ""}
             type="password"
@@ -130,7 +130,7 @@ export const EmployeeDetails = () => {
       <Divider label="Contact Information" my='md' />
       <Grid gutter="md">
         <Grid.Col span={6}>
-          <EditableField
+          <EditableInput
             label="Email"
             currentValue={employee?.contactInfo?.email || ""}
             onSave={(val) => handleChange("contactInfo.email", val)}
