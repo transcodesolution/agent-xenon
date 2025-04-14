@@ -8,7 +8,7 @@ const navigation = {
     { name: 'How it works', href: '#' },
   ],
   legal: [
-    { name: 'Privacy Policy', href: '/privacy-policy' },
+    { name: 'Privacy Policy', href: 'https://www.agentxenon.com/privacy-policy' },
     { name: 'Terms of Service', href: '#' },
   ],
   social: [
