@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import Employee from "../../database/models/employee";
-import { createEmployeeSchema, deleteEmployeeSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
+import { createEmployeeSchema, deleteEmployeeSchema, getAllEmployeeNameSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
 import { FilterQuery, QuerySelector } from "mongoose";
 import { IEmployee } from "@agent-xenon/interfaces";
+import TrainingEnrollment from "../../database/models/training-enrollment";
 
 export const createEmployee = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -105,6 +106,29 @@ export const getEmployees = async (req: Request, res: Response) => {
         ]);
 
         return res.ok("employee", { employees, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
+    } catch (error) {
+        return res.internalServerError(error.message, error.stack, "customMessage")
+    }
+}
+
+export const getAllEmployeeNames = async (req: Request, res: Response) => {
+    const { user } = req.headers;
+    try {
+        const { error, value } = getAllEmployeeNameSchema.validate(req.query);
+
+        if (error) {
+            return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const match: FilterQuery<IEmployee> = { deletedAt: null, organizationId: user.organizationId }
+
+        const unEnrolledEmployeeIds = await TrainingEnrollment.distinct("employeeId", { deletedAt: null, trainingId: value.trainingId });
+
+        match._id = { $nin: unEnrolledEmployeeIds };
+
+        const employees = await Employee.find(match, "firstName lastName");
+
+        return res.ok("employee", { employees }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

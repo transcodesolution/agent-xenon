@@ -29,7 +29,7 @@ const EmployeeSchema: Schema = new Schema({
     lastName: { type: String },
     password: { type: String },
     organizationId: { type: Schema.Types.ObjectId },
-    salaryDetail: { type: [SalarySchema], default: [] },
+    salaryDetail: { type: SalarySchema },
     applicantId: { type: Schema.Types.ObjectId },
     jobRoleId: { type: Schema.Types.ObjectId },
     designationId: { type: Schema.Types.ObjectId },
@@ -82,7 +82,7 @@ const EmployeeSchema: Schema = new Schema({
                 justOne: true,
                 match: { deletedAt: null }
             }
-        }
+        },
     }
 });
 
