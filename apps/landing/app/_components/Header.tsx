@@ -6,7 +6,7 @@ export const Header = () => {
   const links = [
     { label: 'Home', href: '/' },
     { label: 'Features', href: '/#features' },
-    { label: 'Privacy Policy', href: '/privacy-policy' }
+    { label: 'Privacy Policy', href: 'https://www.agentxenon.com/privacy-policy' }
   ];
 
   return (
