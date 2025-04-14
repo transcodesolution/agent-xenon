@@ -18,6 +18,7 @@ import { userRouter } from './user'
 import { codeExecuteRouter } from './code-execution'
 import { appRouter } from './app'
 import { onBoardApp } from '../controllers/app/app'
+import { employeeRouter } from './employee'
 
 const router = Router()
 // const accessControl = (req: Request, res: Response, next: any) => {
@@ -44,5 +45,6 @@ router.use('/document', documentRouter)
 router.use('/role', roleRouter)
 router.use('/user', userRouter)
 router.use('/app', appRouter)
+router.use('/employee', employeeRouter)
 
 export { router }

@@ -10,6 +10,7 @@ import { IApplicant, IApplicantRound, IOrganization } from "@agent-xenon/interfa
 import { APPLICANT_SELECTION_TEMPLATE, APPLICANT_REJECTION_TEMPLATE } from "../helper/email-templates/interview-status";
 import InterviewRound from "../database/models/interview-round";
 import { generateMailBody } from "../utils/mail";
+import { checkOutApplicantToEmployee } from "../utils/employee";
 
 const client = createOpenAIClient();
 
@@ -69,6 +70,7 @@ async function updateApplicantSelectedToDb(jobId: string, roundId: string, isSel
         const html = generateMailBody({ template: isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
         await sendMail(email, "Candidate Interview Status Mail", html);
     }
+    await checkOutApplicantToEmployee(applicantId, jobId);
     return "done";
 }
 
