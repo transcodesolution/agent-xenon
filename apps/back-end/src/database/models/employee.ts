@@ -8,13 +8,13 @@ const AllowanceSchema: Schema = new Schema({
     retirementBenefits: { type: Number },
     transportationMobilityBenefits: { type: Number },
     workRelatedBenefits: { type: Number },
-});
+}, { _id: false });
 
 const DeductionSchema: Schema = new Schema({
     mandatory: { type: Number },
     optional: { type: Number },
     voluntary: { type: Number },
-});
+}, { _id: false });
 
 const SalarySchema: Schema = new Schema({
     allowances: { type: AllowanceSchema },
@@ -22,14 +22,14 @@ const SalarySchema: Schema = new Schema({
     grossSalary: { type: Number },
     netSalary: { type: Number },
     totalCostToCompany: { type: Number },
-});
+}, { _id: false });
 
 const EmployeeSchema: Schema = new Schema({
     firstName: { type: String },
     lastName: { type: String },
     password: { type: String },
     organizationId: { type: Schema.Types.ObjectId },
-    salaryDetail: { type: [SalarySchema], default: [] },
+    salaryDetail: { type: SalarySchema },
     applicantId: { type: Schema.Types.ObjectId },
     jobRoleId: { type: Schema.Types.ObjectId },
     designationId: { type: Schema.Types.ObjectId },
@@ -82,7 +82,7 @@ const EmployeeSchema: Schema = new Schema({
                 justOne: true,
                 match: { deletedAt: null }
             }
-        }
+        },
     }
 });
 
