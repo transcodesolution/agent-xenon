@@ -10,13 +10,13 @@ import {
 } from "@mantine/core";
 import { IconEdit } from "@tabler/icons-react";
 
-export interface EditableInputProps {
+export interface IEditableInput {
   label: string;
   currentValue: string;
-  onSave: (value: string) => void;  
+  onSave: (value: string) => void;
   type?: "text" | "password" | "textarea" | "number";
   placeholder?: string;
-  inputProps?: Record<string, any>;
+  inputProps?: Record<string, unknown>;
 }
 
 export const EditableInput = ({
@@ -26,18 +26,23 @@ export const EditableInput = ({
   type = "text",
   placeholder,
   inputProps = {},
-}: EditableInputProps) => {
+}: IEditableInput) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedValue, setEditedValue] = useState(currentValue);
 
   const handleBlur = () => {
     if (editedValue !== currentValue) {
-      onSave(editedValue);  
+      onSave(editedValue);
     }
     setIsEditing(false);
   };
 
-  let InputComponent;
+  let InputComponent:
+    | typeof TextInput
+    | typeof PasswordInput
+    | typeof Textarea
+    | typeof NumberInput;
+
   switch (type) {
     case "password":
       InputComponent = PasswordInput;
@@ -52,15 +57,26 @@ export const EditableInput = ({
       InputComponent = TextInput;
   }
 
+  const handleChange = (eventOrValue: unknown) => {
+    if (type === "number") {
+      setEditedValue(String(eventOrValue ?? ""));
+    } else if (
+      typeof eventOrValue === "object" &&
+      eventOrValue !== null &&
+      "target" in eventOrValue &&
+      eventOrValue.target instanceof HTMLInputElement
+    ) {
+      setEditedValue(eventOrValue.target.value);
+    }
+  };
+
   return isEditing ? (
     <InputComponent
       label={label}
-      value={type === "number" ? Number(editedValue || currentValue) : editedValue || currentValue}
-      onChange={(val: any) =>
-        setEditedValue(type === "number" ? String(val) : val.target.value)
-      }
+      value={editedValue}
+      onChange={handleChange}
       onBlur={handleBlur}
-      onKeyDown={(e: any) => {
+      onKeyDown={(e) => {
         if (e.key === "Enter") handleBlur();
       }}
       autoFocus
