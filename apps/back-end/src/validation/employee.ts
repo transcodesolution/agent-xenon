@@ -49,6 +49,7 @@ export const getEmployeeSchema = Joi.object().keys({
 
 export const getAllUnassignedTrainingEmployeeSchema = Joi.object().keys({
     trainingId: Joi.string().optional(),
+    search: Joi.string().allow("").optional(),
 })
 
 export const getEmployeeByIdSchema = Joi.object().keys(employeeIdSchema)
