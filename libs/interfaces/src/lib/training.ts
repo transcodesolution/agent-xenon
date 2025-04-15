@@ -28,6 +28,7 @@ export interface ISubmittedAnswer {
 }
 
 export interface ITopic extends ITimestamp {
+  _id: string;
   title: string; //state in react
   description: string;
   topicSections: ITopicSection[];
@@ -37,7 +38,9 @@ export interface ITopic extends ITimestamp {
 }
 
 export interface ITopicSection {
+  _id: string;
   name: string;
+  content: string;
   type: TopicSectionType;
   order: number;
   topicSectionConfig: ITopicSectionConfig;
