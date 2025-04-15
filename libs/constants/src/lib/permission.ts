@@ -40,6 +40,10 @@ export enum Permission {
   EMPLOYEE_UPDATE = 'employee_update',
   EMPLOYEE_READ = 'employee_read',
   EMPLOYEE_DELETE = 'employee_delete',
+  TRAINING_CREATE = 'training_create',
+  TRAINING_UPDATE = 'training_update',
+  TRAINING_READ = 'trainingee_read',
+  TRAINING_DELETE = 'training_delete',
 }
 
 export const permissionsListByModuleWise: Record<string, { label: string, permissions: { label: string, value: Permission }[] }> = {
