@@ -117,7 +117,7 @@ export const getTrainingById = async (req: Request, res: Response) => {
     }
 }
 
-export const addEnrollmentInTraining = async (req: Request, res: Response) => {
+export const assignTraining = async (req: Request, res: Response) => {
     try {
         const { error, value } = addEnrollmentInTrainingSchema.validate(req.body);
 
@@ -147,7 +147,7 @@ export const addEnrollmentInTraining = async (req: Request, res: Response) => {
     }
 }
 
-export const deleteEnrollmentInTraining = async (req: Request, res: Response) => {
+export const unassignTraining = async (req: Request, res: Response) => {
     try {
         const { error, value } = deleteEnrollmentInTrainingSchema.validate(req.body);
 

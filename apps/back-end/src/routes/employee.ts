@@ -1,7 +1,7 @@
 import express from 'express';
 import { validateRoleAndPermissions } from '../helper/middleware';
 import { Permission } from '@agent-xenon/constants';
-import { createEmployee, deleteEmployee, getAllEmployeeNames, getEmployeeById, getEmployees, updateEmployee } from '../controllers/employee/employee';
+import { createEmployee, deleteEmployee, getAllUnassignedEmployeeByTrainingId, getEmployeeById, getEmployees, updateEmployee } from '../controllers/employee/employee';
 import { getJobRoleAndDesignation } from '../controllers/job/job';
 
 const router = express.Router();
@@ -11,7 +11,7 @@ router.patch("/:employeeId", validateRoleAndPermissions([Permission.EMPLOYEE_UPD
 router.delete("/", validateRoleAndPermissions([Permission.EMPLOYEE_DELETE]), deleteEmployee);
 router.get("/", validateRoleAndPermissions([Permission.EMPLOYEE_READ]), getEmployees);
 router.get("/job-role-and-designation", validateRoleAndPermissions([Permission.EMPLOYEE_UPDATE]), getJobRoleAndDesignation);
-router.get("/non-enrolled", validateRoleAndPermissions([Permission.EMPLOYEE_READ]), getAllEmployeeNames);
+router.get("/non-enrolled/:trainingId", validateRoleAndPermissions([Permission.EMPLOYEE_READ]), getAllUnassignedEmployeeByTrainingId);
 router.get("/:employeeId", validateRoleAndPermissions([Permission.EMPLOYEE_READ]), getEmployeeById);
 
 export const employeeRouter = router;

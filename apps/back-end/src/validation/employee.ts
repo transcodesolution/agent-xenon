@@ -55,7 +55,7 @@ export const getEmployeeSchema = Joi.object().keys({
     ...paginationSchema,
 })
 
-export const getAllEmployeeNameSchema = Joi.object().keys({
+export const getAllUnassignedTrainingEmployeeSchema = Joi.object().keys({
     trainingId: Joi.string().optional(),
 })
 

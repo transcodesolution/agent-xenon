@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Employee from "../../database/models/employee";
-import { createEmployeeSchema, deleteEmployeeSchema, getAllEmployeeNameSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
+import { createEmployeeSchema, deleteEmployeeSchema, getAllUnassignedTrainingEmployeeSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
 import { FilterQuery, QuerySelector } from "mongoose";
 import { IEmployee } from "@agent-xenon/interfaces";
 import TrainingEnrollment from "../../database/models/training-enrollment";
@@ -111,10 +111,10 @@ export const getEmployees = async (req: Request, res: Response) => {
     }
 }
 
-export const getAllEmployeeNames = async (req: Request, res: Response) => {
+export const getAllUnassignedEmployeeByTrainingId = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
-        const { error, value } = getAllEmployeeNameSchema.validate(req.query);
+        const { error, value } = getAllUnassignedTrainingEmployeeSchema.validate(req.params);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
