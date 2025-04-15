@@ -3,7 +3,7 @@ import Employee from "../../database/models/employee";
 import { createEmployeeSchema, deleteEmployeeSchema, getAllUnassignedTrainingEmployeeSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
 import { FilterQuery, QuerySelector } from "mongoose";
 import { IEmployee } from "@agent-xenon/interfaces";
-import TrainingEnrollment from "../../database/models/training-enrollment";
+import AssignedTraining from "../../database/models/assigned-training";
 
 export const createEmployee = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -122,7 +122,7 @@ export const getAllUnassignedEmployeeByTrainingId = async (req: Request, res: Re
 
         const match: FilterQuery<IEmployee> = { deletedAt: null, organizationId: user.organizationId }
 
-        const unEnrolledEmployeeIds = await TrainingEnrollment.distinct("employeeId", { deletedAt: null, trainingId: value.trainingId });
+        const unEnrolledEmployeeIds = await AssignedTraining.distinct("employeeId", { deletedAt: null, trainingId: value.trainingId });
 
         match._id = { $nin: unEnrolledEmployeeIds };
 

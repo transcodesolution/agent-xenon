@@ -3,7 +3,7 @@ import { FilterQuery, QuerySelector } from "mongoose";
 import { IApplicant, ITraining } from "@agent-xenon/interfaces";
 import { addEditEmployeeTrainingSchema, addEnrollmentInTrainingSchema, deleteEmployeeTrainingSchema, deleteEnrollmentInTrainingSchema, getEmployeeTrainingByIdSchema, getEmployeeTrainingSchema } from "../../validation/training";
 import Training from "../../database/models/training";
-import AssignedTraining from "../../database/models/assigned-training";
+import TrainingEnrollment from "../../database/models/assigned-training";
 
 export const createEmployeeTraining = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -131,7 +131,7 @@ export const assignTraining = async (req: Request, res: Response) => {
 
         const Query = { trainingId: value.trainingId, deletedAt: null, employeeId: { $in: value.employeeIds } };
 
-        const enrollments = await AssignedTraining.find(Query);
+        const enrollments = await TrainingEnrollment.find(Query);
 
         if (enrollments.length > 0) {
             return res.badRequest("employees already enroll in training", {}, "customMessage")
@@ -139,7 +139,7 @@ export const assignTraining = async (req: Request, res: Response) => {
 
         const enrollmentObject = { trainingId: value.trainingId };
 
-        await AssignedTraining.insertMany(value.employeeIds.map((i) => ({ employeeId: i, ...enrollmentObject })));
+        await TrainingEnrollment.insertMany(value.employeeIds.map((i) => ({ employeeId: i, ...enrollmentObject })));
 
         return res.ok("employees enrolled in training", {}, "customMessage");
     } catch (error) {
@@ -161,13 +161,13 @@ export const unassignTraining = async (req: Request, res: Response) => {
 
         const Query = { trainingId: value.trainingId, deletedAt: null, employeeId: { $in: value.employeeIds } };
 
-        const enrollments = await AssignedTraining.find(Query);
+        const enrollments = await TrainingEnrollment.find(Query);
 
         if (enrollments.length !== value.employeeIds.length) {
             return res.badRequest("employees enrollment is not found in training", {}, "getDataNotFound")
         }
 
-        await AssignedTraining.updateMany(Query, { $set: { deletedAt: Date.now() } });
+        await TrainingEnrollment.updateMany(Query, { $set: { deletedAt: Date.now() } });
 
         return res.ok("enrolled employees", {}, "deleteDataSuccess");
     } catch (error) {

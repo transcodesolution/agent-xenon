@@ -26,7 +26,7 @@ const TrainingSchema: Schema = new Schema({
         },
         enrollments: {
             options: {
-                ref: 'Training_enrollment',
+                ref: 'Assigned_training',
                 localField: '_id',
                 foreignField: 'trainingId',
                 match: { deletedAt: null }

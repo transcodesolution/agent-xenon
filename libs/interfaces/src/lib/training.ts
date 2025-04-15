@@ -12,12 +12,19 @@ export interface ITraining extends ITimestamp {
   level: TrainingLevel;
 }
 
-export interface ITrainingEnrollment extends ITimestamp {
+export interface IAssignedTraining extends ITimestamp {
   employeeId: string;
   startDate: Date;
   endDate: Date;
   progress: number;
   trainingId: string;
+  submittedAnswers: ISubmittedAnswer[];
+}
+
+export interface ISubmittedAnswer {
+  answer: string;
+  questionId: string;
+  sectionId: string;
 }
 
 export interface ITopic extends ITimestamp {
