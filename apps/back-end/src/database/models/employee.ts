@@ -8,13 +8,13 @@ const AllowanceSchema: Schema = new Schema({
     retirementBenefits: { type: Number },
     transportationMobilityBenefits: { type: Number },
     workRelatedBenefits: { type: Number },
-});
+}, { _id: false });
 
 const DeductionSchema: Schema = new Schema({
     mandatory: { type: Number },
     optional: { type: Number },
     voluntary: { type: Number },
-});
+}, { _id: false });
 
 const SalarySchema: Schema = new Schema({
     allowances: { type: AllowanceSchema },
@@ -22,7 +22,7 @@ const SalarySchema: Schema = new Schema({
     grossSalary: { type: Number },
     netSalary: { type: Number },
     totalCostToCompany: { type: Number },
-});
+}, { _id: false });
 
 const EmployeeSchema: Schema = new Schema({
     firstName: { type: String },

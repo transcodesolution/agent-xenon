@@ -13,6 +13,12 @@ export const createEmployee = async (req: Request, res: Response) => {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
+        if (value["contactInfo.email"]) {
+            const checkEmployeeEmailExist = await Employee.findOne({ deletedAt: null, "contactInfo.email": value["contactInfo.email"] });
+
+            if (checkEmployeeEmailExist) return res.badRequest("alreadyEmail", {});
+        }
+
         value.organizationId = user.organizationId;
         const employee = await Employee.create(value);
 
@@ -35,9 +41,11 @@ export const updateEmployee = async (req: Request, res: Response) => {
 
         if (!checkEmployeeExist) return res.badRequest("employee", {}, "getDataNotFound");
 
-        const checkEmployeeEmailExist = await Employee.findOne({ _id: { $ne: value.employeeId }, deletedAt: null, "contactInfo.email": value?.contactInfo?.email });
+        if (value["contactInfo.email"]) {
+            const checkEmployeeEmailExist = await Employee.findOne({ _id: { $ne: value.employeeId }, deletedAt: null, "contactInfo.email": value["contactInfo.email"] });
 
-        if (checkEmployeeEmailExist) return res.badRequest("alreadyEmail", {});
+            if (checkEmployeeEmailExist) return res.badRequest("alreadyEmail", {});
+        }
 
         const employee = await Employee.findByIdAndUpdate(value.employeeId, { $set: value }, { new: true });
 
