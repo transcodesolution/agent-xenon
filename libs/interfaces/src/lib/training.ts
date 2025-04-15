@@ -1,6 +1,7 @@
 import { TopicSectionType, TrainingLevel } from "@agent-xenon/constants";
 import { IInterviewQuestion } from "./interview-question";
 import { ITimestamp } from "./timestamp";
+import { IEmployee } from "./employee";
 
 export interface ITraining extends ITimestamp {
   title: string;  //react training
@@ -10,10 +11,12 @@ export interface ITraining extends ITimestamp {
   organizationId: string;
   tags: string[];
   level: TrainingLevel;
+  assignees: IAssignedTraining[];
 }
 
 export interface IAssignedTraining extends ITimestamp {
   employeeId: string;
+  employee: IEmployee;
   startDate: Date;
   endDate: Date;
   progress: number;
