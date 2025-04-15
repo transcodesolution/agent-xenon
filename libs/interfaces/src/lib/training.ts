@@ -1,45 +1,22 @@
-import { TopicSectionType, TrainingLevel } from "@agent-xenon/constants";
+import { TopicSectionType } from "@agent-xenon/constants";
 import { IInterviewQuestion } from "./interview-question";
-import { ITimestamp } from "./timestamp";
 
-export interface ITraining extends ITimestamp {
+export interface ITraining {
   title: string;  //react training
   description: string;
   topics: ITopic[];
-  topicIds: string[];
-  organizationId: string;
-  tags: string[];
-  level: TrainingLevel;
 }
 
-export interface IAssignedTraining extends ITimestamp {
-  employeeId: string;
-  startDate: Date;
-  endDate: Date;
-  progress: number;
-  trainingId: string;
-  submittedAnswers: ISubmittedAnswer[];
-}
-
-export interface ISubmittedAnswer {
-  answer: string;
-  questionId: string;
-  sectionId: string;
-}
-
-export interface ITopic extends ITimestamp {
+export interface ITopic {
   title: string; //state in react
   description: string;
-  topicSections: ITopicSection[];
-  childTopics: ITopic[];
-  parentTopicId: string;
-  trainingId: string;
+  topicSections: ITopicSection[],
+  childTopics: ITopic[]
 }
 
 export interface ITopicSection {
   name: string;
   type: TopicSectionType;
-  order: number;
   topicSectionConfig: ITopicSectionConfig;
 }
 
@@ -58,7 +35,7 @@ export interface ITopicSectionConfig {
     text: string;
   };
   [TopicSectionType.PRACTICAL]?: {
-    questions: { question: IInterviewQuestion, questionId: string }[]
+    questions: IInterviewQuestion[]
   };
   [TopicSectionType.ASSISTANT]?: {
     prompt: string

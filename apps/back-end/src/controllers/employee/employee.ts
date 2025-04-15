@@ -1,9 +1,8 @@
 import { Request, Response } from "express";
 import Employee from "../../database/models/employee";
-import { createEmployeeSchema, deleteEmployeeSchema, getAllUnassignedTrainingEmployeeSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
+import { createEmployeeSchema, deleteEmployeeSchema, getEmployeeByIdSchema, getEmployeeSchema, updateEmployeeSchema } from "../../validation/employee";
 import { FilterQuery, QuerySelector } from "mongoose";
 import { IEmployee } from "@agent-xenon/interfaces";
-import AssignedTraining from "../../database/models/assigned-training";
 
 export const createEmployee = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -12,12 +11,6 @@ export const createEmployee = async (req: Request, res: Response) => {
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
-        }
-
-        if (value["contactInfo.email"]) {
-            const checkEmployeeEmailExist = await Employee.findOne({ deletedAt: null, "contactInfo.email": value["contactInfo.email"] });
-
-            if (checkEmployeeEmailExist) return res.badRequest("alreadyEmail", {});
         }
 
         value.organizationId = user.organizationId;
@@ -42,11 +35,9 @@ export const updateEmployee = async (req: Request, res: Response) => {
 
         if (!checkEmployeeExist) return res.badRequest("employee", {}, "getDataNotFound");
 
-        if (value["contactInfo.email"]) {
-            const checkEmployeeEmailExist = await Employee.findOne({ _id: { $ne: value.employeeId }, deletedAt: null, "contactInfo.email": value["contactInfo.email"] });
+        const checkEmployeeEmailExist = await Employee.findOne({ _id: { $ne: value.employeeId }, deletedAt: null, "contactInfo.email": value?.contactInfo?.email });
 
-            if (checkEmployeeEmailExist) return res.badRequest("alreadyEmail", {});
-        }
+        if (checkEmployeeEmailExist) return res.badRequest("alreadyEmail", {});
 
         const employee = await Employee.findByIdAndUpdate(value.employeeId, { $set: value }, { new: true });
 
@@ -114,29 +105,6 @@ export const getEmployees = async (req: Request, res: Response) => {
         ]);
 
         return res.ok("employee", { employees, totalData: totalData, state: { page: value.page, limit: value.limit, page_limit: Math.ceil(totalData / value.limit) || 1 } }, "getDataSuccess")
-    } catch (error) {
-        return res.internalServerError(error.message, error.stack, "customMessage")
-    }
-}
-
-export const getAllUnassignedEmployeeByTrainingId = async (req: Request, res: Response) => {
-    const { user } = req.headers;
-    try {
-        const { error, value } = getAllUnassignedTrainingEmployeeSchema.validate(req.params);
-
-        if (error) {
-            return res.badRequest(error.details[0].message, {}, "customMessage");
-        }
-
-        const match: FilterQuery<IEmployee> = { deletedAt: null, organizationId: user.organizationId }
-
-        const unEnrolledEmployeeIds = await AssignedTraining.distinct("employeeId", { deletedAt: null, trainingId: value.trainingId });
-
-        match._id = { $nin: unEnrolledEmployeeIds };
-
-        const employees = await Employee.find(match, "firstName lastName");
-
-        return res.ok("employee", { employees }, "getDataSuccess")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
