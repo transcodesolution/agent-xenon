@@ -37,9 +37,4 @@ export const PERMISSION_CONFIG: { [key: string]: Permission[] } = {
   hasQuestionAnswerRead: [Permission.QUESTION_ANSWER_READ],
   hasQuestionAnswerUpdate: [Permission.QUESTION_ANSWER_UPDATE],
   hasQuestionAnswerDelete: [Permission.QUESTION_ANSWER_DELETE],
-
-  hasEmployeeCreate: [Permission.EMPLOYEE_CREATE],
-  hasEmployeeUpdate: [Permission.EMPLOYEE_UPDATE],
-  hasEmployeeRead: [Permission.EMPLOYEE_READ],
-  hasEmployeeDelete: [Permission.EMPLOYEE_DELETE],
 };
