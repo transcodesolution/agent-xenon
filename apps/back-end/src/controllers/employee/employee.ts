@@ -122,7 +122,8 @@ export const getEmployees = async (req: Request, res: Response) => {
 export const getAllUnassignedEmployeeByTrainingId = async (req: Request, res: Response) => {
     const { user } = req.headers;
     try {
-        const { error, value } = getAllUnassignedTrainingEmployeeSchema.validate(req.params);
+        Object.assign(req.query, req.params);
+        const { error, value } = getAllUnassignedTrainingEmployeeSchema.validate(req.query);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
@@ -131,6 +132,14 @@ export const getAllUnassignedEmployeeByTrainingId = async (req: Request, res: Re
         const match: FilterQuery<IEmployee> = { deletedAt: null, organizationId: user.organizationId }
 
         const unEnrolledEmployeeIds = await AssignedTraining.distinct("employeeId", { deletedAt: null, trainingId: value.trainingId });
+
+        if (value.search) {
+            const searchRegex = new RegExp(value.search, "i")
+            match.$or = [
+                { firstName: searchRegex },
+                { lastName: searchRegex },
+            ]
+        }
 
         match._id = { $nin: unEnrolledEmployeeIds };
 

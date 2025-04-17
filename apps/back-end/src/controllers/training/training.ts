@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import { FilterQuery, QuerySelector } from "mongoose";
-import { IApplicant, ITraining } from "@agent-xenon/interfaces";
+import { IApplicant, IAssignedTraining, IEmployee, ITraining } from "@agent-xenon/interfaces";
 import { addEditEmployeeTrainingSchema, addEnrollmentInTrainingSchema, deleteEmployeeTrainingSchema, deleteEnrollmentInTrainingSchema, getEmployeeTrainingByIdSchema, getEmployeeTrainingSchema } from "../../validation/training";
 import Training from "../../database/models/training";
 import AssignedTraining from "../../database/models/assigned-training";
@@ -109,7 +109,17 @@ export const getTrainingById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<ITraining> = { deletedAt: null, _id: value.trainingId };
 
-        const trainingData = await Training.findOne<ITraining>(match, "name description").populate("enrollments").lean();
+        const trainingData = await Training.findOne<ITraining>(match, "name description assignees").populate<{ assignees: IAssignedTraining[] }>({
+            path: "assignees",
+            match: { "employeeId": { $ne: null } },
+            populate: { path: "employeeId", match: { deletedAt: null }, select: "firstName lastName contactInfo" },
+            select: "employeeId progress startDate endDate"
+        }).lean();
+
+        for (const training of trainingData?.assignees ?? []) {
+            training.employee = training.employeeId as unknown as IEmployee;
+            delete training.employeeId;
+        }
 
         return res.ok("training", trainingData ?? {}, "getDataSuccess");
     } catch (error) {
