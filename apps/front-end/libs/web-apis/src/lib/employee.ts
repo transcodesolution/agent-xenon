@@ -1,7 +1,7 @@
 import http from "./http-common";
 import { IApiResponse, IEmployee, PaginationApiResponseType } from "@agent-xenon/interfaces";
 import { apiErrorHandler } from "@/libs/utils/apiErrorHandler";
-import { IGetEmployeeRequest } from "@agent-xenon/types-api";
+import { IGetEmployeeRequest, IGetUnassignedEmployeesRequest, IGetUnassignedEmployeesResponse } from "@agent-xenon/types-api";
 
 export const getEmployees = async (params: IGetEmployeeRequest): Promise<IApiResponse<PaginationApiResponseType<IEmployee[]>>> => {
   try {
@@ -46,5 +46,15 @@ export const deleteEmployees = async (employeeIds: string[]): Promise<IApiRespon
     return result.data;
   } catch (error) {
     throw new Error(`Error while delete employee: ${error}`);
+  }
+};
+
+export const getUnassignedEmployees = async (params: IGetUnassignedEmployeesRequest): Promise<IApiResponse<IGetUnassignedEmployeesResponse>> => {
+  try {
+    const { trainingId, search } = params;
+    const result = await http.get<IApiResponse<IGetUnassignedEmployeesResponse>>(`/employee/unassigned-employee-by-trainingId/${trainingId}`, { params: { search } });
+    return result.data;
+  } catch (error) {
+    throw new Error(`Error while un assined employees: ${error}`);
   }
 };
