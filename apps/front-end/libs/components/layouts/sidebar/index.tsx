@@ -2,6 +2,7 @@
 
 import {
   IconApps,
+  IconBook,
   IconHome,
   IconNotes,
   IconUserCircle,
@@ -59,6 +60,12 @@ const mockData = [
     icon: IconApps,
     permissions: [Permission.READ_APP_INFO],
     link: '/apps',
+  },
+  {
+    label: 'Training',
+    icon: IconBook,
+    permissions: [Permission.JOB_READ],
+    link: '/trainings',
   },
 ];
 
