@@ -1,0 +1,6 @@
+export * from './useGetTraining'
+export * from './useCreateTraining'
+export * from './useDeleteTraining'
+export * from './useGetTrainingById'
+export * from './useUpdateTraining'
+export * from './useGetTopicById'

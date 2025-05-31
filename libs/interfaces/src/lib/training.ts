@@ -4,7 +4,8 @@ import { ITimestamp } from "./timestamp";
 import { IEmployee } from "./employee";
 
 export interface ITraining extends ITimestamp {
-  title: string;  //react training
+  _id: string;
+  name: string;  //react training
   description: string;
   topics: ITopic[];
   topicIds: string[];
@@ -32,7 +33,7 @@ export interface ISubmittedAnswer {
 
 export interface ITopic extends ITimestamp {
   _id: string;
-  title: string; //state in react
+  name: string
   description: string;
   topicSections: ITopicSection[];
   childTopics: ITopic[];

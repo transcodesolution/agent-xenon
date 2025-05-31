@@ -7,16 +7,19 @@ import {
   Group,
   ActionIcon,
   NumberInput,
+  Box,
 } from "@mantine/core";
 import { IconEdit } from "@tabler/icons-react";
 
 export interface IEditableInput {
-  label: string;
+  label?: string;
   currentValue: string;
   onSave: (value: string) => void;
   type?: "text" | "password" | "textarea" | "number";
   placeholder?: string;
   inputProps?: Record<string, unknown>;
+  isEditInput?: boolean;
+  renderValue?: (value: string) => React.ReactNode;
 }
 
 export const EditableInput = ({
@@ -26,8 +29,10 @@ export const EditableInput = ({
   type = "text",
   placeholder,
   inputProps = {},
+  isEditInput = false,
+  renderValue
 }: IEditableInput) => {
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(isEditInput);
   const [editedValue, setEditedValue] = useState(currentValue);
 
   const handleBlur = () => {
@@ -84,16 +89,18 @@ export const EditableInput = ({
       {...inputProps}
     />
   ) : (
-    <div>
-      <Text size="sm" fw={500}>{label}</Text>
-      <Group justify="space-between" mt={4}>
-        <Text>
-          {type === "password" ? "•••••••" : editedValue || currentValue}
-        </Text>
-        <ActionIcon variant="light" color="blue" onClick={() => setIsEditing(true)}>
+    <Box w='100%' p='0'>
+      {label && <Text size="sm" fw={500} pb={4}>{label}</Text>}
+      <Group justify="space-between" >
+        {renderValue ? (
+          renderValue(editedValue || currentValue)
+        ) : (
+          <Text>{type === "password" ? "•••••••" : editedValue || currentValue}</Text>
+        )}
+        <ActionIcon variant="transparent" color="blue" onClick={() => setIsEditing(true)}>
           <IconEdit size={18} />
         </ActionIcon>
       </Group>
-    </div>
+    </Box>
   );
 };
