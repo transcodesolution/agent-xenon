@@ -23,7 +23,6 @@ export function ApplicantUploadForm({ refetch, onClose }: { refetch: () => void,
     for (const file of acceptedFiles) {
       const formData = new FormData();
       formData.append('document', file);
-
       try {
         const uploadResponse = await uploadFileToServiceViaHandler({
           formData,

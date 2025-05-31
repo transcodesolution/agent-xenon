@@ -15,8 +15,9 @@ import { useDebouncedValue } from "@mantine/hooks";
 import { useState } from "react";
 import { IAssignedEmployees } from "@/libs/types-api/src";
 import { useGetUnassignedEmployees } from "@/libs/react-query-hooks/src";
+import { getInitials } from "@/libs/utils/ui-helpers";
 
-interface Props {
+interface IAssigneesSelector {
   trainingId: string;
   assignedEmployees: IAssignedEmployees[];
   onAdd: (emp: IAssignedEmployees) => void | Promise<void>;
@@ -24,21 +25,13 @@ interface Props {
   classNames?: string;
 }
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
 
 export const TrainingAssigneesSelector = ({
   trainingId,
   assignedEmployees,
   onAdd,
   onRemove,
-}: Props) => {
+}: IAssigneesSelector) => {
   const [searchText, setSearchText] = useState("");
   const [debouncedSearch] = useDebouncedValue(searchText, 500);
   const combobox = useCombobox({ onDropdownClose: () => combobox.resetSelectedOption() });
@@ -80,12 +73,6 @@ export const TrainingAssigneesSelector = ({
       <Text fw={500} size="sm">Assigned Employees</Text>
       <Group w="100%" align="center" >
         <Popover width={300} position="bottom-start" withArrow opened={opened} >
-          <Popover.Target>
-            <ActionIcon onClick={() => setOpened((o) => !o)} variant="light">
-              {opened ? <IconChevronDown /> : <IconChevronRight />}
-            </ActionIcon>
-          </Popover.Target>
-
           <Popover.Dropdown>
             <Combobox store={combobox} onOptionSubmit={handleSelect}>
               <Combobox.Target>
@@ -146,6 +133,11 @@ export const TrainingAssigneesSelector = ({
               ))}
             </Stack>
           </Popover.Dropdown>
+          <Popover.Target>
+            <ActionIcon onClick={() => setOpened((o) => !o)} variant="light">
+              {opened ? <IconChevronDown /> : <IconChevronRight />}
+            </ActionIcon>
+          </Popover.Target>
         </Popover>
         <Group gap="xs" wrap="nowrap">
           {assignedEmployees.length === 0 && (

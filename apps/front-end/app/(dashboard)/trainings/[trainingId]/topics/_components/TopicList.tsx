@@ -32,8 +32,8 @@ const TopicList = () => {
       </Flex>
       <Stack gap="0" h='calc(100vh - 152px)' styles={{ root: { overflowY: 'auto' } }}>
         {rootTopicIds.length > 0 ? (
-          rootTopicIds.map((id) => (
-            <TopicItem key={id} topicId={id} trainingId={trainingId} />
+          rootTopicIds.map((id, index) => (
+            <TopicItem key={id} topicId={id} trainingId={trainingId} numbering={`${index + 1}`} />
           ))
         ) : (
           <Text size="sm" c="dimmed" p='sm' >
