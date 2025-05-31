@@ -3,7 +3,7 @@ import { DataTable, DataTableSortStatus } from "mantine-datatable";
 import { useSearchParams, useRouter } from "next/navigation";
 import React, { useState } from "react";
 import { IApplicant } from "@agent-xenon/interfaces";
-import { ActionIcon, Paper } from "@mantine/core";
+import { ActionIcon } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { FilterParams, updateUrlParams } from "@/libs/utils/updateUrlParams";
 import { useGetApplicants, useDeleteApplicants } from "@agent-xenon/react-query-hooks";

@@ -11,13 +11,6 @@ export const getColumns = (
     direction: string;
   }
 ): DataTableColumn<IJob>[] => {
-
-  const statusColors = {
-    open: 'var(--mantine-primary-color-5)',
-    close: 'var(--mantine-red-6)',
-    paused: 'var(--mantine-yellow-6)',
-    interview_started: 'var(--mantine-green-6)'
-  };
   return [
     {
       accessor: 'title',

@@ -56,7 +56,10 @@ export const InterviewRound = ({ onAddRound, roundId, roundNumber = 1 }: IInterv
     }
   }, [round]);
 
-  const handleChange = (field: keyof typeof formState, value: any) => {
+  const handleChange = (
+    field: keyof typeof formState,
+    value: string | InterviewRoundTypes | number | { _id: string; question: string }[] | Date | null | undefined
+  ) => {
     setFormState((prev) => ({ ...prev, [field]: value }));
   };
 

@@ -90,7 +90,10 @@ export const QuestionDetails = () => {
   }, [questionData, editor]);
 
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (
+    field: string,
+    value: string | number | boolean | string[] | typeof questionFormState.options
+  ) => {
     if (!permission?.hasQuestionAnswerUpdate) {
       showNotification({
         message: "You do not have permission to update questions",
@@ -187,7 +190,9 @@ export const QuestionDetails = () => {
                 label: type,
               }))}
               value={questionFormState.questionFormat}
-              onChange={(value) => handleChange("questionFormat", value)}
+              onChange={(value) => {
+                if (value !== null) handleChange("questionFormat", value);
+              }}
             />
           </Grid.Col>
 
