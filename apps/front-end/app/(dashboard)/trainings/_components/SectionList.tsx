@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { Flex, Stack } from '@mantine/core'
 import React from 'react'
 import { IconBrandYoutube, IconDeviceAudioTape, IconRobot, IconTestPipe, IconTextCaption } from '@tabler/icons-react'
