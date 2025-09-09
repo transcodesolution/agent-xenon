@@ -1,6 +1,6 @@
 import { useGetRoles } from "@/libs/react-query-hooks/src";
 import { IUser } from "@agent-xenon/interfaces";
-import { Box, Flex, Paper, PasswordInput, Select, TextInput, Title, Button } from "@mantine/core";
+import { Box, Flex, Paper, PasswordInput, Select, TextInput, Button } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { useEffect } from "react";
 

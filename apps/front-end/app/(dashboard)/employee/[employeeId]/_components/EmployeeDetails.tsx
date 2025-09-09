@@ -39,7 +39,7 @@ export const EmployeeDetails = () => {
       label: role.name,
     })) || [];
 
-  const debouncedUpdate = useDebouncedCallback((field: string, value: any) => {
+  const debouncedUpdate = useDebouncedCallback((field: string, value: unknown) => {
     updateEmployee(
       {
         _id: employeeId,
@@ -58,7 +58,7 @@ export const EmployeeDetails = () => {
     );
   }, 600);
 
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: unknown) => {
     if (!permission?.hasEmployeeUpdate) {
       showNotification({
         message: "You do not have permission to update employee",

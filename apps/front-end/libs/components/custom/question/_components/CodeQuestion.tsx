@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Group, Stack, Button, Grid, Flex, Text } from "@mantine/core";
 import { IconPlayerPlay, IconRefresh } from "@tabler/icons-react";
-import Editor, { OnMount } from "@monaco-editor/react";
+import Editor from "@monaco-editor/react";
 import { Terminal } from "./Terminal";
 import { LanguageSelector } from "./LanguageSelector";
 import { useCodeExecute } from "@agent-xenon/react-query-hooks";

@@ -61,9 +61,9 @@ export const SignInForm = () => {
       };
 
       router.push(redirectMap[role] || '/');
-    } catch (error: any) {
+    } catch (error) {
       showNotification({
-        message: error?.message || 'Login failed',
+        message: (error instanceof Error && error.message) ? error.message : 'Login failed',
         color: 'red',
       });
     }

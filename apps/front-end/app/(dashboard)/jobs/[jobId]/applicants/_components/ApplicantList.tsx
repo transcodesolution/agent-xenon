@@ -4,7 +4,7 @@ import { useSearchParams, useRouter, useParams } from "next/navigation";
 import React, { useState } from "react";
 import { IApplicant } from "@agent-xenon/interfaces";
 import { getApplicantColumns } from "./ApplicantColumns";
-import { ActionIcon, Badge, Button, Flex, Group, Modal, Paper, Text } from "@mantine/core";
+import { ActionIcon, Badge, Button, Flex, Group, Modal, Text } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
 import { FilterParams, updateUrlParams } from "@/libs/utils/updateUrlParams";
 import { useGetApplicants, useDeleteApplicants } from "@agent-xenon/react-query-hooks";
