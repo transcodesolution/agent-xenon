@@ -17,6 +17,7 @@ import { useGetEmployeeById, useJobRoleAndDesignation, useUpdateEmployee } from 
 import { useDebouncedCallback } from "@mantine/hooks";
 import { DatePickerInput } from "@mantine/dates";
 import { EditableInput } from "@/libs/components/custom/input/EditableInput";
+import { useEffect, useState } from "react";
 
 export const EmployeeDetails = () => {
   const { employeeId } = useParams<{ employeeId: string }>();
@@ -26,6 +27,7 @@ export const EmployeeDetails = () => {
   const employee = getEmployeeByIdResponse?.data;
   const { data: jobRoleAndDesignationResponse } = useJobRoleAndDesignation();
   const jobRoleAndDesignation = jobRoleAndDesignationResponse?.data
+  const [joinDate, setJoinDate] = useState<Date | null>(employee?.joinDate ? new Date(employee.joinDate) : new Date());
 
   const designationsOptions =
     jobRoleAndDesignation?.designations.map((designation) => ({
@@ -38,6 +40,12 @@ export const EmployeeDetails = () => {
       value: role._id,
       label: role.name,
     })) || [];
+
+  useEffect(() => {
+    if (employee?.joinDate) {
+      setJoinDate(new Date(employee.joinDate));
+    }
+  }, [employee]);
 
   const debouncedUpdate = useDebouncedCallback((field: string, value: any) => {
     updateEmployee(
@@ -113,8 +121,11 @@ export const EmployeeDetails = () => {
         <Grid.Col span={6}>
           <DatePickerInput
             label="Join Date"
-            value={employee?.joinDate ? new Date(employee.joinDate) : null}
-            onChange={(date) => handleChange('joinDate', date)}
+            value={joinDate}
+            onChange={(date) => {
+              setJoinDate(date);
+              handleChange("joinDate", date);
+            }}
             clearable={false}
           />
         </Grid.Col>
