@@ -154,7 +154,7 @@ export const updateRoundStatus = async (req: Request, res: Response) => {
             await Promise.all([
                 ApplicantRound.updateOne(Query, { $set: value }),
                 sendMail(applicantRoundData.applicantId.contactInfo.email, "Candidate Interview Status Mail", html),
-                checkOutApplicantToEmployee(value.applicantId, value.jobId),
+                checkOutApplicantToEmployee(value.applicantId, value.jobId, user.organization.name),
             ]);
 
             message = "applicant round status";
@@ -215,7 +215,7 @@ export const getInterviewRoundByJobId = async (req: Request, res: Response) => {
 
         const match: FilterQuery<IInterviewRound> = { deletedAt: null, jobId: value.jobId }
 
-        const interviewRounds = await InterviewRound.find(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name").sort({ _id: 1 });
+        const interviewRounds = await InterviewRound.find(match, "type endDate startDate status qualificationCriteria selectionMarginInPercentage name").sort({ roundNumber: 1 });
 
         return res.ok("interview round", interviewRounds, "getDataSuccess")
     } catch (error) {
@@ -507,7 +507,7 @@ export const handleCandidateExamSubmission = async (questions: questionAnswerTyp
                 }
             }),
             sendMail(applicantEmail, "Candidate Interview Status Mail", html),
-            checkOutApplicantToEmployee(applicantId, interviewRoundData.jobId.toString()),
+            checkOutApplicantToEmployee(applicantId, interviewRoundData.jobId.toString(), organizationName),
         ]);
     } catch (error) {
         console.error("submitExam: ", error.message);

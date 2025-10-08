@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import Organization from "../../database/models/organization";
 import { User } from "../../database";
-import { createUpdateUserSchema, deleteUserSchema, getUserSchema, userByIdSchema } from "../../validation/user";
+import { createUserSchema, deleteUserSchema, getUserSchema, updateUserSchema, userByIdSchema } from "../../validation/user";
 import { FilterQuery } from "mongoose";
 import { IUser } from "@agent-xenon/interfaces";
 import { generateHash } from "../../utils/password-hashing";
@@ -29,16 +29,26 @@ export const createUser = async (req: Request, res: Response) => {
     const { body: userData, headers } = req;
     const { user } = headers;
     try {
-        const { error, value } = createUpdateUserSchema.validate(userData);
+        const { error, value } = createUserSchema.validate(userData);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
+        }
+
+        const existingUser = await User.findOne({ email: value.email, deletedAt: null, organizationId: user.organizationId });
+
+        if (existingUser) {
+            return res.badRequest('Email already exists', {}, 'customMessage');
         }
 
         value.organizationId = user.organizationId;
 
         const newUser = new User(value);
         await newUser.save();
+
+        const html = generateMailBody({ template: ACCOUNT_CREATION_TEMPLATE, organizationName: user.organization.name, extraData: { frontendDomailUrl: updateFrontendDomainUrl(user.organization.name) } });
+
+        await sendMail(newUser.email, "Account Created", html);
 
         return res.ok('user', { user: newUser }, 'addDataSuccess');
     } catch (error) {
@@ -51,14 +61,14 @@ export const updateUser = async (req: Request, res: Response) => {
     const { user } = headers;
     try {
         Object.assign(userData, req.params);
-        const { error, value } = createUpdateUserSchema.validate(userData);
+        const { error, value } = updateUserSchema.validate(userData);
 
         if (error) {
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
         if (value.email) {
-            const existingUser = await User.findOne({ id: { $ne: value.id }, email: value.email, deletedAt: null, organizationId: user.organizationId });
+            const existingUser = await User.findOne({ _id: { $ne: value.id }, email: value.email, deletedAt: null, organizationId: user.organizationId });
 
             if (existingUser) {
                 return res.badRequest('Email already exists', {}, 'customMessage');
@@ -69,23 +79,14 @@ export const updateUser = async (req: Request, res: Response) => {
             value.password = await generateHash(value.password);
         }
 
-        const oldUserData = await User.findOne({ _id: value.id, deletedAt: null });
-
         const updatedUser = await User.findOneAndUpdate({ _id: value.id, deletedAt: null }, { $set: value }, { new: true });
 
         if (!updatedUser) {
             return res.notFound('User not found', {}, 'getDataNotFound');
         }
 
-        const organizationData = await Organization.findOne({ _id: user.organizationId }, "name");
-
-        if (!oldUserData.email) {
-            const html = generateMailBody({ template: ACCOUNT_CREATION_TEMPLATE, organizationName: organizationData.name, extraData: { frontendDomailUrl: updateFrontendDomainUrl(organizationData.name) } });
-            await sendMail(updatedUser.email, "Account Created", html);
-        } else if (oldUserData.email !== value.email) {
-            const html = generateMailBody({ template: ACCOUNT_UPDATION_TEMPLATE, organizationName: organizationData.name, extraData: { updatedOn: new Date().toLocaleString() } });
-            await sendMail(updatedUser.email, "Account Updated", html);
-        }
+        const html = generateMailBody({ template: ACCOUNT_UPDATION_TEMPLATE, organizationName: user.organization.name, extraData: { updatedOn: new Date().toLocaleString() } });
+        await sendMail(updatedUser.email, "Account Updated", html);
 
         return res.ok('user', { user: updatedUser }, 'updateDataSuccess');
     } catch (error) {

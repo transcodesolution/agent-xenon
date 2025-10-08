@@ -7,5 +7,7 @@ export interface IMailTemplate {
     frontendDomailUrl?: string;
     applicantEmail?: string;
     applicantPassword?: string;
+    employeeEmail?: string;
+    employeePassword?: string;
     examLink?: string;
 }

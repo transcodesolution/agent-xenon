@@ -4,6 +4,15 @@ import { createEmployeeSchema, deleteEmployeeSchema, getAllUnassignedTrainingEmp
 import { FilterQuery, QuerySelector } from "mongoose";
 import { IEmployee } from "@agent-xenon/interfaces";
 import AssignedTraining from "../../database/models/assigned-training";
+import { generateMailBody } from "../../utils/mail";
+import { EMPLOYEE_ADDITION_TEMPLATE, EMPLOYEE_UPDATE_TEMPLATE } from "../../helper/email-templates/employee";
+import { generateEmployeePassword } from "../../utils/employee";
+import { sendMail } from "../../helper/mail";
+import { updateFrontendDomainUrl } from "../../utils/technical-round";
+import { generateRandomString } from "../../utils/random-string-generator";
+import { config } from "../../config";
+import { RoleType } from "@agent-xenon/constants";
+import { Role } from "../../database";
 
 export const createEmployee = async (req: Request, res: Response) => {
     const { user } = req.headers;
@@ -20,7 +29,10 @@ export const createEmployee = async (req: Request, res: Response) => {
             if (checkEmployeeEmailExist) return res.badRequest("alreadyEmail", {});
         }
 
+        const role = await Role.findOne({ type: RoleType.EMPLOYEE, deletedAt: null, organizationId: user.organizationId });
+
         value.organizationId = user.organizationId;
+        value.roleId = role._id;
         const employee = await Employee.create(value);
 
         return res.ok("employee", employee, "addDataSuccess")
@@ -30,6 +42,7 @@ export const createEmployee = async (req: Request, res: Response) => {
 }
 
 export const updateEmployee = async (req: Request, res: Response) => {
+    const { user } = req.headers;
     try {
         req.body.employeeId = req.params.employeeId;
         const { error, value } = updateEmployeeSchema.validate(req.body);
@@ -48,7 +61,22 @@ export const updateEmployee = async (req: Request, res: Response) => {
             if (checkEmployeeEmailExist) return res.badRequest("alreadyEmail", {});
         }
 
+        if (!checkEmployeeExist.password) {
+            const generatedFirstName = generateRandomString(5);
+            const generatedLastName = generateRandomString(5);
+            value.password = generateEmployeePassword({ firstName: value.firstName ?? generatedFirstName, lastName: value.lastName ?? generatedLastName });
+        }
+
         const employee = await Employee.findByIdAndUpdate(value.employeeId, { $set: value }, { new: true });
+
+        if (!checkEmployeeExist.contactInfo.email && value["contactInfo.email"]) {
+            const frontendDomailUrl = updateFrontendDomainUrl(user.organization.name);
+            const html = generateMailBody({ template: EMPLOYEE_ADDITION_TEMPLATE, organizationName: user.organization.name, extraData: { employeeEmail: employee.contactInfo.email, employeePassword: employee.password, frontendDomailUrl: `${frontendDomailUrl}${config.EMPLOYEE_PANEL_FRONTEND_ROUTE_NAME}` } });
+            await sendMail(employee.contactInfo.email, "Employee On Boarded", html);
+        } else if (employee.contactInfo.email) {
+            const html = generateMailBody({ template: EMPLOYEE_UPDATE_TEMPLATE, organizationName: user.organization.name, extraData: { updatedOn: new Date().toLocaleString() } });
+            await sendMail(employee.contactInfo.email, "Employee Information Updated", html);
+        }
 
         return res.ok("employee", employee, "updateDataSuccess")
     } catch (error) {

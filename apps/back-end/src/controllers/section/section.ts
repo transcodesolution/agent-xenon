@@ -19,7 +19,9 @@ export const createSection = async (req: Request, res: Response) => {
 
         const topic = await Topic.findByIdAndUpdate(value.topicId, { $push: { topicSections: value } }, { new: true });
 
-        return res.ok("section added to topic", topic, "customMessage");
+        const [sectionCreatedReesponse] = topic.topicSections.slice(-1);
+
+        return res.ok("section added to topic", sectionCreatedReesponse ?? {}, "customMessage");
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }
@@ -34,19 +36,29 @@ export const updateSectionBySectionAndTopicId = async (req: Request, res: Respon
             return res.badRequest(error.details[0].message, {}, "customMessage");
         }
 
-        const checkTopicExist = await Topic.findOne({ _id: value.topicId, deletedAt: null });
+        const { topicId, sectionId, ...restUpdatedFields } = value;
+
+        const topicQuery: FilterQuery<ITopic> = { _id: topicId, deletedAt: null };
+
+        const sectionQuery: FilterQuery<ITopic> = { ...topicQuery, 'topicSections._id': sectionId };
+
+        const checkTopicExist = await Topic.findOne(topicQuery);
 
         if (!checkTopicExist) return res.badRequest("topic", {}, "getDataNotFound");
 
-        const { topicId, sectionId, ...restUpdatedFields } = value;
+        const checkSectionExist = await Topic.findOne(sectionQuery);
+
+        if (!checkSectionExist) return res.badRequest("section", {}, "getDataNotFound");
 
         const sectionUpdatePayloadArray = Object.keys(restUpdatedFields).map((i) => ({ ["topicSections.$." + i]: value[i] }));
 
         const sectionUpdatePayload = Object.assign({}, ...sectionUpdatePayloadArray);
 
-        const topic = await Topic.findOneAndUpdate({ _id: topicId, 'topicSections._id': sectionId }, { $set: sectionUpdatePayload }, { new: true });
+        const topic = await Topic.findOneAndUpdate(sectionQuery, { $set: sectionUpdatePayload }, { new: true });
 
-        return res.ok("section updated to topic", topic, "customMessage")
+        const sectionUpdatedReesponse = topic.topicSections.find((i) => i._id.toString() === sectionId);
+
+        return res.ok("section updated to topic", sectionUpdatedReesponse ?? {}, "customMessage")
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

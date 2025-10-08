@@ -2,6 +2,8 @@ import { TopicSectionType } from '@agent-xenon/constants';
 import { ITopic } from '@agent-xenon/interfaces';
 import mongoose, { Schema } from 'mongoose';
 
+const defaultValue = "";
+
 const TopicSchema: Schema = new Schema({
     name: { type: String },
     description: { type: String },
@@ -17,20 +19,20 @@ const TopicSchema: Schema = new Schema({
                 }],
             },
             text: {
-                text: { type: String },
+                text: { type: String, default: defaultValue },
             },
             video: {
-                videoDescription: { type: String },
-                videoTitle: { type: String },
-                videoURL: { type: String },
+                videoDescription: { type: String, default: defaultValue },
+                videoTitle: { type: String, default: defaultValue },
+                videoURL: { type: String, default: defaultValue },
             },
             assistent: {
-                prompt: { type: String },
+                prompt: { type: String, default: defaultValue },
             },
             audio: {
-                audioDescription: { type: String },
-                audioTitle: { type: String },
-                audioURL: { type: String },
+                audioDescription: { type: String, default: defaultValue },
+                audioTitle: { type: String, default: defaultValue },
+                audioURL: { type: String, default: defaultValue },
             },
         },
         type: { type: String, enum: TopicSectionType },
