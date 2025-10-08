@@ -109,19 +109,23 @@ export const getTrainingById = async (req: Request, res: Response) => {
 
         const match: FilterQuery<ITraining> = { deletedAt: null, _id: value.trainingId };
 
-        const trainingData = await Training.findOne<ITraining>(match, "name description assignees").populate<{ assignees: IAssignedTraining[] }>({
-            path: "assignees",
-            match: { "employeeId": { $ne: null } },
-            populate: { path: "employeeId", match: { deletedAt: null }, select: "firstName lastName contactInfo" },
-            select: "employeeId progress startDate endDate"
-        }).lean();
+        const [training, assignees] = await Promise.all([
+            Training.findOne<ITraining>(match, "name description").lean(),
+            AssignedTraining.find({ deletedAt: match.deletedAt, trainingId: match._id })
+                .populate({
+                    path: "employee",
+                    select: "firstName lastName contactInfo",
+                    options: { lean: true }
+                })
+                .select("-employeeId") // Exclude employeeId from the root
+                .lean(),
+        ]);
 
-        for (const training of trainingData?.assignees ?? []) {
-            training.employee = training.employeeId as unknown as IEmployee;
-            delete training.employeeId;
-        }
+        training.assignees = assignees;
+        console.log(training)
+        console.log(assignees)
 
-        return res.ok("training", trainingData ?? {}, "getDataSuccess");
+        return res.ok("training", training ?? {}, "getDataSuccess");
     } catch (error) {
         return res.internalServerError(error.message, error.stack, "customMessage")
     }

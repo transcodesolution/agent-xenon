@@ -41,7 +41,7 @@ async function candidateAnswerAnalysisAgent(question: Pick<IInterviewQuestion, "
     const messages: ChatCompletionMessageParam[] = [
         { role: "system", content: SYSTEM_PROMPT },
         {
-            role: "user", content: `I'm a candidate. Here is my code with question statement, my answer as a input format given. You have an extra prompt given to understand question. so you can create test cases, expected output according to question statement accurately. 
+            role: "user", content: `I'm a candidate. Here is my answer with question statement, my answer as a input format given. You have an extra prompt given to understand question. so you can create test cases, expected output according to question statement accurately. 
         
         question statement: ${question.question}\n${question.description}
         extra prompt: ${question.evaluationCriteria}\n

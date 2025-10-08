@@ -7,7 +7,7 @@ const TrainingSchema: Schema = new Schema({
     description: { type: String },
     tags: { type: [String], default: [] },
     level: { type: String, enum: TrainingLevel },
-    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
+    organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true, index: true },
     topicIds: { type: [{ type: Schema.Types.ObjectId, }], default: [] },
     deletedAt: { type: Date, default: null },
 }, {
@@ -21,14 +21,6 @@ const TrainingSchema: Schema = new Schema({
                 ref: 'Topic',
                 localField: 'topicIds',
                 foreignField: '_id',
-                match: { deletedAt: null }
-            }
-        },
-        assignees: {
-            options: {
-                ref: 'Assigned_training',
-                localField: '_id',
-                foreignField: 'trainingId',
                 match: { deletedAt: null }
             }
         },

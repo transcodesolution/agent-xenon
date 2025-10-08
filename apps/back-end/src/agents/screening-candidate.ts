@@ -70,7 +70,7 @@ async function updateApplicantSelectedToDb(jobId: string, roundId: string, isSel
         const html = generateMailBody({ template: isSelected ? APPLICANT_SELECTION_TEMPLATE : APPLICANT_REJECTION_TEMPLATE, organizationName, extraData: { roundName: interviewRoundData.name, roundType: interviewRoundData.type } });
         await sendMail(email, "Candidate Interview Status Mail", html);
     }
-    await checkOutApplicantToEmployee(applicantId, jobId);
+    await checkOutApplicantToEmployee(applicantId, jobId, organizationName);
     return "done";
 }
 
